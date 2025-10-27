@@ -1,0 +1,331 @@
+# Lizoku LMS Backend API Specification (Mock)
+# This file documents the API endpoints simulated in `services/api.ts`.
+
+---
+## Authentication
+---
+
+### POST /api/auth/login
+- **Description:** Authenticates a user and returns their profile.
+- **Request Body:**
+  ```json
+  {
+    "email": "string",
+    "password": "string"
+  }
+  ```
+- **Response:** `User` object or `null`.
+
+---
+## Admin
+---
+
+### GET /api/admin/stats
+- **Description:** Retrieves key statistics for the admin dashboard.
+- **Response:** `StatCardData[]`
+
+### GET /api/users
+- **Description:** Retrieves all users in the system.
+- **Response:** `User[]`
+
+### POST /api/users
+- **Description:** Creates a new user.
+- **Request Body:** `Pick<User, 'name' | 'email' | 'role' | 'status'>`
+- **Response:** The newly created `User` object.
+
+### PUT /api/users/:userId
+- **Description:** Updates an existing user.
+- **Request Body:** `Partial<Pick<User, 'name' | 'email' | 'role' | 'status'>>`
+- **Response:** The updated `User` object or `null`.
+
+### DELETE /api/users/:userId
+- **Description:** Deletes a user.
+- **Response:** `{ success: boolean }`
+
+### GET /api/users/recent?limit={number}
+- **Description:** Retrieves the most recently signed-up users.
+- **Query Params:**
+  - `limit`: (Optional) Number of users to return. Defaults to 5.
+- **Response:** `User[]`
+
+### GET /api/departments
+- **Description:** Retrieves all academic departments.
+- **Response:** `Department[]`
+
+### POST /api/departments
+- **Description:** Creates a new department.
+- **Request Body:** `Pick<Department, 'name' | 'head'>`
+- **Response:** The newly created `Department` object.
+
+### PUT /api/departments/:deptId
+- **Description:** Updates an existing department.
+- **Request Body:** `Pick<Department, 'name' | 'head'>`
+- **Response:** The updated `Department` object or `null`.
+
+### DELETE /api/departments/:deptId
+- **Description:** Deletes a department.
+- **Response:** `{ success: boolean }`
+
+
+### GET /api/programs
+- **Description:** Retrieves all academic programs.
+- **Response:** `Program[]`
+
+### POST /api/programs
+- **Description:** Creates a new program.
+- **Request Body:** `Pick<Program, 'name' | 'departmentId' | 'duration'>`
+- **Response:** The newly created `Program` object.
+
+### PUT /api/programs/:programId
+- **Description:** Updates an existing program.
+- **Request Body:** `Pick<Program, 'name' | 'departmentId' | 'duration'>`
+- **Response:** The updated `Program` object or `null`.
+
+### DELETE /api/programs/:programId
+- **Description:** Deletes a program.
+- **Response:** `{ success: boolean }`
+
+
+### GET /api/semesters
+- **Description:** Retrieves all academic semesters.
+- **Response:** `Semester[]`
+
+### POST /api/semesters
+- **Description:** Creates a new semester.
+- **Request Body:** `Pick<Semester, 'name' | 'startDate' | 'endDate'>`
+- **Response:** The newly created `Semester` object.
+
+### PUT /api/semesters/:semesterId
+- **Description:** Updates an existing semester.
+- **Request Body:** `Pick<Semester, 'name' | 'startDate' | 'endDate'>`
+- **Response:** The updated `Semester` object or `null`.
+
+### DELETE /api/semesters/:semesterId
+- **Description:** Deletes a semester.
+- **Response:** `{ success: boolean }`
+
+
+### GET /api/courses
+- **Description:** Retrieves all courses in the system.
+- **Response:** `Course[]`
+
+### POST /api/courses
+- **Description:** Creates a new course.
+- **Request Body:** `Pick<Course, 'title' | 'description' | 'departmentId' | 'instructorId'>`
+- **Response:** The newly created `Course` object.
+
+### PUT /api/courses/:courseId
+- **Description:** Updates an existing course by its ID.
+- **Request Body:** `Pick<Course, 'title' | 'description' | 'departmentId' | 'instructorId'>`
+- **Response:** The updated `Course` object or `null` if not found.
+
+### PUT /api/courses/:courseId/modules
+- **Description:** Updates the entire module structure for a course. Used for saving quiz question selections.
+- **Request Body:** `Module[]`
+- **Response:** The updated `Course` object.
+
+### DELETE /api/courses/:courseId
+- **Description:** Deletes a course by its ID.
+- **Response:** `{ success: boolean }`
+
+### GET /api/announcements
+- **Description:** Retrieves all site announcements.
+- **Response:** `Announcement[]`
+
+### GET /api/announcements/latest
+- **Description:** Retrieves the single most recent announcement.
+- **Response:** `Announcement` object or `null`.
+
+### POST /api/announcements
+- **Description:** Creates a new announcement.
+- **Request Body:** `Pick<Announcement, 'title' | 'content' | 'author'>`
+- **Response:** The newly created `Announcement` object.
+
+### PUT /api/announcements/:announcementId
+- **Description:** Updates an existing announcement.
+- **Request Body:** `Pick<Announcement, 'title' | 'content'>`
+- **Response:** The updated `Announcement` object or `null`.
+
+### DELETE /api/announcements/:announcementId
+- **Description:** Deletes an announcement.
+- **Response:** `{ success: boolean }`
+
+
+---
+## Instructor
+---
+
+### GET /api/instructor/stats
+- **Description:** Retrieves key statistics for the logged-in instructor's dashboard.
+- **Response:** `StatCardData[]`
+
+### GET /api/instructor/courses
+- **Description:** Retrieves all courses assigned to the logged-in instructor.
+- **Response:** `Course[]` (merged with summary data)
+
+### GET /api/instructor/rubrics
+- **Description:** Retrieves all rubrics for the logged-in instructor.
+- **Response:** `Rubric[]`
+
+### POST /api/instructor/rubrics
+- **Description:** Creates a new rubric.
+- **Request Body:** `Omit<Rubric, 'id'>`
+- **Response:** The newly created `Rubric` object.
+
+### PUT /api/instructor/rubrics/:rubricId
+- **Description:** Updates an existing rubric.
+- **Request Body:** `Partial<Omit<Rubric, 'id' | 'instructorId'>>`
+- **Response:** The updated `Rubric` object or `null`.
+
+### DELETE /api/instructor/rubrics/:rubricId
+- **Description:** Deletes a rubric.
+- **Response:** `{ success: boolean }`
+
+### GET /api/grades/course/:courseId
+- **Description:** Retrieves all students and their grades for a specific course.
+- **Response:** 
+  ```json
+  {
+    "gradableItems": "ContentItem[]",
+    "studentGrades": "object[]" 
+  }
+  ```
+
+### GET /api/submissions/:submissionId
+- **Description:** Retrieves the details of a specific quiz submission for manual grading.
+- **Response:** 
+  ```json
+  {
+    "submission": "QuizSubmission",
+    "questions": "Question[]",
+    "rubric": "Rubric | null"
+  }
+  ```
+
+### POST /api/submissions/grade-manual
+- **Description:** Calculates and saves the final score for a manually reviewed submission.
+- **Request Body:**
+  ```json
+  {
+    "submissionId": "string",
+    "manualScores": "Record<string, number>" 
+  }
+  ```
+- **Response:** The final, updated `Grade` object.
+
+### PUT /api/grades
+- **Description:** Creates or updates a specific grade for a student.
+- **Request Body:**
+  ```json
+  {
+    "studentId": "string",
+    "courseId": "string",
+    "contentItemId": "string",
+    "score": "number | null"
+  }
+  ```
+- **Response:** The updated `Grade` object.
+
+### GET /api/questions?instructorId={id}
+- **Description:** Retrieves all questions for a specific instructor.
+- **Response:** `Question[]` (Array of question objects. `Question` is a discriminated union based on the `type` property, including `multiple-choice`, `true-false`, `short-answer`, `multiple-select`, and `fill-in-the-blank`.)
+
+### POST /api/questions/batch
+- **Description:** Retrieves a specific list of questions by their IDs.
+- **Request Body:** `string[]` (Array of question IDs)
+- **Response:** `Question[]`
+
+### POST /api/questions
+- **Description:** Creates a new question.
+- **Request Body:** `Omit<Question, 'id'>` (A question object from the discriminated union.)
+- **Response:** The newly created `Question` object.
+
+### PUT /api/questions/:questionId
+- **Description:** Updates an existing question.
+- **Request Body:** `Partial<Omit<Question, 'id' | 'instructorId'>>`
+- **Response:** The updated `Question` object or `null`.
+
+### DELETE /api/questions/:questionId
+- **Description:** Deletes a question.
+- **Response:** `{ success: boolean }`
+
+
+---
+## Student
+---
+
+### GET /api/student/program
+- **Description:** Retrieves the academic program details for the logged-in student.
+- **Response:** `StudentProgramDetails` object or `null`.
+
+### GET /api/student/courses
+- **Description:** Retrieves all courses the logged-in student is enrolled in.
+- **Response:** `CourseSummary[]`
+
+### GET /api/grades/student/:studentId/course/:courseId
+- **Description:** Retrieves a specific student's grades for a given course.
+- **Response:** 
+  ```json
+  [
+    {
+      "contentItemTitle": "string",
+      "score": "number | null"
+    },
+    ...
+  ]
+  ```
+
+### POST /api/quizzes/submit
+- **Description:** Submits a student's quiz answers for grading.
+- **Request Body:**
+  ```json
+  {
+    "studentId": "string",
+    "courseId": "string",
+    "contentItemId": "string",
+    "answers": "Record<string, string | number | boolean | number[]>"
+  }
+  ```
+- **Response:** The resulting `Grade` object, which may have a status of 'graded' or 'pending review'.
+
+
+---
+## General
+---
+
+### GET /api/courses/:courseId
+- **Description:** Retrieves detailed information for a specific course.
+- **Response:** `Course` object or `null`.
+
+### GET /api/calendar/events
+- **Description:** Retrieves all calendar events relevant to the user.
+- **Response:** `CalendarEvent[]`
+
+### GET /api/discussions/:discussionId/threads
+- **Description:** Retrieves all threads for a specific discussion content item.
+- **Response:** `DiscussionThread[]` (with posts included)
+
+### POST /api/discussions/threads
+- **Description:** Creates a new discussion thread.
+- **Request Body:**
+  ```json
+  {
+    "discussionId": "string",
+    "title": "string",
+    "content": "string", // Content of the first post
+    "author": "User"
+  }
+  ```
+- **Response:** The newly created `DiscussionThread` object (with the first post).
+
+### POST /api/discussions/posts
+- **Description:** Creates a new post (reply) in a thread.
+- **Request Body:**
+  ```json
+  {
+    "threadId": "string",
+    "content": "string",
+    "author": "User"
+  }
+  ```
+- **Response:** The newly created `DiscussionPost` object.
