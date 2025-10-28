@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Icon } from '../icons';
 
@@ -56,17 +57,17 @@ export const IdleTimeoutModal: React.FC<IdleTimeoutModalProps> = ({ isOpen, onSt
 
     return (
         <div className={`fixed inset-0 bg-black z-[100] flex justify-center items-center p-4 transition-opacity duration-300 ease-out ${isAnimating ? 'bg-opacity-75' : 'bg-opacity-0'}`}>
-            <div className={`bg-white rounded-lg shadow-xl w-full max-w-md text-center p-8 transform transition-all duration-300 ease-out ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}>
+            <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md text-center p-8 transform transition-all duration-300 ease-out ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}>
                 <Icon name="Clock" className="mx-auto h-12 w-12 text-yellow-500 mb-4" />
-                <h2 className="text-2xl font-bold text-gray-800">Are you still there?</h2>
-                <p className="text-gray-600 my-4">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Are you still there?</h2>
+                <p className="text-gray-600 dark:text-gray-300 my-4">
                     For your security, you will be logged out automatically due to inactivity in{' '}
                     <span className="font-bold text-lg text-red-600">{countdown}</span> seconds.
                 </p>
                 <div className="flex justify-center gap-4 mt-6">
                     <button
                         onClick={onLogout}
-                        className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                        className="px-6 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
                     >
                         Log Out Now
                     </button>

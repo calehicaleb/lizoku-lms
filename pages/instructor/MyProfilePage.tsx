@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { useAuth } from '../../contexts/AuthContext';
@@ -100,8 +101,8 @@ const InstructorMyProfilePage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Profile Information Card */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                    <h3 className="text-xl font-bold text-gray-800 mb-6">Personal Information</h3>
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6">Personal Information</h3>
                     
                     <div className="flex items-center mb-6">
                         <img src={user.avatarUrl} alt="User Avatar" className="w-24 h-24 rounded-full border-4 border-primary" />
@@ -114,33 +115,33 @@ const InstructorMyProfilePage: React.FC = () => {
                                 <Icon name="Sparkles" className={`h-5 w-5 mr-2 ${isGeneratingAvatar ? 'animate-spin' : ''}`} />
                                 {isGeneratingAvatar ? 'Generating...' : 'Regenerate AI Avatar'}
                             </button>
-                            <p className="text-xs text-gray-500 mt-2">Generate a unique new avatar for your profile.</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Generate a unique new avatar for your profile.</p>
                         </div>
                     </div>
 
                     <form className="space-y-4" onSubmit={handleProfileSave}>
                         <div>
-                            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
                             <input
                                 type="text"
                                 id="fullName"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                              <input
                                 type="email"
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                             />
                         </div>
                         {profileMessage.text && (
-                            <div className={`p-3 rounded-md text-sm ${profileMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            <div className={`p-3 rounded-md text-sm ${profileMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
                                 {profileMessage.text}
                             </div>
                         )}
@@ -157,44 +158,44 @@ const InstructorMyProfilePage: React.FC = () => {
                 </div>
 
                 {/* Change Password Card */}
-                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                     <h3 className="text-xl font-bold text-gray-800 mb-6">Change Password</h3>
+                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                     <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-6">Change Password</h3>
                      <form className="space-y-4" onSubmit={handlePasswordChange}>
                         <div>
-                            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                            <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Current Password</label>
                             <input
                                 type="password"
                                 id="currentPassword"
                                 value={currentPassword}
                                 onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
                                 required
                             />
                         </div>
                         <div>
-                            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                            <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
                             <input
                                 type="password"
                                 id="newPassword"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
                                 required
                             />
                         </div>
                          <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm New Password</label>
                             <input
                                 type="password"
                                 id="confirmPassword"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
                                 required
                             />
                         </div>
                         {passwordMessage.text && (
-                            <div className={`p-3 rounded-md text-sm ${passwordMessage.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                            <div className={`p-3 rounded-md text-sm ${passwordMessage.type === 'success' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`}>
                                 {passwordMessage.text}
                             </div>
                         )}

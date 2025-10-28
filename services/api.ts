@@ -1,4 +1,3 @@
-
 import { User, UserRole, UserStatus, StatCardData, CourseSummary, Department, Program, Semester, SemesterStatus, Course, CourseStatus, Module, ContentType, ContentItem, Announcement, Enrollment, Grade, CalendarEvent, CalendarEventType, DiscussionPost, Question, QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, ShortAnswerQuestion, QuizSubmission, MultipleSelectQuestion, FillBlankQuestion, Rubric, StudentProgramDetails, ProgramCourse, Communication, SecuritySettings, StudentTranscript, Message, MessageThread, Examination, ExaminationStatus, Certificate, Achievement, CertificateSettings, CertificateRequest, CertificateRequestStatus, InstitutionSettings, ActivityLog, ActivityActionType, UserSession, Notification, NotificationType, OverdueItem, UpcomingDeadline, RecentActivity, IconName, ContentItemDetails, AssignmentSubmission, Submission } from '../types';
 import { generateAIAvatar } from './geminiService';
 
@@ -496,8 +495,8 @@ const CONTENT_ITEM_DETAILS: ContentItemDetails[] = [
         content: `<div class="prose prose-sans max-w-none">
         <p class="text-lg">Welcome to our first class discussion!</p>
         <p>The goal of this first discussion is simple: to get to know each other. Building a supportive community is key to a successful course, and that starts here.</p>
-        <div class="p-4 bg-secondary-light/40 border-l-4 border-secondary my-6">
-            <h4 class="font-bold text-secondary">Your Task:</h4>
+        <div class="p-4 bg-secondary-light/40 dark:bg-secondary/20 border-l-4 border-secondary dark:border-blue-400 my-6">
+            <h4 class="font-bold text-secondary dark:text-blue-300">Your Task:</h4>
             <p>Please post a new thread introducing yourself. You can talk about:</p>
             <ul class="list-disc pl-5 mt-2">
                 <li>Your academic interests or what you hope to learn in this course.</li>
@@ -520,8 +519,8 @@ const CONTENT_ITEM_DETAILS: ContentItemDetails[] = [
         content: `<div class="prose prose-sans max-w-none">
         <p class="text-lg">This week's discussion is about algorithm efficiency.</p>
         <p>We've learned about Linear Search vs. Binary Search, and simple sorting algorithms like Bubble Sort. While they all get the job done, *how* they do it matters immensely, especially as data scales up. This is where we analyze an algorithm's efficiency, often using Big O notation.</p>
-        <div class="p-4 bg-secondary-light/40 border-l-4 border-secondary my-6">
-            <h4 class="font-bold text-secondary">Your Task:</h4>
+        <div class="p-4 bg-secondary-light/40 dark:bg-secondary/20 border-l-4 border-secondary dark:border-blue-400 my-6">
+            <h4 class="font-bold text-secondary dark:text-blue-300">Your Task:</h4>
             <p>Choose <strong>one</strong> of the following prompts and start a new thread with your response:</p>
             <ol class="list-decimal pl-5 mt-2">
                 <li><strong>Real-World Analogy:</strong> Explain the difference between Linear Search and Binary Search using a real-world analogy (that isn't a phone book!). Why is it critical for the data to be sorted for Binary Search?</li>
@@ -534,60 +533,60 @@ const CONTENT_ITEM_DETAILS: ContentItemDetails[] = [
     { 
         id: 'cs101-c1', 
         content: `<div class="welcome-container">
-    <h2 class="text-4xl font-bold text-gray-800 mb-4">Welcome to the Adventure of Computer Science!</h2>
-    <p class="text-lg text-gray-600 mb-8">Hello and a warm welcome to CS101. Whether you're completely new to programming or have dabbled a bit before, this course is your gateway into the fascinating world of how computers think, solve problems, and shape our modern world.</p>
+    <h2 class="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4">Welcome to the Adventure of Computer Science!</h2>
+    <p class="text-lg text-gray-600 dark:text-gray-300 mb-8">Hello and a warm welcome to CS101. Whether you're completely new to programming or have dabbled a bit before, this course is your gateway into the fascinating world of how computers think, solve problems, and shape our modern world.</p>
     
-    <section class="p-6 bg-secondary-light/40 rounded-lg border border-secondary/20">
-        <h3 class="text-2xl font-bold text-secondary mb-4">What to Expect</h3>
+    <section class="p-6 bg-secondary-light/40 dark:bg-secondary/20 rounded-lg border border-secondary/20 dark:border-secondary/30">
+        <h3 class="text-2xl font-bold text-secondary dark:text-blue-300 mb-4">What to Expect</h3>
         <ul class="space-y-4">
             <li class="flex items-start">
-                <span class="bg-primary/30 text-primary-dark rounded-full p-2 mr-4 mt-1 flex-shrink-0">
+                <span class="bg-primary/30 dark:bg-primary/20 text-primary-dark dark:text-primary rounded-full p-2 mr-4 mt-1 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                 </span>
                 <div>
-                    <strong class="font-semibold text-gray-800">Engaging Lessons:</strong>
-                    <p class="text-gray-600">Each week introduces new concepts through easy-to-understand lessons.</p>
+                    <strong class="font-semibold text-gray-800 dark:text-gray-200">Engaging Lessons:</strong>
+                    <p class="text-gray-600 dark:text-gray-300">Each week introduces new concepts through easy-to-understand lessons.</p>
                 </div>
             </li>
             <li class="flex items-start">
-                 <span class="bg-primary/30 text-primary-dark rounded-full p-2 mr-4 mt-1 flex-shrink-0">
+                 <span class="bg-primary/30 dark:bg-primary/20 text-primary-dark dark:text-primary rounded-full p-2 mr-4 mt-1 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path></svg>
                 </span>
                 <div>
-                    <strong class="font-semibold text-gray-800">Hands-On Practice:</strong>
-                    <p class="text-gray-600">You'll apply what you learn through quizzes and programming assignments.</p>
+                    <strong class="font-semibold text-gray-800 dark:text-gray-200">Hands-On Practice:</strong>
+                    <p class="text-gray-600 dark:text-gray-300">You'll apply what you learn through quizzes and programming assignments.</p>
                 </div>
             </li>
             <li class="flex items-start">
-                 <span class="bg-primary/30 text-primary-dark rounded-full p-2 mr-4 mt-1 flex-shrink-0">
+                 <span class="bg-primary/30 dark:bg-primary/20 text-primary-dark dark:text-primary rounded-full p-2 mr-4 mt-1 flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
                 </span>
                 <div>
-                    <strong class="font-semibold text-gray-800">Supportive Community:</strong>
-                    <p class="text-gray-600">Use the discussion boards to ask questions and collaborate with your peers.</p>
+                    <strong class="font-semibold text-gray-800 dark:text-gray-200">Supportive Community:</strong>
+                    <p class="text-gray-600 dark:text-gray-300">Use the discussion boards to ask questions and collaborate with your peers.</p>
                 </div>
             </li>
         </ul>
     </section>
 
-    <p class="my-8 text-gray-700">My name is Instructor Sam, and I'll be your guide. My goal is to make this subject approachable, exciting, and rewarding. Please don't hesitate to reach out or post in the forums if you're ever feeling stuck.</p>
+    <p class="my-8 text-gray-700 dark:text-gray-300">My name is Instructor Sam, and I'll be your guide. My goal is to make this subject approachable, exciting, and rewarding. Please don't hesitate to reach out or post in the forums if you're ever feeling stuck.</p>
 
-    <div class="p-6 bg-green-50 border-l-4 border-green-500 rounded-r-lg flex items-center">
-         <span class="text-green-600 mr-4 flex-shrink-0">
+    <div class="p-6 bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 dark:border-green-600 rounded-r-lg flex items-center">
+         <span class="text-green-600 dark:text-green-300 mr-4 flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.3.09-3.1a2 2 0 0 0-2.83-2.83c-.8.61-2.26.62-3.1.09z"></path><path d="m12 15-3-3a2 2 0 0 1 2.83-2.83l.09.09c.8.61 2.26.62 3.1.09s1.26-1.5.09-3.1l-3-3c-1.5-1.26-5-2-5-2s.5 3.74 2 5"></path><path d="M9 12c-2 2.24-2.68 4.31-2.68 4.31s2.07-.68 4.31-2.68"></path><path d="M15 9c2.24-2 4.31-2.68 4.31-2.68s-.68 2.07-2.68 4.31"></path></svg>
         </span>
         <div>
-            <h4 class="font-bold text-green-800">Ready to Begin?</h4>
-            <p class="text-sm text-green-700">Your first step is to review the <strong>Course Syllabus</strong> and then head over to the Week 1 Discussion to <strong>Introduce Yourself</strong>.</p>
+            <h4 class="font-bold text-green-800 dark:text-green-200">Ready to Begin?</h4>
+            <p class="text-sm text-green-700 dark:text-green-300">Your first step is to review the <strong>Course Syllabus</strong> and then head over to the Week 1 Discussion to <strong>Introduce Yourself</strong>.</p>
         </div>
     </div>
 </div>` 
     },
     { 
         id: 'cs101-c2', 
-        content: `<h2 class="text-3xl font-bold text-gray-800 mb-6 border-b pb-2">CS101: Introduction to Computer Science - Syllabus</h2><section class="syllabus-section"><h3 class="syllabus-header">Course Description</h3><p class="syllabus-content">This course provides a comprehensive introduction to the fundamental concepts of computer science and programming. Students will learn the basics of computational thinking, problem-solving, and software development. Topics include data types, control flow, functions, data structures, and basic algorithms. The course is language-agnostic in its concepts but will use JavaScript for examples and assignments.</p></section><section class="syllabus-section"><h3 class="syllabus-header">Learning Objectives</h3><ul class="syllabus-list"><li>Understand and apply fundamental programming concepts.</li><li>Analyze problems and develop algorithmic solutions.</li><li>Write, debug, and test simple computer programs.</li><li>Understand the role of basic data structures like arrays and objects.</li><li>Work with functions to create modular and reusable code.</li></ul></section><section class="syllabus-section"><h3 class="syllabus-header">Grading Policy</h3><p class="syllabus-content mb-4">Your final grade will be determined by your performance on the following components:</p><table class="grading-table"><thead><tr><th>Component</th><th>Weight</th></tr></thead><tbody><tr><td>Assignments (2)</td><td>30%</td></tr><tr><td>Quizzes (2)</td><td>30%</td></tr><tr><td>Mid-Term Exam</td><td>15%</td></tr><tr><td>Final Exam</td><td>15%</td></tr><tr><td>Final Project</td><td>10%</td></tr></tbody><tfoot><tr><td>Total</td><td>100%</td></tr></tfoot></table></section><section class="syllabus-section"><h3 class="syllabus-header">Weekly Schedule</h3><ul class="syllabus-list schedule-list"><li><strong>Week 1:</strong> Foundations & Course Overview</li><li><strong>Week 2:</strong> Programming Fundamentals (Variables, Data Types, Operators)</li><li><strong>Week 3:</strong> Control Flow (Conditionals, Loops)</li><li><strong>Week 4:</strong> Functions and Scope</li><li><strong>Week 5:</strong> Mid-Term Exam</li><li><strong>Week 6:</strong> Data Structures (Arrays, Objects)</li><li><strong>Week 7:</strong> Introduction to Algorithms</li><li><strong>Week 8:</strong> Final Project & Final Exam</li></ul></section>` 
+        content: `<h2 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6 border-b dark:border-gray-700 pb-2">CS101: Introduction to Computer Science - Syllabus</h2><section class="syllabus-section"><h3 class="syllabus-header">Course Description</h3><p class="syllabus-content">This course provides a comprehensive introduction to the fundamental concepts of computer science and programming. Students will learn the basics of computational thinking, problem-solving, and software development. Topics include data types, control flow, functions, data structures, and basic algorithms. The course is language-agnostic in its concepts but will use JavaScript for examples and assignments.</p></section><section class="syllabus-section"><h3 class="syllabus-header">Learning Objectives</h3><ul class="syllabus-list"><li>Understand and apply fundamental programming concepts.</li><li>Analyze problems and develop algorithmic solutions.</li><li>Write, debug, and test simple computer programs.</li><li>Understand the role of basic data structures like arrays and objects.</li><li>Work with functions to create modular and reusable code.</li></ul></section><section class="syllabus-section"><h3 class="syllabus-header">Grading Policy</h3><p class="syllabus-content mb-4">Your final grade will be determined by your performance on the following components:</p><table class="grading-table"><thead><tr><th>Component</th><th>Weight</th></tr></thead><tbody><tr><td>Assignments (2)</td><td>30%</td></tr><tr><td>Quizzes (2)</td><td>30%</td></tr><tr><td>Mid-Term Exam</td><td>15%</td></tr><tr><td>Final Exam</td><td>15%</td></tr><tr><td>Final Project</td><td>10%</td></tr></tbody><tfoot><tr><td>Total</td><td>100%</td></tr></tfoot></table></section><section class="syllabus-section"><h3 class="syllabus-header">Weekly Schedule</h3><ul class="syllabus-list schedule-list"><li><strong>Week 1:</strong> Foundations & Course Overview</li><li><strong>Week 2:</strong> Programming Fundamentals (Variables, Data Types, Operators)</li><li><strong>Week 3:</strong> Control Flow (Conditionals, Loops)</li><li><strong>Week 4:</strong> Functions and Scope</li><li><strong>Week 5:</strong> Mid-Term Exam</li><li><strong>Week 6:</strong> Data Structures (Arrays, Objects)</li><li><strong>Week 7:</strong> Introduction to Algorithms</li><li><strong>Week 8:</strong> Final Project & Final Exam</li></ul></section>` 
     },
-    { id: 'cs101-c4', content: `<p class="lesson-intro">At the heart of any computer program is <strong>data</strong>. But how do we store and manage it? The answer is <strong>variables</strong>, the fundamental building blocks for storing information.</p><div class="key-concept"><h3 class="font-bold text-secondary">Key Concept: Variable</h3><p>A variable is a named storage location for data. Think of it as a labeled box where you can store information. You can change what's inside the box later.</p></div><p>In programming, we use variables to hold values like numbers, text, and more complex information so we can refer to it and manipulate it throughout our code.</p><div class="code-block"><div class="code-header"><span>script.js</span></div><pre><code>// 'message' is the variable name, "Hello, world!" is the value.
+    { id: 'cs101-c4', content: `<p class="lesson-intro">At the heart of any computer program is <strong>data</strong>. But how do we store and manage it? The answer is <strong>variables</strong>, the fundamental building blocks for storing information.</p><div class="key-concept"><h3 class="font-bold text-secondary dark:text-blue-300">Key Concept: Variable</h3><p>A variable is a named storage location for data. Think of it as a labeled box where you can store information. You can change what's inside the box later.</p></div><p>In programming, we use variables to hold values like numbers, text, and more complex information so we can refer to it and manipulate it throughout our code.</p><div class="code-block"><div class="code-header"><span>script.js</span></div><pre><code>// 'message' is the variable name, "Hello, world!" is the value.
 let message = "Hello, world!";
 
 // We can change the value later.
@@ -629,7 +628,7 @@ console.log(x % y); // Output: 1 (10 divided by 3 is 3 with a remainder of 1)</c
     <li><code><</code> (Less than)</li>
 </ul>
 <div class="key-concept">
-    <h3 class="font-bold text-secondary">Important: <code>==</code> vs <code>===</code></h3>
+    <h3 class="font-bold text-secondary dark:text-blue-300">Important: <code>==</code> vs <code>===</code></h3>
     <p>Always prefer using the strict equality operator <code>===</code>. It prevents unexpected behavior by ensuring both the value and the data type are the same.</p>
 </div>
 <div class="code-block"><div class="code-header"><span>script.js</span></div><pre><code>let score = 95;

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Icon } from '../icons';
 
@@ -51,11 +52,11 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
             aria-labelledby="modal-title"
         >
             <div
-                className={`bg-white rounded-lg shadow-xl w-full max-w-md max-h-full overflow-y-auto transform transition-all duration-300 ease-out ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}
+                className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-full overflow-y-auto transform transition-all duration-300 ease-out ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}
             >
-                <div className="flex justify-between items-center p-4 border-b">
-                    <h3 id="modal-title" className="text-xl font-bold text-gray-800">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+                <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                    <h3 id="modal-title" className="text-xl font-bold text-gray-800 dark:text-gray-100">{title}</h3>
+                    <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
                         <Icon name="X" className="h-6 w-6" />
                     </button>
                 </div>

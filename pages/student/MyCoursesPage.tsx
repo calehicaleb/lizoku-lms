@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -36,17 +37,17 @@ const MyCoursesPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {courses.map(course => (
-                    <div key={course.id} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                        <div className="h-32 bg-secondary-light flex items-center justify-center">
-                            <Icon name="BookOpen" className="h-16 w-16 text-secondary" />
+                    <div key={course.id} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                        <div className="h-32 bg-secondary-light dark:bg-secondary/20 flex items-center justify-center">
+                            <Icon name="BookOpen" className="h-16 w-16 text-secondary dark:text-blue-400" />
                         </div>
                         <div className="p-4">
-                            <h4 className="font-bold text-gray-800 truncate">{course.title}</h4>
+                            <h4 className="font-bold text-gray-800 dark:text-gray-200 truncate">{course.title}</h4>
                             <div className="mt-3">
-                                 <div className="w-full bg-gray-200 rounded-full h-2">
+                                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                     <div className="bg-primary h-2 rounded-full" style={{ width: `${course.progress}%` }}></div>
                                 </div>
-                                <p className="text-xs text-gray-500 text-right mt-1">{course.progress}% complete</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 text-right mt-1">{course.progress}% complete</p>
                             </div>
                             <Link to={`/courses/${course.id}`} className="mt-4 block w-full text-center bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300">
                                 Go to Course

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { StatCard } from '../../components/common/StatCard';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -42,48 +43,48 @@ const AdminDashboard: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">Recent Sign-ups</h3>
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Recent Sign-ups</h3>
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th className="px-4 py-2 text-left font-medium text-gray-500">Name</th>
-                                    <th className="px-4 py-2 text-left font-medium text-gray-500">Role</th>
-                                    <th className="px-4 py-2 text-left font-medium text-gray-500">Status</th>
-                                    <th className="px-4 py-2 text-left font-medium text-gray-500">Date</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Name</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Role</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Date</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                 {recentUsers.map(user => (
                                     <tr key={user.id}>
-                                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">{user.name}</td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-gray-500 capitalize">{user.role}</td>
+                                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 dark:text-gray-200">{user.name}</td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400 capitalize">{user.role}</td>
                                         <td className="px-4 py-3 whitespace-nowrap">
                                             <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                                                user.status === 'active' ? 'bg-green-100 text-green-800' :
-                                                user.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                'bg-gray-100 text-gray-800'
+                                                user.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' :
+                                                user.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' :
+                                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                                             }`}>{user.status}</span>
                                         </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-gray-500">{user.createdAt}</td>
+                                        <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{user.createdAt}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">Latest Announcement</h3>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Latest Announcement</h3>
                     <div className="space-y-4">
                          {latestAnnouncement ? (
-                            <div className="p-4 bg-secondary-light rounded-lg">
-                                <h4 className="font-bold text-secondary">{latestAnnouncement.title}</h4>
-                                <p className="text-sm text-gray-600 mt-1">{latestAnnouncement.content}</p>
-                                <p className="text-xs text-gray-500 mt-2">Posted on {latestAnnouncement.createdAt}</p>
+                            <div className="p-4 bg-secondary-light dark:bg-secondary/20 rounded-lg">
+                                <h4 className="font-bold text-secondary dark:text-blue-300">{latestAnnouncement.title}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{latestAnnouncement.content}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Posted on {latestAnnouncement.createdAt}</p>
                             </div>
                          ) : (
-                            <p className="text-sm text-gray-500">No announcements yet.</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">No announcements yet.</p>
                          )}
                     </div>
                 </div>

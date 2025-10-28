@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Icon } from '../../components/icons';
@@ -95,57 +96,57 @@ const CertificateSettingsPage: React.FC = () => {
 
             <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Left Column: Form */}
-                <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                     <div className="space-y-6">
                         <div>
-                            <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 mb-1">Institution Logo URL</label>
-                            <input type="text" id="logoUrl" value={settings.logoUrl} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" />
+                            <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institution Logo URL</label>
+                            <input type="text" id="logoUrl" value={settings.logoUrl} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" />
                         </div>
                         
-                        <div className="border-t pt-6">
-                             <h3 className="text-lg font-bold text-gray-800 mb-2">Signature Details</h3>
+                        <div className="border-t dark:border-gray-700 pt-6">
+                             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">Signature Details</h3>
                              <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="signatureImageUrl" className="block text-sm font-medium text-gray-700 mb-1">Signature Image URL</label>
-                                    <input type="text" id="signatureImageUrl" value={settings.signatureImageUrl} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" />
+                                    <label htmlFor="signatureImageUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Signature Image URL</label>
+                                    <input type="text" id="signatureImageUrl" value={settings.signatureImageUrl} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" />
                                 </div>
                                  <div>
-                                    <label htmlFor="signatureSignerName" className="block text-sm font-medium text-gray-700 mb-1">Signer's Name</label>
-                                    <input type="text" id="signatureSignerName" value={settings.signatureSignerName} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" />
+                                    <label htmlFor="signatureSignerName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Signer's Name</label>
+                                    <input type="text" id="signatureSignerName" value={settings.signatureSignerName} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" />
                                 </div>
                                  <div>
-                                    <label htmlFor="signatureSignerTitle" className="block text-sm font-medium text-gray-700 mb-1">Signer's Title</label>
-                                    <input type="text" id="signatureSignerTitle" value={settings.signatureSignerTitle} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" />
+                                    <label htmlFor="signatureSignerTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Signer's Title</label>
+                                    <input type="text" id="signatureSignerTitle" value={settings.signatureSignerTitle} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" />
                                 </div>
                              </div>
                         </div>
 
-                         <div className="border-t pt-6">
-                             <h3 className="text-lg font-bold text-gray-800 mb-2">Template & Automation</h3>
+                         <div className="border-t dark:border-gray-700 pt-6">
+                             <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">Template & Automation</h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
+                                    <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary Color</label>
                                     <div className="flex items-center gap-2">
-                                        <input type="color" id="primaryColor" value={settings.primaryColor} onChange={handleFormChange} className="h-10 w-10 p-1 border rounded-md" />
-                                        <input type="text" value={settings.primaryColor} onChange={handleFormChange} id="primaryColor" className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" />
+                                        <input type="color" id="primaryColor" value={settings.primaryColor} onChange={handleFormChange} className="h-10 w-10 p-1 border dark:border-gray-600 rounded-md" />
+                                        <input type="text" value={settings.primaryColor} onChange={handleFormChange} id="primaryColor" className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" />
                                     </div>
                                 </div>
                                 <div className="flex items-center">
                                     <input
                                         id="autoIssueOnCompletion"
                                         type="checkbox"
-                                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 dark:border-gray-600 rounded"
                                         checked={settings.autoIssueOnCompletion}
                                         onChange={handleFormChange}
                                     />
-                                    <label htmlFor="autoIssueOnCompletion" className="ml-2 block text-sm text-gray-900">
+                                    <label htmlFor="autoIssueOnCompletion" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">
                                         Automatically issue on course completion
                                     </label>
                                 </div>
                             </div>
                         </div>
                     </div>
-                     <div className="pt-6 mt-6 border-t flex justify-end items-center gap-4">
+                     <div className="pt-6 mt-6 border-t dark:border-gray-700 flex justify-end items-center gap-4">
                         {saveMessage && <p className={`text-sm ${saveMessage.includes('success') ? 'text-green-600' : 'text-red-600'}`}>{saveMessage}</p>}
                         <button type="submit" disabled={saving} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 disabled:bg-gray-300">
                             {saving ? 'Saving...' : 'Save Settings'}
@@ -155,8 +156,8 @@ const CertificateSettingsPage: React.FC = () => {
 
                 {/* Right Column: Preview */}
                 <div className="self-start sticky top-24">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">Live Preview</h3>
-                     <div className="bg-gray-100 p-4 rounded-lg">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Live Preview</h3>
+                     <div className="bg-gray-100 dark:bg-gray-900 p-4 rounded-lg">
                         <CertificatePreview settings={settings} />
                      </div>
                 </div>

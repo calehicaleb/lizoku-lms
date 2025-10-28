@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import * as api from '../../services/api';
@@ -54,10 +55,10 @@ const ExaminationsPage: React.FC = () => {
 
     const getStatusColor = (status: ExaminationStatus) => {
         switch (status) {
-            case ExaminationStatus.Scheduled: return 'bg-blue-100 text-blue-800';
-            case ExaminationStatus.Completed: return 'bg-green-100 text-green-800';
-            case ExaminationStatus.Draft: return 'bg-gray-100 text-gray-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case ExaminationStatus.Scheduled: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+            case ExaminationStatus.Completed: return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+            case ExaminationStatus.Draft: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
         }
     };
 
@@ -67,12 +68,12 @@ const ExaminationsPage: React.FC = () => {
         <div>
             <PageHeader title="Examinations Management" subtitle="Oversee all examinations created across the platform." />
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <select
                         value={statusFilter}
                         onChange={e => setStatusFilter(e.target.value as any)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option value="all">All Statuses</option>
                         {Object.values(ExaminationStatus).map(status => (
@@ -82,7 +83,7 @@ const ExaminationsPage: React.FC = () => {
                     <select
                         value={instructorFilter}
                         onChange={e => setInstructorFilter(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option value="all">All Instructors</option>
                         {instructors.map(inst => (
@@ -93,23 +94,23 @@ const ExaminationsPage: React.FC = () => {
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Exam Title</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Course</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Instructor</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Schedule</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Status</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Actions</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Exam Title</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Course</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Instructor</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Schedule</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredExaminations.map(exam => (
                                 <tr key={exam.id}>
-                                    <td className="px-4 py-3 font-medium text-gray-900">{exam.title}</td>
-                                    <td className="px-4 py-3 text-gray-500">{exam.courseTitle}</td>
-                                    <td className="px-4 py-3 text-gray-500">{exam.instructorName}</td>
-                                    <td className="px-4 py-3 text-gray-500">{new Date(exam.scheduledStart).toLocaleString()}</td>
+                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-200">{exam.title}</td>
+                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{exam.courseTitle}</td>
+                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{exam.instructorName}</td>
+                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{new Date(exam.scheduledStart).toLocaleString()}</td>
                                     <td className="px-4 py-3">
                                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${getStatusColor(exam.status)}`}>
                                             {exam.status}
@@ -124,7 +125,7 @@ const ExaminationsPage: React.FC = () => {
                     </table>
                      {filteredExaminations.length === 0 && (
                         <div className="text-center py-10">
-                            <p className="text-gray-500">No examinations match the current filters.</p>
+                            <p className="text-gray-500 dark:text-gray-400">No examinations match the current filters.</p>
                         </div>
                     )}
                 </div>

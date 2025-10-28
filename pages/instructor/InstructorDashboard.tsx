@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { StatCard } from '../../components/common/StatCard';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -45,22 +46,22 @@ const InstructorDashboard: React.FC = () => {
                 {stats.map(stat => <StatCard key={stat.title} data={stat} />)}
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h3 className="text-lg font-bold text-gray-800 mb-4">My Courses</h3>
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">My Courses</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {courses.map(course => (
-                        <div key={course.id} className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                            <div className="h-32 bg-secondary-light flex items-center justify-center">
-                                <Icon name="Book" className="h-16 w-16 text-secondary" />
+                        <div key={course.id} className="border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div className="h-32 bg-secondary-light dark:bg-secondary/20 flex items-center justify-center">
+                                <Icon name="Book" className="h-16 w-16 text-secondary dark:text-blue-400" />
                             </div>
                             <div className="p-4">
-                                <h4 className="font-bold text-gray-800 truncate">{course.title}</h4>
-                                <p className="text-sm text-gray-500 mt-1">{course.students} Students</p>
+                                <h4 className="font-bold text-gray-800 dark:text-gray-200 truncate">{course.title}</h4>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{course.students} Students</p>
                                 <div className="mt-3">
-                                     <div className="w-full bg-gray-200 rounded-full h-2">
+                                     <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                         <div className="bg-primary h-2 rounded-full" style={{ width: `${course.progress}%` }}></div>
                                     </div>
-                                    <p className="text-xs text-gray-500 text-right mt-1">{course.progress}% progress</p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 text-right mt-1">{course.progress}% progress</p>
                                 </div>
                             </div>
                         </div>

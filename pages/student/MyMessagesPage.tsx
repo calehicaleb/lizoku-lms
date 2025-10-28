@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Icon } from '../../components/icons';
@@ -63,12 +64,12 @@ const MyMessagesPage: React.FC = () => {
     return (
         <div>
             <PageHeader title="My Messages" subtitle="Communicate with instructors and peers." />
-            <div className="bg-white rounded-lg shadow-sm h-[75vh] flex overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm h-[75vh] flex overflow-hidden">
                 {/* Threads List (Left Pane) */}
-                <aside className="w-full md:w-1/3 border-r flex flex-col">
-                    <div className="p-4 border-b">
+                <aside className="w-full md:w-1/3 border-r dark:border-gray-700 flex flex-col">
+                    <div className="p-4 border-b dark:border-gray-700">
                         <div className="flex justify-between items-center">
-                            <h2 className="text-lg font-bold text-gray-800">Inbox</h2>
+                            <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Inbox</h2>
                             <button onClick={() => navigate('/my-messages/new')} className="bg-primary text-gray-800 font-bold py-2 px-3 rounded-md hover:bg-primary-dark flex items-center text-sm">
                                 <Icon name="PenSquare" className="h-4 w-4 mr-2" />
                                 New
@@ -83,14 +84,14 @@ const MyMessagesPage: React.FC = () => {
                                 <li key={thread.id}>
                                     <button 
                                         onClick={() => navigate(`/my-messages/${thread.id}`)}
-                                        className={`w-full text-left p-4 border-b hover:bg-gray-50 ${selectedThread?.id === thread.id ? 'bg-secondary-light' : ''}`}
+                                        className={`w-full text-left p-4 border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 ${selectedThread?.id === thread.id ? 'bg-secondary-light dark:bg-secondary/20' : ''}`}
                                     >
                                         <div className="flex justify-between items-start">
-                                            <p className={`font-bold ${!thread.isRead ? 'text-gray-900' : 'text-gray-700'}`}>{thread.subject}</p>
+                                            <p className={`font-bold ${!thread.isRead ? 'text-gray-900 dark:text-gray-100' : 'text-gray-700 dark:text-gray-300'}`}>{thread.subject}</p>
                                             {!thread.isRead && <span className="w-2.5 h-2.5 bg-primary rounded-full flex-shrink-0 mt-1.5 ml-2"></span>}
                                         </div>
-                                        <p className="text-sm text-gray-500 truncate">{thread.lastMessage.content}</p>
-                                        <p className="text-xs text-gray-400 mt-1 text-right">{new Date(thread.lastMessage.createdAt).toLocaleDateString()}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{thread.lastMessage.content}</p>
+                                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 text-right">{new Date(thread.lastMessage.createdAt).toLocaleDateString()}</p>
                                     </button>
                                 </li>
                             ))}
@@ -105,7 +106,7 @@ const MyMessagesPage: React.FC = () => {
                     ) : loadingMessages ? (
                         <div className="flex-1 flex items-center justify-center"><p>Loading messages...</p></div>
                     ) : !selectedThread ? (
-                        <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-500 p-8">
+                        <div className="flex-1 flex flex-col items-center justify-center text-center text-gray-500 dark:text-gray-400 p-8">
                             <Icon name="MessageSquare" className="h-16 w-16 mb-4" />
                             <h2 className="text-xl font-medium">Select a conversation</h2>
                             <p>Choose a conversation from the left or start a new one.</p>
@@ -144,9 +145,9 @@ const ThreadView: React.FC<{ thread: MessageThread }> = ({ thread }) => {
 
     return (
         <>
-            <div className="p-4 border-b">
-                <h3 className="text-lg font-bold text-gray-800">{thread.subject}</h3>
-                <p className="text-sm text-gray-500">
+            <div className="p-4 border-b dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">{thread.subject}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                     Participants: {thread.participants.map(p => p.name).join(', ')}
                 </p>
             </div>
@@ -154,25 +155,25 @@ const ThreadView: React.FC<{ thread: MessageThread }> = ({ thread }) => {
                 {messages.map(message => (
                     <div key={message.id} className={`flex items-start gap-3 ${message.authorId === user?.id ? 'flex-row-reverse' : ''}`}>
                         <img src={message.authorAvatarUrl} alt={message.authorName} className="w-10 h-10 rounded-full" />
-                        <div className={`max-w-md p-3 rounded-lg ${message.authorId === user?.id ? 'bg-primary-dark/20' : 'bg-gray-100'}`}>
-                            <p className="font-bold text-sm text-gray-800">
+                        <div className={`max-w-md p-3 rounded-lg ${message.authorId === user?.id ? 'bg-primary-dark/20 dark:bg-primary/20' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                            <p className="font-bold text-sm text-gray-800 dark:text-gray-200">
                                 {message.authorName}
-                                {message.authorId === user?.id && <span className="text-xs text-gray-500 font-normal ml-1">(me)</span>}
+                                {message.authorId === user?.id && <span className="text-xs text-gray-500 dark:text-gray-400 font-normal ml-1">(me)</span>}
                             </p>
-                            <p className="text-gray-700">{message.content}</p>
-                            <p className="text-xs text-gray-400 mt-1 text-right">{new Date(message.createdAt).toLocaleTimeString()}</p>
+                            <p className="text-gray-700 dark:text-gray-300">{message.content}</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1 text-right">{new Date(message.createdAt).toLocaleTimeString()}</p>
                         </div>
                     </div>
                 ))}
             </div>
-            <div className="p-4 border-t bg-gray-50">
+            <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                 <form onSubmit={handleSendMessage} className="flex items-center gap-4">
                     <textarea
                         value={replyContent}
                         onChange={e => setReplyContent(e.target.value)}
                         rows={1}
                         placeholder="Type your reply..."
-                        className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+                        className="flex-1 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary resize-none"
                         disabled={isSending}
                     />
                     <button type="submit" className="bg-primary text-gray-800 font-bold p-2 rounded-full hover:bg-primary-dark transition-colors disabled:bg-gray-300" disabled={!replyContent.trim() || isSending}>
@@ -248,17 +249,17 @@ const ComposeView: React.FC<{ prefill?: { participantIds: string[], subject: str
 
     return (
         <form onSubmit={handleSend} className="flex-1 flex flex-col">
-            <div className="p-4 border-b">
-                <h3 className="text-lg font-bold text-gray-800">New Message</h3>
+            <div className="p-4 border-b dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">New Message</h3>
             </div>
             <div className="p-4 space-y-4">
                 <div>
-                    <label htmlFor="recipients" className="block text-sm font-medium text-gray-700 mb-1">To:</label>
-                    <div className="relative border rounded-md p-2 flex flex-wrap gap-2 min-h-12 bg-white">
+                    <label htmlFor="recipients" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To:</label>
+                    <div className="relative border dark:border-gray-600 rounded-md p-2 flex flex-wrap gap-2 min-h-12 bg-white dark:bg-gray-700">
                          {participants.map(p => (
-                            <span key={p.id} className="inline-flex items-center bg-secondary-light text-secondary text-sm font-medium px-2 py-1 rounded-full">
+                            <span key={p.id} className="inline-flex items-center bg-secondary-light dark:bg-secondary/20 text-secondary dark:text-blue-300 text-sm font-medium px-2 py-1 rounded-full">
                                 {p.name}
-                                <button type="button" onClick={() => removeParticipant(p.id)} className="ml-1 text-secondary hover:text-secondary-dark">
+                                <button type="button" onClick={() => removeParticipant(p.id)} className="ml-1 text-secondary dark:text-blue-300 hover:text-secondary-dark dark:hover:text-blue-100">
                                     <Icon name="X" className="h-3 w-3" />
                                 </button>
                             </span>
@@ -271,9 +272,9 @@ const ComposeView: React.FC<{ prefill?: { participantIds: string[], subject: str
                             className="flex-1 outline-none bg-transparent"
                         />
                         {filteredUsers.length > 0 && (
-                            <ul className="absolute z-10 top-full left-0 w-full bg-white border mt-1 rounded-md shadow-lg max-h-60 overflow-auto">
+                            <ul className="absolute z-10 top-full left-0 w-full bg-white dark:bg-gray-600 border dark:border-gray-500 mt-1 rounded-md shadow-lg max-h-60 overflow-auto">
                                 {filteredUsers.map(u => (
-                                    <li key={u.id} onClick={() => addParticipant(u)} className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm flex items-center gap-2">
+                                    <li key={u.id} onClick={() => addParticipant(u)} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-500 cursor-pointer text-sm flex items-center gap-2">
                                         <img src={u.avatarUrl} alt={u.name} className="w-6 h-6 rounded-full" />
                                         {u.name} <span className="text-gray-400">({u.email})</span>
                                     </li>
@@ -283,8 +284,8 @@ const ComposeView: React.FC<{ prefill?: { participantIds: string[], subject: str
                     </div>
                 </div>
                 <div>
-                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject:</label>
-                    <input type="text" id="subject" value={subject} onChange={e => setSubject(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" required />
+                    <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject:</label>
+                    <input type="text" id="subject" value={subject} onChange={e => setSubject(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
                 </div>
             </div>
             <div className="flex-1 p-4 pt-0 flex flex-col">
@@ -292,11 +293,11 @@ const ComposeView: React.FC<{ prefill?: { participantIds: string[], subject: str
                     value={content}
                     onChange={e => setContent(e.target.value)}
                     placeholder="Write your message here..."
-                    className="flex-1 w-full px-3 py-2 bg-white border border-gray-300 rounded-md resize-none"
+                    className="flex-1 w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md resize-none"
                     required
                 />
             </div>
-            <div className="p-4 border-t bg-gray-50 flex justify-end">
+            <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 flex justify-end">
                 <button type="submit" className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark disabled:bg-gray-300" disabled={isSending}>
                     {isSending ? 'Sending...' : 'Send'}
                 </button>

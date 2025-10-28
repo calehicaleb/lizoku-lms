@@ -125,11 +125,11 @@ const LoginPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-light-cream flex flex-col lg:flex-row">
-            <div className="flex-1 bg-secondary-light flex-col justify-center p-8 lg:p-12 hidden lg:flex">
-                <h1 className="text-4xl font-bold text-secondary mb-4">Lizoku Learning Management System</h1>
-                <p className="text-lg text-gray-700 mb-8">A modern, cloud-native, AI-enhanced educational platform for Kenya.</p>
-                <ul className="space-y-4 text-gray-800">
+        <div className="min-h-screen bg-light-cream dark:bg-gray-900 flex flex-col lg:flex-row">
+            <div className="flex-1 bg-secondary-light dark:bg-gray-900/50 flex-col justify-center p-8 lg:p-12 hidden lg:flex">
+                <h1 className="text-4xl font-bold text-secondary dark:text-blue-300 mb-4">Lizoku Learning Management System</h1>
+                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">A modern, cloud-native, AI-enhanced educational platform for Kenya.</p>
+                <ul className="space-y-4 text-gray-800 dark:text-gray-200">
                     <li className="flex items-center"><Icon name="CheckCircle" className="h-6 w-6 text-primary mr-3" /> AI-powered content generation</li>
                     <li className="flex items-center"><Icon name="BookOpen" className="h-6 w-6 text-primary mr-3" /> Comprehensive course management</li>
                     <li className="flex items-center"><Icon name="ListChecks" className="h-6 w-6 text-primary mr-3" /> Advanced assessment tools</li>
@@ -138,30 +138,30 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-                <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg">
-                    <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Welcome Back</h2>
+                <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
+                    <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Welcome Back</h2>
                     <form onSubmit={handleLogin}>
-                        {error && <p className="bg-red-100 text-red-700 p-3 rounded-md mb-4 text-sm">{error}</p>}
+                        {error && <p className="bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-md mb-4 text-sm">{error}</p>}
                         <div className="mb-4">
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                             <input
                                 type="email"
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-gray-200"
                                 placeholder="Enter your email"
                                 required
                             />
                         </div>
                         <div className="mb-6">
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
                             <input
                                 type="password"
                                 id="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-gray-200"
                                 placeholder="Enter your password"
                                 required
                             />
@@ -171,24 +171,24 @@ const LoginPage: React.FC = () => {
                         </button>
                     </form>
                     <div className="text-center mt-4">
-                        <button onClick={() => setHintModalOpen(true)} className="text-sm text-secondary hover:underline">Forgot your password?</button>
+                        <button onClick={() => setHintModalOpen(true)} className="text-sm text-secondary dark:text-blue-400 hover:underline">Forgot your password?</button>
                     </div>
                     <div className="text-center mt-6">
-                        <p className="text-sm text-gray-600">Don't have an account? <button onClick={() => setSignupModalOpen(true)} className="font-bold text-secondary hover:underline">Sign up</button></p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Don't have an account? <button onClick={() => setSignupModalOpen(true)} className="font-bold text-secondary dark:text-blue-400 hover:underline">Sign up</button></p>
                     </div>
                 </div>
             </div>
 
             <Modal isOpen={isHintModalOpen} onClose={() => setHintModalOpen(false)} title="Forgot Password">
-                <p className="text-sm text-gray-600 mb-4">Enter your email and we'll send you an AI-generated password hint.</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter your email and we'll send you an AI-generated password hint.</p>
                 <div className="mb-4">
-                    <label htmlFor="hint-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                    <input type="email" id="hint-email" value={hintEmail} onChange={(e) => setHintEmail(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your email" />
+                    <label htmlFor="hint-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                    <input type="email" id="hint-email" value={hintEmail} onChange={(e) => setHintEmail(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your email" />
                 </div>
                 {isHintLoading && <p>Generating hint...</p>}
-                {generatedHint && <div className="mt-4 p-3 bg-blue-50 rounded-md text-blue-800">{generatedHint}</div>}
+                {generatedHint && <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/50 rounded-md text-blue-800 dark:text-blue-300">{generatedHint}</div>}
                 <div className="mt-6 flex justify-end space-x-2">
-                    <button onClick={() => setHintModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">Cancel</button>
+                    <button onClick={() => setHintModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
                     <button onClick={handleRequestHint} disabled={isHintLoading} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark">Send Hint</button>
                 </div>
             </Modal>
@@ -196,23 +196,23 @@ const LoginPage: React.FC = () => {
             <Modal isOpen={isSignupModalOpen} onClose={() => setSignupModalOpen(false)} title="Create Account">
                 {isFetchingSettings ? <p>Loading settings...</p> : (
                     <>
-                        <p className="text-sm text-gray-600 mb-4">Your new account will be in a "Pending Approval" state until activated by an Administrator.</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Your new account will be in a "Pending Approval" state until activated by an Administrator.</p>
                         <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                              <div>
-                                <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                                <input type="text" id="signup-name" value={signupFullName} onChange={e => setSignupFullName(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" required />
+                                <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
+                                <input type="text" id="signup-name" value={signupFullName} onChange={e => setSignupFullName(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
                             </div>
                             <div>
-                                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" id="signup-email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" required />
+                                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                                <input type="email" id="signup-email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
                             </div>
                             <div>
-                                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                                <input type="password" id="signup-password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" required />
+                                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                                <input type="password" id="signup-password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
                             </div>
                              <div>
-                                <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                                <input type="password" id="confirm-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" required />
+                                <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
+                                <input type="password" id="confirm-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
                             </div>
                         </form>
                         
@@ -220,16 +220,16 @@ const LoginPage: React.FC = () => {
                             <div className="mt-4 space-y-2">
                                 <h4 className="text-sm font-medium">Password requirements:</h4>
                                 <ul className="text-xs list-disc list-inside space-y-1">
-                                    {securitySettings.passwordPolicy.minLength && <li className={passwordValidation.minLength ? 'text-green-600' : 'text-red-600'}>At least 8 characters</li>}
-                                    {securitySettings.passwordPolicy.requireUppercase && <li className={passwordValidation.requireUppercase ? 'text-green-600' : 'text-red-600'}>Contains an uppercase letter</li>}
-                                    {securitySettings.passwordPolicy.requireNumber && <li className={passwordValidation.requireNumber ? 'text-green-600' : 'text-red-600'}>Contains a number</li>}
-                                    <li className={passwordValidation.passwordsMatch ? 'text-green-600' : 'text-red-600'}>Passwords match</li>
+                                    {securitySettings.passwordPolicy.minLength && <li className={passwordValidation.minLength ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>At least 8 characters</li>}
+                                    {securitySettings.passwordPolicy.requireUppercase && <li className={passwordValidation.requireUppercase ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>Contains an uppercase letter</li>}
+                                    {securitySettings.passwordPolicy.requireNumber && <li className={passwordValidation.requireNumber ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>Contains a number</li>}
+                                    <li className={passwordValidation.passwordsMatch ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>Passwords match</li>
                                 </ul>
                             </div>
                         )}
                         
                         <div className="pt-4 flex justify-end space-x-2">
-                            <button onClick={() => setSignupModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">Cancel</button>
+                            <button onClick={() => setSignupModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
                             <button onClick={handleSignup} disabled={isSigningUp || !passwordValidation.isValid} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark disabled:bg-gray-300 disabled:cursor-not-allowed">
                                 {isSigningUp ? 'Signing Up...' : 'Sign Up'}
                             </button>

@@ -20,14 +20,14 @@ export const StatCard: React.FC<StatCardProps> = ({ data }) => {
     const bgColorClass = colorClasses[color] || colorClasses.primary;
 
     return (
-        <div className="bg-white rounded-lg p-5 shadow-sm flex items-center space-x-4">
+        <div className="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm flex items-center space-x-4">
             <div className={`w-16 h-16 rounded-full flex items-center justify-center ${bgColorClass}`}>
                 {/* Fix: Removed 'as any' type assertion. The 'icon' prop is now correctly typed as IconName. */}
                 <Icon name={icon} className="w-8 h-8" />
             </div>
             <div>
-                <h3 className="text-3xl font-bold text-gray-800">{value}</h3>
-                <p className="text-gray-500">{title}</p>
+                <h3 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{value}</h3>
+                <p className="text-gray-500 dark:text-gray-400">{title}</p>
             </div>
         </div>
     );

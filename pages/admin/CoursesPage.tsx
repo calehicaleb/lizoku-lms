@@ -105,7 +105,7 @@ const CoursesPage: React.FC = () => {
         <div>
             <PageHeader title="Course Management" subtitle="A comprehensive view of all courses on the platform." />
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="flex justify-end mb-4">
                     <button onClick={() => handleOpenModal()} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 flex items-center">
                         <Icon name="Book" className="h-5 w-5 mr-2" />
@@ -115,30 +115,30 @@ const CoursesPage: React.FC = () => {
                 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Course Title</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Instructor</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Department</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Status</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Actions</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Course Title</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Instructor</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Department</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {courses.map(course => (
                                 <tr key={course.id}>
-                                    <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">{course.title}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500">{course.instructorName}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500">{course.departmentName}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 dark:text-gray-200">{course.title}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{course.instructorName}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{course.departmentName}</td>
                                      <td className="px-4 py-3 whitespace-nowrap">
                                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                                            course.status === CourseStatus.Published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                            course.status === CourseStatus.Published ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                                         }`}>
                                             {course.status}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap space-x-4">
-                                        <button onClick={() => handleOpenModal(course)} className="text-secondary hover:text-secondary-dark font-medium">Edit</button>
+                                        <button onClick={() => handleOpenModal(course)} className="text-secondary dark:text-blue-400 hover:text-secondary-dark font-medium">Edit</button>
                                         <button onClick={() => handleDelete(course.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
                                     </td>
                                 </tr>
@@ -151,32 +151,32 @@ const CoursesPage: React.FC = () => {
             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedCourse ? 'Edit Course' : 'Add Course'}>
                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <div>
-                        <label htmlFor="course-title" className="block text-sm font-medium text-gray-700 mb-1">Course Title</label>
-                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <label htmlFor="course-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course Title</label>
+                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                      <div>
-                        <label htmlFor="course-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <label htmlFor="course-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <div>
-                            <label htmlFor="course-departmentId" className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                            <select id="course-departmentId" value={formData.departmentId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <label htmlFor="course-departmentId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+                            <select id="course-departmentId" value={formData.departmentId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="d1">School of Computing</option>
                                 <option value="d2">Business School</option>
                                 <option value="d3">School of Design</option>
                             </select>
                         </div>
                         <div>
-                            <label htmlFor="course-instructorId" className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
-                             <select id="course-instructorId" value={formData.instructorId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <label htmlFor="course-instructorId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instructor</label>
+                             <select id="course-instructorId" value={formData.instructorId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="2">Instructor Sam</option>
                                 <option value="6">Inactive Bob</option>
                             </select>
                         </div>
                     </div>
                     <div className="pt-4 flex justify-end space-x-2">
-                        <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">Cancel</button>
+                        <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
                         <button type="button" onClick={handleSave} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark">Save</button>
                     </div>
                 </form>

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -53,15 +54,15 @@ export const MainLayout: React.FC = () => {
     const mainContentPadding = isSidebarOpen ? 'lg:pl-72' : 'lg:pl-16';
 
     return (
-        <div className="min-h-screen bg-light-cream">
+        <div className="min-h-screen bg-light-cream dark:bg-gray-900">
             {/* Floating button to OPEN sidebar, only on desktop when closed */}
             {!isSidebarOpen && (
                 <button
                     onClick={handleToggleSidebar}
                     aria-label="Open sidebar"
-                    className="fixed top-20 left-4 z-30 p-2 bg-white rounded-lg shadow-lg hidden lg:block"
+                    className="fixed top-20 left-4 z-30 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg hidden lg:block"
                 >
-                    <Icon name="ChevronRight" className="h-6 w-6 text-gray-600" />
+                    <Icon name="ChevronRight" className="h-6 w-6 text-gray-600 dark:text-gray-300" />
                 </button>
             )}
 

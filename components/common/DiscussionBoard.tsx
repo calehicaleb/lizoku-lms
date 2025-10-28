@@ -81,25 +81,25 @@ const PostItem: React.FC<PostItemProps> = ({ post, onReply, level, isCollapsed: 
             {!post.isRead && <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-3.5"></div>}
             <img src={post.authorAvatarUrl} alt={post.authorName} className="h-10 w-10 rounded-full flex-shrink-0" />
             <div className="flex-1">
-                <div className="bg-gray-50 p-3 rounded-lg border">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border dark:border-gray-600">
                     <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
-                            <p className="font-bold text-gray-800">{post.authorName}</p>
+                            <p className="font-bold text-gray-800 dark:text-gray-200">{post.authorName}</p>
                              {level === 0 && (
-                                <span className="text-xs bg-secondary-light text-secondary font-semibold px-2 py-0.5 rounded-full">Thread Starter</span>
+                                <span className="text-xs bg-secondary-light dark:bg-secondary/20 text-secondary dark:text-blue-300 font-semibold px-2 py-0.5 rounded-full">Thread Starter</span>
                             )}
                         </div>
-                        <p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleString()}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(post.createdAt).toLocaleString()}</p>
                     </div>
-                    <p className="text-gray-700 mt-2 whitespace-pre-wrap">{post.content}</p>
+                    <p className="text-gray-700 dark:text-gray-300 mt-2 whitespace-pre-wrap">{post.content}</p>
                 </div>
 
                 <div className="mt-2 flex items-center space-x-4">
-                    <button onClick={() => setIsReplying(!isReplying)} className="text-xs font-bold text-secondary hover:underline">
+                    <button onClick={() => setIsReplying(!isReplying)} className="text-xs font-bold text-secondary dark:text-blue-400 hover:underline">
                         Reply
                     </button>
                     {canCollapse && (
-                        <button onClick={toggleCollapse} className="text-xs font-medium text-gray-500 hover:text-gray-800 flex items-center gap-1">
+                        <button onClick={toggleCollapse} className="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-1">
                             {isCollapsed ? <Icon name="ChevronRight" className="h-4 w-4" /> : <Icon name="ChevronDown" className="h-4 w-4" />}
                             <span>
                                 {isCollapsed 
@@ -116,13 +116,13 @@ const PostItem: React.FC<PostItemProps> = ({ post, onReply, level, isCollapsed: 
                         <textarea
                             value={replyContent}
                             onChange={e => setReplyContent(e.target.value)}
-                            className="w-full p-2 border rounded-md text-sm bg-white"
+                            className="w-full p-2 border dark:border-gray-600 rounded-md text-sm bg-white dark:bg-gray-600"
                             rows={2}
                             placeholder={`Replying to ${post.authorName}...`}
                             required
                         />
                         <div className="mt-2 flex justify-end gap-2">
-                            <button type="button" onClick={() => setIsReplying(false)} className="px-3 py-1 text-xs font-medium text-gray-700 bg-gray-100 rounded-md">Cancel</button>
+                            <button type="button" onClick={() => setIsReplying(false)} className="px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-500 rounded-md">Cancel</button>
                             <button type="submit" disabled={isSubmitting} className="px-3 py-1 text-xs font-medium text-gray-800 bg-primary rounded-md disabled:bg-gray-300">
                                 {isSubmitting ? 'Posting...' : 'Post Reply'}
                             </button>
@@ -130,7 +130,7 @@ const PostItem: React.FC<PostItemProps> = ({ post, onReply, level, isCollapsed: 
                     </form>
                 )}
                 
-                <div className={`pl-5 border-l-2 border-gray-200 space-y-4 transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-[5000px] opacity-100 mt-4'}`}>
+                <div className={`pl-5 border-l-2 border-gray-200 dark:border-gray-600 space-y-4 transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-[5000px] opacity-100 mt-4'}`}>
                     {post.children.map(reply => (
                         <PostItem key={reply.id} post={reply} onReply={onReply} level={level + 1} />
                     ))}
@@ -211,20 +211,20 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
         <div>
             {isLoadingPrompt ? <p>Loading prompt...</p> : (
                 <div
-                    className="mb-8 p-6 bg-gray-50 rounded-lg border-l-4 border-primary prose prose-sans max-w-none"
+                    className="mb-8 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-primary dark:border-primary-dark prose prose-sans max-w-none dark:prose-invert"
                     dangerouslySetInnerHTML={{ __html: promptContent?.content || '<p>No prompt available.</p>' }}
                 />
             )}
             
-            <div className="my-8 pt-6 border-t">
-                <h3 className="text-lg font-bold mb-2">Start a New Thread</h3>
+            <div className="my-8 pt-6 border-t dark:border-gray-700">
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-2">Start a New Thread</h3>
                 <form onSubmit={handleNewThread} className="flex items-start space-x-4">
                     <img src={user?.avatarUrl} alt="Your avatar" className="h-10 w-10 rounded-full" />
                     <div className="flex-1">
                         <textarea
                             value={newThreadContent}
                             onChange={e => setNewThreadContent(e.target.value)}
-                            className="w-full p-2 border rounded-md bg-white"
+                            className="w-full p-2 border dark:border-gray-600 rounded-md bg-white dark:bg-gray-700"
                             rows={3}
                             placeholder="Share your thoughts..."
                             required
@@ -237,9 +237,9 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
             </div>
             
             {postTree.length > 0 && (
-                <div className="flex justify-between items-center mb-4 border-b pb-2">
-                    <h3 className="text-lg font-bold text-gray-800">{postTree.length} Thread{postTree.length > 1 ? 's' : ''}</h3>
-                    <button onClick={toggleCollapseAll} className="text-sm font-medium text-secondary hover:underline">
+                <div className="flex justify-between items-center mb-4 border-b dark:border-gray-700 pb-2">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{postTree.length} Thread{postTree.length > 1 ? 's' : ''}</h3>
+                    <button onClick={toggleCollapseAll} className="text-sm font-medium text-secondary dark:text-blue-400 hover:underline">
                         {areAllCollapsed ? 'Show All' : 'Hide All'}
                     </button>
                 </div>

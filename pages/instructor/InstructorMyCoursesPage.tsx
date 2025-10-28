@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -82,27 +81,27 @@ const InstructorMyCoursesPage: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {courses.map(course => (
-                    <div key={course.id} className="bg-white border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
-                        <div className="h-36 bg-secondary-light flex items-center justify-center">
-                            <Icon name="BookOpen" className="h-16 w-16 text-secondary" />
+                    <div key={course.id} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                        <div className="h-36 bg-secondary-light dark:bg-secondary/20 flex items-center justify-center">
+                            <Icon name="BookOpen" className="h-16 w-16 text-secondary dark:text-blue-400" />
                         </div>
                         <div className="p-4 flex-grow flex flex-col">
                             <div className="flex justify-between items-start">
-                                <h4 className="font-bold text-gray-800 text-lg flex-1 pr-2">{course.title}</h4>
+                                <h4 className="font-bold text-gray-800 dark:text-gray-200 text-lg flex-1 pr-2">{course.title}</h4>
                                 <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${
-                                    course.status === CourseStatus.Published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                    course.status === CourseStatus.Published ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                                 }`}>
                                     {course.status}
                                 </span>
                             </div>
-                             <p className="text-sm text-gray-500 mt-1 flex-grow">{course.description}</p>
+                             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex-grow">{course.description}</p>
                             <Link to={`/instructor/courses/${course.id}`} className="mt-4 block w-full text-center bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300">
                                 Manage Course
                             </Link>
                         </div>
                     </div>
                 ))}
-                 <button onClick={handleOpenModal} className="border-2 border-dashed rounded-lg flex items-center justify-center text-gray-400 hover:bg-gray-50 hover:text-secondary transition-colors cursor-pointer min-h-[250px]">
+                 <button onClick={handleOpenModal} className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:text-secondary dark:hover:text-blue-400 transition-colors cursor-pointer min-h-[250px]">
                     <div className="text-center">
                         <Icon name="Book" className="h-12 w-12 mx-auto" />
                         <span className="mt-2 block font-medium">Create New Course</span>
@@ -113,15 +112,15 @@ const InstructorMyCoursesPage: React.FC = () => {
             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title="Create New Course">
                 <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                     <div>
-                        <label htmlFor="course-title" className="block text-sm font-medium text-gray-700 mb-1">Course Title</label>
-                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
+                        <label htmlFor="course-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course Title</label>
+                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
                     </div>
                     <div>
-                        <label htmlFor="course-description" className="block text-sm font-medium text-gray-700 mb-1">Course Description</label>
-                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <label htmlFor="course-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course Description</label>
+                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     <div className="pt-4 flex justify-end space-x-2">
-                        <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">Cancel</button>
+                        <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
                         <button type="submit" className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark">Create and Build</button>
                     </div>
                 </form>

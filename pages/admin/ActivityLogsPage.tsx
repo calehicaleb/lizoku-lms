@@ -58,11 +58,11 @@ const ActivityLogsPage: React.FC = () => {
     
     const getActionColor = (action: ActivityActionType): string => {
         switch (action) {
-            case 'login': return 'bg-sky-100 text-sky-800';
-            case 'create': return 'bg-green-100 text-green-800';
-            case 'update': return 'bg-yellow-100 text-yellow-800';
-            case 'delete': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'login': return 'bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300';
+            case 'create': return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+            case 'update': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+            case 'delete': return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-400';
+            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
         }
     };
 
@@ -72,19 +72,19 @@ const ActivityLogsPage: React.FC = () => {
         <div>
             <PageHeader title="Activity Logs" subtitle="Track important events and actions across the platform." />
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                     <input 
                         type="text"
                         placeholder="Search user or action..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="lg:col-span-2 w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="lg:col-span-2 w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                     <select 
                         value={actionFilter}
                         onChange={e => setActionFilter(e.target.value as any)}
-                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md capitalize focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md capitalize focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <option value="all">All Actions</option>
                         {Object.values(ActivityActionType).map(action => (
@@ -96,35 +96,35 @@ const ActivityLogsPage: React.FC = () => {
                             type="date"
                             value={dateRange.start}
                             onChange={e => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                          <span className="text-gray-500">-</span>
                         <input 
                             type="date"
                             value={dateRange.end}
                             onChange={e => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                         />
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">User</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Action</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Description</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Timestamp</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">User</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Action</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Description</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Timestamp</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                              {filteredLogs.map(log => (
                                 <tr key={log.id}>
                                     <td className="px-4 py-3 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <img src={log.userAvatarUrl} alt={log.userName} className="h-8 w-8 rounded-full mr-3" />
-                                            <span className="font-medium text-gray-900">{log.userName}</span>
+                                            <span className="font-medium text-gray-900 dark:text-gray-200">{log.userName}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-3 whitespace-nowrap">
@@ -133,8 +133,8 @@ const ActivityLogsPage: React.FC = () => {
                                             {log.action}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-3 text-gray-500">{log.description}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500">{new Date(log.timestamp).toLocaleString()}</td>
+                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{log.description}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{new Date(log.timestamp).toLocaleString()}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -142,8 +142,8 @@ const ActivityLogsPage: React.FC = () => {
                      {filteredLogs.length === 0 && (
                         <div className="text-center py-16 px-6">
                             <Icon name="ListChecks" className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-lg font-medium text-gray-900">No Logs Found</h3>
-                            <p className="mt-1 text-sm text-gray-500">No activity logs match your current filters.</p>
+                            <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">No Logs Found</h3>
+                            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">No activity logs match your current filters.</p>
                         </div>
                     )}
                 </div>

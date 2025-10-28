@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -158,6 +159,24 @@ const AppRoutes: React.FC = () => {
 };
 
 const App: React.FC = () => {
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        const applyTheme = () => {
+            if (mediaQuery.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        };
+
+        applyTheme(); // Apply theme on initial load
+
+        mediaQuery.addEventListener('change', applyTheme);
+
+        return () => mediaQuery.removeEventListener('change', applyTheme);
+    }, []);
+
     return (
         <AuthProvider>
             <HashRouter>

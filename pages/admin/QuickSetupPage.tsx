@@ -25,15 +25,15 @@ const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => (
                         <div
                             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300 ${
                                 isCompleted ? 'bg-primary text-gray-800' :
-                                isActive ? 'bg-secondary text-white ring-4 ring-secondary-light' :
-                                'bg-gray-200 text-gray-500'
+                                isActive ? 'bg-secondary text-white ring-4 ring-secondary-light dark:ring-secondary/20' :
+                                'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                             }`}
                         >
                             {isCompleted ? <Icon name="CheckCircle" className="w-6 h-6" /> : <span className="font-bold">{stepNumber}</span>}
                         </div>
-                        <p className={`mt-2 text-sm font-medium ${isActive ? 'text-secondary' : 'text-gray-500'}`}>{step}</p>
+                        <p className={`mt-2 text-sm font-medium ${isActive ? 'text-secondary dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>{step}</p>
                     </div>
-                    {stepNumber < STEPS.length && <div className={`flex-1 h-1 mx-4 ${isCompleted ? 'bg-primary' : 'bg-gray-200'}`}></div>}
+                    {stepNumber < STEPS.length && <div className={`flex-1 h-1 mx-4 ${isCompleted ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`}></div>}
                 </React.Fragment>
             );
         })}
@@ -120,15 +120,15 @@ const QuickSetupPage: React.FC = () => {
         <div>
             <PageHeader title="Quick Setup Wizard" subtitle="Get your LMS up and running in a few simple steps." />
             
-            <div className="bg-white p-8 rounded-lg shadow-sm max-w-4xl mx-auto">
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-sm max-w-4xl mx-auto">
                 <Stepper currentStep={step} />
                 
                 <div className="mt-8">
                     {step === 1 && (
                         <div className="text-center">
                             <Icon name="Wrench" className="h-16 w-16 text-primary mx-auto mb-4" />
-                            <h2 className="text-2xl font-bold text-gray-800">Welcome to Lizoku LMS!</h2>
-                            <p className="mt-2 text-gray-600 max-w-xl mx-auto">This setup wizard will guide you through the essential first steps to configure your new learning management system. Let's get started!</p>
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Welcome to Lizoku LMS!</h2>
+                            <p className="mt-2 text-gray-600 dark:text-gray-300 max-w-xl mx-auto">This setup wizard will guide you through the essential first steps to configure your new learning management system. Let's get started!</p>
                         </div>
                     )}
 
@@ -136,18 +136,18 @@ const QuickSetupPage: React.FC = () => {
                         <div className="space-y-6">
                              <h2 className="text-xl font-bold text-center">Institution Branding</h2>
                              <div>
-                                <label htmlFor="institutionName" className="block text-sm font-medium text-gray-700 mb-1">Institution Name</label>
-                                <input type="text" id="institutionName" value={formData.institutionName} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                                <label htmlFor="institutionName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Institution Name</label>
+                                <input type="text" id="institutionName" value={formData.institutionName} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                             </div>
                              <div>
-                                <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                                <input type="text" id="logoUrl" value={formData.logoUrl} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                                <label htmlFor="logoUrl" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Logo URL</label>
+                                <input type="text" id="logoUrl" value={formData.logoUrl} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                             </div>
                              <div>
-                                <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 mb-1">Primary Brand Color</label>
+                                <label htmlFor="primaryColor" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Primary Brand Color</label>
                                 <div className="flex items-center gap-2">
-                                    <input type="color" id="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-10 p-1 border rounded-md" />
-                                    <input type="text" id="primaryColor" value={formData.primaryColor} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                                    <input type="color" id="primaryColor" value={formData.primaryColor} onChange={handleChange} className="h-10 w-10 p-1 border dark:border-gray-600 rounded-md" />
+                                    <input type="text" id="primaryColor" value={formData.primaryColor} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                                 </div>
                             </div>
                         </div>
@@ -157,16 +157,16 @@ const QuickSetupPage: React.FC = () => {
                          <div className="space-y-6">
                              <h2 className="text-xl font-bold text-center">Initial Academic Structure</h2>
                              <div>
-                                <label htmlFor="departmentName" className="block text-sm font-medium text-gray-700 mb-1">First Department Name</label>
-                                <input type="text" id="departmentName" value={formData.departmentName} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" placeholder="e.g., School of Computing" />
+                                <label htmlFor="departmentName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Department Name</label>
+                                <input type="text" id="departmentName" value={formData.departmentName} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" placeholder="e.g., School of Computing" />
                             </div>
                              <div>
-                                <label htmlFor="programName" className="block text-sm font-medium text-gray-700 mb-1">First Program Name</label>
-                                <input type="text" id="programName" value={formData.programName} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" placeholder="e.g., BSc. in Computer Science" />
+                                <label htmlFor="programName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Program Name</label>
+                                <input type="text" id="programName" value={formData.programName} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" placeholder="e.g., BSc. in Computer Science" />
                             </div>
                              <div>
-                                <label htmlFor="programDuration" className="block text-sm font-medium text-gray-700 mb-1">Program Duration</label>
-                                <input type="text" id="programDuration" value={formData.programDuration} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" placeholder="e.g., 4 Years" />
+                                <label htmlFor="programDuration" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Program Duration</label>
+                                <input type="text" id="programDuration" value={formData.programDuration} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" placeholder="e.g., 4 Years" />
                             </div>
                         </div>
                     )}
@@ -175,12 +175,12 @@ const QuickSetupPage: React.FC = () => {
                          <div className="space-y-6">
                              <h2 className="text-xl font-bold text-center">Create Your First Instructor</h2>
                              <div>
-                                <label htmlFor="instructorName" className="block text-sm font-medium text-gray-700 mb-1">Instructor's Full Name</label>
-                                <input type="text" id="instructorName" value={formData.instructorName} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                                <label htmlFor="instructorName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instructor's Full Name</label>
+                                <input type="text" id="instructorName" value={formData.instructorName} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                             </div>
                              <div>
-                                <label htmlFor="instructorEmail" className="block text-sm font-medium text-gray-700 mb-1">Instructor's Email</label>
-                                <input type="email" id="instructorEmail" value={formData.instructorEmail} onChange={handleChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                                <label htmlFor="instructorEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instructor's Email</label>
+                                <input type="email" id="instructorEmail" value={formData.instructorEmail} onChange={handleChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                             </div>
                         </div>
                     )}
@@ -188,9 +188,9 @@ const QuickSetupPage: React.FC = () => {
                     {step === 5 && (
                         <div className="text-center">
                             <Icon name="BadgeCheck" className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                            <h2 className="text-2xl font-bold text-gray-800">Setup Complete!</h2>
-                            <p className="mt-2 text-gray-600">You have successfully configured the basics of your LMS.</p>
-                             <ul className="mt-4 text-left inline-block bg-gray-50 p-4 rounded-md">
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Setup Complete!</h2>
+                            <p className="mt-2 text-gray-600 dark:text-gray-300">You have successfully configured the basics of your LMS.</p>
+                             <ul className="mt-4 text-left inline-block bg-gray-50 dark:bg-gray-700/50 p-4 rounded-md">
                                 <li><strong>Institution:</strong> {formData.institutionName}</li>
                                 <li><strong>Department:</strong> {formData.departmentName}</li>
                                 <li><strong>Program:</strong> {formData.programName}</li>
@@ -201,9 +201,9 @@ const QuickSetupPage: React.FC = () => {
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="mt-10 pt-6 border-t flex justify-between items-center">
+                <div className="mt-10 pt-6 border-t dark:border-gray-700 flex justify-between items-center">
                     {step > 1 && step < STEPS.length && (
-                        <button onClick={handleBack} className="bg-gray-200 text-gray-800 font-bold py-2 px-6 rounded-md hover:bg-gray-300">
+                        <button onClick={handleBack} className="bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-100 font-bold py-2 px-6 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">
                             Back
                         </button>
                     )}
