@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import * as api from '../../services/api';
@@ -18,6 +21,8 @@ const CourseBuilderPage: React.FC = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [aiDescription, setAiDescription] = useState('');
     const [generatorError, setGeneratorError] = useState('');
+    const [numModules, setNumModules] = useState('8');
+    const [allowedContentTypes, setAllowedContentTypes] = useState<Set<ContentType>>(() => new Set(Object.values(ContentType)));
 
     // Quiz/Assignment Assembly State
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
@@ -59,13 +64,42 @@ const CourseBuilderPage: React.FC = () => {
         };
         fetchInitialData();
     }, [courseId, user]);
+    
+    const handleContentTypeToggle = (type: ContentType) => {
+        setAllowedContentTypes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(type)) {
+                newSet.delete(type);
+            } else {
+                newSet.add(type);
+            }
+            return newSet;
+        });
+    };
 
     const handleGenerateOutline = async () => {
         if (!course) return;
+
+        if (allowedContentTypes.size === 0) {
+            setGeneratorError("Please select at least one content type.");
+            return;
+        }
+
+        const num = parseInt(numModules, 10);
+        if (isNaN(num) || num < 1 || num > 20) {
+            setGeneratorError("Number of modules must be between 1 and 20.");
+            return;
+        }
+
         setIsGenerating(true);
         setGeneratorError('');
         try {
-            const generatedModules = await generateCourseOutline(course.title, aiDescription);
+            const generatedModules = await generateCourseOutline(
+                course.title, 
+                aiDescription,
+                num,
+                Array.from(allowedContentTypes)
+            );
             
             const modulesWithIds = generatedModules.map((mod, modIndex) => ({
                 ...mod,
@@ -129,12 +163,14 @@ const CourseBuilderPage: React.FC = () => {
         }
     };
     
+// FIX: Added 'Examination' to the icon map to resolve a type error.
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
         [ContentType.Assignment]: 'PenSquare',
         [ContentType.Discussion]: 'MessageSquare',
         [ContentType.Resource]: 'Link',
+        [ContentType.Examination]: 'ListChecks',
     };
 
     if (loading) return <div>Loading course builder...</div>;
@@ -235,20 +271,48 @@ const CourseBuilderPage: React.FC = () => {
             
             <Modal isOpen={isGeneratorOpen} onClose={() => setGeneratorOpen(false)} title="Generate Course Outline with AI">
                 <div className="space-y-4">
-                    <p className="text-sm text-gray-600">Provide a brief description of your course, and our AI will generate a structured outline with modules and content items for you.</p>
+                    <p className="text-sm text-gray-600">Provide a brief description and set your preferences, and our AI will generate a structured outline for you.</p>
                     <div>
                         <label htmlFor="course-title-ai" className="block text-sm font-medium text-gray-700 mb-1">Course Title</label>
                         <input type="text" id="course-title-ai" value={course.title} readOnly className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed" />
                     </div>
                     <div>
                         <label htmlFor="course-desc-ai" className="block text-sm font-medium text-gray-700 mb-1">Course Description</label>
-                        <textarea id="course-desc-ai" rows={4} value={aiDescription} onChange={(e) => setAiDescription(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., An introductory course covering the fundamentals of Python programming, including variables, control flow, functions, and basic data structures." />
+                        <textarea id="course-desc-ai" rows={3} value={aiDescription} onChange={(e) => setAiDescription(e.target.value)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., An introductory course covering the fundamentals of Python programming..." />
+                    </div>
+                    <div>
+                        <label htmlFor="num-modules-ai" className="block text-sm font-medium text-gray-700 mb-1">Number of Modules</label>
+                        <input
+                            type="number"
+                            id="num-modules-ai"
+                            value={numModules}
+                            onChange={(e) => setNumModules(e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            min="1"
+                            max="20"
+                        />
+                    </div>
+                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Allowed Content Types</label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 p-3 border rounded-md bg-gray-50">
+                            {Object.values(ContentType).map(type => (
+                                <label key={type} className="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={allowedContentTypes.has(type)}
+                                        onChange={() => handleContentTypeToggle(type)}
+                                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                                    />
+                                    <span className="text-sm capitalize text-gray-700">{type}</span>
+                                </label>
+                            ))}
+                        </div>
                     </div>
                     {generatorError && <p className="bg-red-100 text-red-700 p-3 rounded-md text-sm">{generatorError}</p>}
                     <div className="pt-2 flex justify-end">
                         <button 
                             onClick={handleGenerateOutline} 
-                            disabled={isGenerating || !aiDescription.trim()} 
+                            disabled={isGenerating || !aiDescription.trim() || allowedContentTypes.size === 0}
                             className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 flex items-center disabled:bg-gray-300 disabled:cursor-not-allowed">
                             {isGenerating ? (
                                 <>
@@ -298,11 +362,11 @@ const CourseBuilderPage: React.FC = () => {
                                 <h3 className="font-bold text-lg">Settings</h3>
                                 <div>
                                     <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-700 mb-1">Time Limit (minutes)</label>
-                                    <input type="number" name="timeLimit" value={itemFormData.timeLimit ?? ''} onChange={handleItemFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., 60" min="1" />
+                                    <input type="number" name="timeLimit" value={itemFormData.timeLimit ?? ''} onChange={handleItemFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" placeholder="e.g., 60" min="1" />
                                 </div>
                                 <div>
                                     <label htmlFor="attemptsLimit" className="block text-sm font-medium text-gray-700 mb-1">Max Attempts</label>
-                                    <input type="number" name="attemptsLimit" value={itemFormData.attemptsLimit ?? ''} onChange={handleItemFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., 3" min="1" />
+                                    <input type="number" name="attemptsLimit" value={itemFormData.attemptsLimit ?? ''} onChange={handleItemFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md" placeholder="e.g., 3" min="1" />
                                 </div>
                                 <div className="pt-2">
                                     <label className="flex items-center">
@@ -318,7 +382,7 @@ const CourseBuilderPage: React.FC = () => {
                          <div>
                             <h3 className="font-bold text-lg">Grading</h3>
                              <label htmlFor="rubricId" className="block text-sm font-medium text-gray-700 mb-1 mt-2">Attach Rubric</label>
-                            <select name="rubricId" value={itemFormData.rubricId ?? ''} onChange={handleItemFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <select name="rubricId" value={itemFormData.rubricId ?? ''} onChange={handleItemFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md">
                                 <option value="">None</option>
                                 {instructorRubrics.map(rubric => (
                                     <option key={rubric.id} value={rubric.id}>{rubric.title}</option>

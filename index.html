@@ -29,6 +29,30 @@
         },
       }
     </script>
+    <style type="text/css" media="print">
+      @media print {
+        body {
+          background-color: #fff;
+        }
+        .no-print, header, aside {
+          display: none !important;
+        }
+        main, .lg\:pl-64 {
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+        .printable-area {
+          box-shadow: none !important;
+          border: none !important;
+          margin: 0;
+          padding: 0;
+        }
+        @page {
+          size: auto;
+          margin: 0.5in;
+        }
+      }
+    </style>
   <script type="importmap">
 {
   "imports": {
@@ -42,7 +66,7 @@
 }
 </script>
 </head>
-  <body class="bg-light-cream font-sans">
+  <body class="bg-light-cream font-sans text-gray-800 antialiased">
     <div id="root"></div>
   </body>
 </html>

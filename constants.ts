@@ -35,7 +35,7 @@ export const INSTRUCTOR_NAV_ITEMS: NavItem[] = [
   { path: '/instructor/rubrics', name: 'Rubrics', icon: 'ClipboardCheck', section: 'Course Management' },
 
 
-  { path: '/profile', name: 'My Profile', icon: 'User', section: 'Account' },
+  { path: '/instructor/profile', name: 'My Profile', icon: 'User', section: 'Account' },
 ];
 
 export const STUDENT_NAV_ITEMS: NavItem[] = [

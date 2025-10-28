@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import * as api from '../../services/api';
@@ -19,9 +20,11 @@ const MyGradesPage: React.FC = () => {
     const [loadingGrades, setLoadingGrades] = useState(false);
 
     useEffect(() => {
+        if (!user) return;
         const fetchCourses = async () => {
             try {
-                const data = await api.getStudentCourses();
+                // FIX: Pass the student's ID to the API call.
+                const data = await api.getStudentCourses(user.id);
                 setCourses(data);
                 if (data.length > 0) {
                     setSelectedCourseId(data[0].id);
@@ -33,7 +36,7 @@ const MyGradesPage: React.FC = () => {
             }
         };
         fetchCourses();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         if (!selectedCourseId || !user) return;
@@ -72,7 +75,7 @@ const MyGradesPage: React.FC = () => {
                         id="course-select"
                         value={selectedCourseId}
                         onChange={e => setSelectedCourseId(e.target.value)}
-                        className="w-full max-w-sm px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full max-w-sm px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         disabled={loadingCourses}
                     >
                         {loadingCourses ? <option>Loading...</option> : courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}

@@ -51,12 +51,21 @@ export const generateAIAvatar = async (name: string): Promise<string> => {
     }
 };
 
-export const generateCourseOutline = async (title: string, description: string): Promise<Module[]> => {
+export const generateCourseOutline = async (
+  title: string, 
+  description: string,
+  numModules: number,
+  allowedContentTypes: ContentType[]
+): Promise<Module[]> => {
   try {
+    if (allowedContentTypes.length === 0) {
+      throw new Error("At least one content type must be allowed.");
+    }
+
     const prompt = `As an expert instructional designer, create a detailed course outline for a course titled "${title}".
 The course is described as: "${description}".
-The outline should be structured into logical modules. Each module must contain a list of content items.
-For each content item, suggest a title and a type. The valid content item types are: 'lesson', 'quiz', 'assignment', 'discussion', 'resource'.
+The outline should be structured into exactly ${numModules} logical modules. Each module must contain a list of content items.
+For each content item, suggest a title and a type. The only valid content item types you can use are: '${allowedContentTypes.join("', '")}'.
 Ensure the structure is logical and covers the topic comprehensively.`;
 
     const response = await ai.models.generateContent({
@@ -85,7 +94,8 @@ Ensure the structure is logical and covers the topic comprehensively.`;
                     type: {
                       type: Type.STRING,
                       description: "The type of content item.",
-                      enum: Object.values(ContentType),
+                      // FIX: The enum property expects an array of strings, not the enum object itself.
+                      enum: allowedContentTypes,
                     }
                   },
                   required: ["title", "type"]
@@ -101,7 +111,13 @@ Ensure the structure is logical and covers the topic comprehensively.`;
     const jsonStr = response.text.trim();
     const parsedOutline: Module[] = JSON.parse(jsonStr);
     
-    return parsedOutline;
+    // Filter the result to ensure the model respected the content type constraint
+    const filteredAndParsedOutline = parsedOutline.map(module => ({
+      ...module,
+      items: module.items.filter(item => allowedContentTypes.includes(item.type))
+    }));
+
+    return filteredAndParsedOutline;
 
   } catch (error) {
     console.error("Error generating course outline:", error);

@@ -1,5 +1,5 @@
-import React from 'react';
-import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import { MainLayout } from './components/layout/MainLayout';
@@ -11,20 +11,38 @@ import ProgramsPage from './pages/admin/ProgramsPage';
 import SemestersPage from './pages/admin/SemestersPage';
 import CoursesPage from './pages/admin/CoursesPage';
 import AnnouncementsPage from './pages/admin/AnnouncementsPage';
+import CommunicationsPage from './pages/admin/CommunicationsPage';
+import AdminQuestionBankPage from './pages/admin/AdminQuestionBankPage';
+import ReportingPage from './pages/admin/ReportingPage';
+import AdminExaminationsPage from './pages/admin/ExaminationsPage';
+import CertificateSettingsPage from './pages/admin/CertificateSettingsPage';
+import CertificateRequestsPage from './pages/admin/CertificateRequestsPage';
+import QuickSetupPage from './pages/admin/QuickSetupPage';
+import ActivityLogsPage from './pages/admin/ActivityLogsPage';
+import SessionManagementPage from './pages/admin/SessionManagementPage';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import InstructorMyCoursesPage from './pages/instructor/InstructorMyCoursesPage';
 import CourseBuilderPage from './pages/instructor/CourseBuilderPage';
 import GradebookPage from './pages/instructor/GradebookPage';
+import ExaminationsPage from './pages/instructor/ExaminationsPage';
 import QuestionBankPage from './pages/instructor/QuestionBankPage';
 import RubricsPage from './pages/instructor/RubricsPage';
+import InstructorMyProfilePage from './pages/instructor/MyProfilePage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import MyCoursesPage from './pages/student/MyCoursesPage';
 import CourseViewerPage from './pages/student/CourseViewerPage';
 import ExploreCoursesPage from './pages/student/ExploreCoursesPage';
 import MyGradesPage from './pages/student/MyGradesPage';
 import MyProgramPage from './pages/student/MyProgramPage';
+import MyProfilePage from './pages/student/MyProfilePage';
+import MyTranscriptPage from './pages/student/MyTranscriptPage';
+import MyMessagesPage from './pages/student/MyMessagesPage';
+import MyCertificatesPage from './pages/student/MyCertificatesPage';
+import MyAchievementsPage from './pages/student/MyAchievementsPage';
 import CalendarPage from './pages/CalendarPage';
+import ExamTakerPage from './pages/student/ExamTakerPage';
 import { UserRole } from './types';
+import { IdleTimeoutModal } from './components/common/IdleTimeoutModal';
 
 const ProtectedRoute: React.FC<{ allowedRoles: UserRole[] }> = ({ allowedRoles }) => {
     const { isAuthenticated, user, loading } = useAuth();
@@ -47,7 +65,13 @@ const ProtectedRoute: React.FC<{ allowedRoles: UserRole[] }> = ({ allowedRoles }
 
 
 const AppRoutes: React.FC = () => {
-    const { isAuthenticated, user, loading } = useAuth();
+    const { isAuthenticated, user, loading, isIdleTimeoutWarningVisible, resetTimers, logout } = useAuth();
+    const location = useLocation();
+
+    // Scroll to top on every route change to ensure users don't start halfway down a page.
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
     
     if (loading) {
         return <div className="flex h-screen items-center justify-center">Loading...</div>;
@@ -56,51 +80,80 @@ const AppRoutes: React.FC = () => {
     const defaultPath = user ? (user.role === UserRole.Student ? '/dashboard' : `/${user.role}`) : '/login';
 
     return (
-        <Routes>
-            <Route path="/login" element={isAuthenticated ? <Navigate to={defaultPath} /> : <LoginPage />} />
-            
-            {/* Shared Routes */}
-            <Route element={<ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Instructor, UserRole.Student]} />}>
-                <Route path="/calendar" element={<CalendarPage />} />
-            </Route>
+        <>
+            <Routes>
+                <Route path="/login" element={isAuthenticated ? <Navigate to={defaultPath} /> : <LoginPage />} />
+                
+                {/* Shared Routes */}
+                <Route element={<ProtectedRoute allowedRoles={[UserRole.Admin, UserRole.Instructor, UserRole.Student]} />}>
+                    <Route path="/calendar" element={<CalendarPage />} />
+                </Route>
 
-            {/* Admin Routes */}
-            <Route element={<ProtectedRoute allowedRoles={[UserRole.Admin]} />}>
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/users" element={<UserManagementPage />} />
-                <Route path="/admin/departments" element={<DepartmentsPage />} />
-                <Route path="/admin/programs" element={<ProgramsPage />} />
-                <Route path="/admin/semesters" element={<SemestersPage />} />
-                <Route path="/admin/courses" element={<CoursesPage />} />
-                <Route path="/admin/announcements" element={<AnnouncementsPage />} />
-                <Route path="/admin/security" element={<SecurityManagementPage />} />
-                {/* Add other admin routes as placeholders */}
-            </Route>
-            
-            {/* Instructor Routes */}
-            <Route element={<ProtectedRoute allowedRoles={[UserRole.Instructor]} />}>
-                <Route path="/instructor" element={<InstructorDashboard />} />
-                <Route path="/instructor/courses" element={<InstructorMyCoursesPage />} />
-                <Route path="/instructor/courses/:courseId" element={<CourseBuilderPage />} />
-                <Route path="/instructor/gradebook" element={<GradebookPage />} />
-                <Route path="/instructor/question-bank" element={<QuestionBankPage />} />
-                <Route path="/instructor/rubrics" element={<RubricsPage />} />
-                {/* Add other instructor routes as placeholders */}
-            </Route>
+                {/* Admin Routes */}
+                <Route element={<ProtectedRoute allowedRoles={[UserRole.Admin]} />}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/admin/users" element={<UserManagementPage />} />
+                    <Route path="/admin/departments" element={<DepartmentsPage />} />
+                    <Route path="/admin/programs" element={<ProgramsPage />} />
+                    <Route path="/admin/semesters" element={<SemestersPage />} />
+                    <Route path="/admin/courses" element={<CoursesPage />} />
+                    <Route path="/admin/examinations" element={<AdminExaminationsPage />} />
+                    <Route path="/admin/announcements" element={<AnnouncementsPage />} />
+                    <Route path="/admin/communications" element={<CommunicationsPage />} />
+                    <Route path="/admin/question-bank" element={<AdminQuestionBankPage />} />
+                    <Route path="/admin/reports" element={<ReportingPage />} />
+                    <Route path="/admin/security" element={<SecurityManagementPage />} />
+                    <Route path="/admin/certificate-settings" element={<CertificateSettingsPage />} />
+                    <Route path="/admin/certificate-requests" element={<CertificateRequestsPage />} />
+                    <Route path="/admin/quick-setup" element={<QuickSetupPage />} />
+                    <Route path="/admin/activity-logs" element={<ActivityLogsPage />} />
+                    <Route path="/admin/sessions" element={<SessionManagementPage />} />
+                </Route>
+                
+                {/* Instructor Routes */}
+                <Route element={<ProtectedRoute allowedRoles={[UserRole.Instructor]} />}>
+                    <Route path="/instructor" element={<InstructorDashboard />} />
+                    <Route path="/instructor/courses" element={<InstructorMyCoursesPage />} />
+                    <Route path="/instructor/courses/:courseId" element={<CourseBuilderPage />} />
+                    <Route path="/instructor/gradebook" element={<GradebookPage />} />
+                    <Route path="/instructor/examinations" element={<ExaminationsPage />} />
+                    <Route path="/instructor/question-bank" element={<QuestionBankPage />} />
+                    <Route path="/instructor/rubrics" element={<RubricsPage />} />
+                    <Route path="/instructor/profile" element={<InstructorMyProfilePage />} />
+                    {/* Add other instructor routes as placeholders */}
+                </Route>
 
-            {/* Student Routes */}
-            <Route element={<ProtectedRoute allowedRoles={[UserRole.Student]} />}>
-                <Route path="/dashboard" element={<StudentDashboard />} />
-                <Route path="/explore" element={<ExploreCoursesPage />} />
-                <Route path="/my-courses" element={<MyCoursesPage />} />
-                <Route path="/courses/:courseId" element={<CourseViewerPage />} />
-                <Route path="/grades" element={<MyGradesPage />} />
-                <Route path="/program" element={<MyProgramPage />} />
-                 {/* Add other student routes as placeholders */}
-            </Route>
+                {/* Student Routes */}
+                <Route element={<ProtectedRoute allowedRoles={[UserRole.Student]} />}>
+                    <Route path="/dashboard" element={<StudentDashboard />} />
+                    <Route path="/explore" element={<ExploreCoursesPage />} />
+                    <Route path="/my-courses" element={<MyCoursesPage />} />
+                    <Route path="/courses/:courseId" element={<CourseViewerPage />} />
+                    <Route path="/grades" element={<MyGradesPage />} />
+                    <Route path="/program" element={<MyProgramPage />} />
+                    <Route path="/transcript" element={<MyTranscriptPage />} />
+                    <Route path="/my-messages" element={<MyMessagesPage />} />
+                    <Route path="/my-messages/new" element={<MyMessagesPage />} />
+                    <Route path="/my-messages/:threadId" element={<MyMessagesPage />} />
+                    <Route path="/my-certificates" element={<MyCertificatesPage />} />
+                    <Route path="/achievements" element={<MyAchievementsPage />} />
+                    <Route path="/profile" element={<MyProfilePage />} />
+                     {/* Add other student routes as placeholders */}
+                </Route>
 
-            <Route path="*" element={<Navigate to={defaultPath} replace />} />
-        </Routes>
+                {/* Standalone Exam Taker Route */}
+                <Route path="/exam/:examId" element={<ExamTakerPage />} />
+
+                <Route path="*" element={<Navigate to={defaultPath} replace />} />
+            </Routes>
+            {isAuthenticated && (
+                <IdleTimeoutModal
+                    isOpen={isIdleTimeoutWarningVisible}
+                    onStayLoggedIn={resetTimers}
+                    onLogout={logout}
+                />
+            )}
+        </>
     );
 };
 

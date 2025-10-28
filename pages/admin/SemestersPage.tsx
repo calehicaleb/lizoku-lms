@@ -148,16 +148,16 @@ const SemestersPage: React.FC = () => {
                 <form className="space-y-4" onSubmit={e => e.preventDefault()}>
                     <div>
                         <label htmlFor="semester-name" className="block text-sm font-medium text-gray-700 mb-1">Semester Name</label>
-                        <input type="text" id="semester-name" value={formData.name} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., Fall 2024"/>
+                        <input type="text" id="semester-name" value={formData.name} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="e.g., Fall 2024"/>
                     </div>
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="semester-startDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                            <input type="date" id="semester-startDate" value={formData.startDate} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <input type="date" id="semester-startDate" value={formData.startDate} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                         </div>
                         <div>
                              <label htmlFor="semester-endDate" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-                            <input type="date" id="semester-endDate" value={formData.endDate} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <input type="date" id="semester-endDate" value={formData.endDate} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                         </div>
                     </div>
                     <div className="pt-4 flex justify-end space-x-2">

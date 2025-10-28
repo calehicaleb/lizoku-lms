@@ -1,7 +1,10 @@
-// Fix: Import React to provide the 'React' namespace.
-import React from 'react';
-// Fix: Import IconName type for use in StatCardData to ensure type safety for icon strings.
-import { IconName } from './components/icons';
+
+
+// Fix: Import IconName for use within this file and re-export it for other modules, resolving errors where IconName was not found.
+import type { IconName } from './components/icons';
+export type { IconName };
+
+// Fix: Removed self-import of User which caused a naming conflict.
 
 export enum UserRole {
   Admin = 'admin',
@@ -87,6 +90,7 @@ export enum ContentType {
     Assignment = 'assignment',
     Discussion = 'discussion',
     Resource = 'resource',
+    Examination = 'examination',
 }
 
 export interface ContentItem {
@@ -98,6 +102,9 @@ export interface ContentItem {
     attemptsLimit?: number; // max number of attempts
     randomizeQuestions?: boolean;
     rubricId?: string; // ID of the associated rubric
+    instructions?: string; // Instructions for quiz/assignment
+    requiresFileUpload?: boolean; // For assignments
+    examinationId?: string;
 }
 
 export interface Module {
@@ -149,6 +156,7 @@ export interface Grade {
 
 export interface QuizSubmission {
     id: string;
+    type: 'quiz';
     studentId: string;
     courseId: string;
     contentItemId: string; // The quiz ID
@@ -156,6 +164,22 @@ export interface QuizSubmission {
     answers: Record<string, string | number | boolean | number[]>; // questionId -> answer
     attemptNumber: number;
 }
+
+export interface AssignmentSubmission {
+    id: string;
+    type: 'assignment';
+    studentId: string;
+    courseId: string;
+    contentItemId: string; // The assignment ID
+    submittedAt: string;
+    file: {
+        name: string;
+        size: number; // in bytes
+        url: string; // mock URL
+    };
+}
+
+export type Submission = QuizSubmission | AssignmentSubmission;
 
 
 export enum CalendarEventType {
@@ -175,21 +199,16 @@ export interface CalendarEvent {
 
 export interface DiscussionPost {
     id: string;
-    threadId: string;
+    discussionId: string; // Links to a ContentItem of type 'discussion'
+    parentId?: string; // ID of the post this is a reply to. If undefined, it's a thread starter.
+    authorId: string;
     authorName: string;
     authorAvatarUrl: string;
     content: string;
     createdAt: string; // ISO String
-}
-
-export interface DiscussionThread {
-    id: string;
-    discussionId: string; // Links to a ContentItem of type 'discussion'
-    title: string;
-    authorName: string;
-    createdAt: string; // ISO String
-    postCount: number;
-    posts?: DiscussionPost[];
+    isRead: boolean; // For unread indicators
+    children?: DiscussionPost[]; // For client-side rendering
+    replyCount?: number; // Total replies in this sub-thread
 }
 
 export enum QuestionType {
@@ -275,4 +294,227 @@ export interface StudentProgramDetails {
     program: Program;
     progress: number; // Overall percentage
     courses: ProgramCourse[];
+}
+
+export interface Communication {
+    id: string;
+    subject: string;
+    content: string;
+    recipientsSummary: string; // e.g., "All Students", "Instructors (3)", "John Doe, Jane Smith"
+    sentAt: string; // ISO String
+    authorName: string;
+}
+
+export interface SecuritySettings {
+    enableAiFeatures: boolean;
+    aiSafetyFilter: 'Low' | 'Medium' | 'High';
+    passwordPolicy: {
+        minLength: boolean;
+        requireUppercase: boolean;
+        requireNumber: boolean;
+    };
+}
+
+// --- My Transcript Page ---
+export interface TranscriptCourse {
+    courseCode: string; // e.g., CS101
+    courseTitle: string;
+    credits: number; // e.g., 3
+    grade: string; // e.g., A, B+, etc.
+    gradePoints: number; // e.g., 4.0, 3.3
+}
+
+export interface TranscriptSemester {
+    semesterName: string; // e.g., "Summer 2024"
+    courses: TranscriptCourse[];
+    semesterGpa: number;
+}
+
+export interface StudentTranscript {
+    studentName: string;
+    studentId: string; // Can be the user ID
+    programName: string;
+    semesters: TranscriptSemester[];
+    cumulativeGpa: number;
+}
+
+// --- My Messages Page ---
+export interface Message {
+    id: string;
+    threadId: string;
+    authorId: string; // User ID
+    authorName: string;
+    authorAvatarUrl: string;
+    content: string;
+    createdAt: string; // ISO String
+}
+
+export interface MessageThread {
+    id: string;
+    participants: Pick<User, 'id' | 'name' | 'avatarUrl'>[]; // Simplified user object with avatar
+    subject: string;
+    lastMessage: {
+        content: string;
+        createdAt: string; // ISO String
+    };
+    isRead: boolean;
+    messages?: Message[]; // Will be populated when a thread is selected
+}
+
+// --- Examinations ---
+export enum ExaminationStatus {
+    Draft = 'draft',
+    Scheduled = 'scheduled',
+    Completed = 'completed',
+}
+
+export interface Examination {
+    id: string;
+    instructorId: string;
+    title: string;
+    instructions: string;
+    courseId: string;
+    courseTitle: string;
+    scheduledStart: string; // ISO String
+    scheduledEnd: string; // ISO String
+    durationMinutes: number;
+    questionIds: string[];
+    shuffleQuestions: boolean;
+    status: ExaminationStatus;
+}
+
+// --- My Certificates Page ---
+export interface Certificate {
+  id: string;
+  courseName: string;
+  studentName: string;
+  issueDate: string; // ISO String or formatted date string
+  certificateId: string; // A unique ID for the certificate
+}
+
+// --- My Achievements Page ---
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: IconName;
+  unlocked: boolean;
+}
+
+// --- Certificate Settings ---
+export interface CertificateSettings {
+  logoUrl: string;
+  signatureImageUrl: string;
+  signatureSignerName: string;
+  signatureSignerTitle: string;
+  primaryColor: string;
+  autoIssueOnCompletion: boolean;
+}
+
+// --- Certificate Requests ---
+export enum CertificateRequestStatus {
+  Pending = 'pending',
+  Approved = 'approved',
+  Denied = 'denied',
+}
+
+export interface CertificateRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  courseId: string;
+  courseName: string;
+  requestDate: string; // ISO String
+  status: CertificateRequestStatus;
+}
+
+// --- Institution Settings ---
+export interface InstitutionSettings {
+  institutionName: string;
+  logoUrl: string;
+  primaryColor: string;
+}
+
+// --- Activity Logs ---
+export enum ActivityActionType {
+  Login = 'login',
+  Logout = 'logout',
+  Create = 'create',
+  Update = 'update',
+  Delete = 'delete',
+  View = 'view',
+  Enroll = 'enroll',
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl: string;
+  action: ActivityActionType;
+  description: string; // e.g., "Updated user 'John Doe'."
+  timestamp: string; // ISO String
+}
+
+// --- Session Management ---
+export interface UserSession {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl: string;
+  userRole: UserRole;
+  loginTime: string; // ISO String
+  lastActiveTime: string; // ISO String
+  ipAddress: string;
+}
+
+// --- Notifications ---
+export enum NotificationType {
+  NewGrade = 'new_grade',
+  NewMessage = 'new_message',
+  NewAnnouncement = 'new_announcement',
+  AssignmentDueSoon = 'assignment_due_soon',
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  link: string; // e.g., /grades, /my-messages/threadId, etc.
+  isRead: boolean;
+  createdAt: string; // ISO String
+}
+
+// For Student Dashboard
+export interface OverdueItem {
+    id: string;
+    title: string;
+    courseName: string;
+    dueDate: string;
+    link: string;
+}
+
+export interface UpcomingDeadline {
+    id: string;
+    title: string;
+    courseName: string;
+    dueDate: string;
+    type: 'quiz' | 'assignment' | 'exam';
+}
+
+export interface RecentActivity {
+    id: string;
+    type: 'grade' | 'message' | 'announcement';
+    title: string;
+    summary: string;
+    timestamp: string;
+    link: string;
+    icon: IconName;
+}
+
+export interface ContentItemDetails {
+    id: string;
+    content: string; // HTML content
 }

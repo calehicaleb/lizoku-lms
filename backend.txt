@@ -28,15 +28,30 @@
 - **Description:** Retrieves all users in the system.
 - **Response:** `User[]`
 
+### GET /api/users/instructors
+- **Description:** Retrieves all users with the role of 'instructor'.
+- **Response:** `User[]`
+
 ### POST /api/users
 - **Description:** Creates a new user.
 - **Request Body:** `Pick<User, 'name' | 'email' | 'role' | 'status'>`
 - **Response:** The newly created `User` object.
 
 ### PUT /api/users/:userId
-- **Description:** Updates an existing user.
-- **Request Body:** `Partial<Pick<User, 'name' | 'email' | 'role' | 'status'>>`
+- **Description:** Updates an existing user's details (name, email, role, status, avatarUrl).
+- **Request Body:** `Partial<Pick<User, 'name' | 'email' | 'role' | 'status' | 'avatarUrl'>>`
 - **Response:** The updated `User` object or `null`.
+
+### POST /api/users/:userId/change-password
+- **Description:** Changes a user's password.
+- **Request Body:**
+  ```json
+  {
+    "currentPassword": "string",
+    "newPassword": "string"
+  }
+  ```
+- **Response:** `{ success: boolean, message: string }`
 
 ### DELETE /api/users/:userId
 - **Description:** Deletes a user.
@@ -137,7 +152,7 @@
 - **Response:** `Announcement` object or `null`.
 
 ### POST /api/announcements
-- **Description:** Creates a new announcement.
+- **Description:** Creates a new announcement. Also generates notifications for all users.
 - **Request Body:** `Pick<Announcement, 'title' | 'content' | 'author'>`
 - **Response:** The newly created `Announcement` object.
 
@@ -148,6 +163,81 @@
 
 ### DELETE /api/announcements/:announcementId
 - **Description:** Deletes an announcement.
+- **Response:** `{ success: boolean }`
+
+### GET /api/communications
+- **Description:** Retrieves all sent communications, sorted by most recent.
+- **Response:** `Communication[]`
+
+### POST /api/communications
+- **Description:** Sends a new communication. Also generates notifications for recipients.
+- **Request Body:** `Omit<Communication, 'id' | 'sentAt'>`
+- **Response:** The newly created `Communication` object.
+
+### GET /api/admin/questions
+- **Description:** Retrieves all questions from all instructors in the system.
+- **Response:** `(Question & { instructorName: string })[]`
+
+### GET /api/admin/activity-logs
+- **Description:** Retrieves a filterable list of all significant user activities.
+- **Response:** `ActivityLog[]`
+
+### GET /api/admin/sessions
+- **Description:** Retrieves all active user sessions.
+- **Response:** `UserSession[]`
+
+### DELETE /api/admin/sessions/:sessionId
+- **Description:** Terminates a user session by its ID.
+- **Response:** `{ success: boolean }`
+
+### GET /api/admin/security-settings
+- **Description:** Retrieves the current platform security settings.
+- **Response:** `SecuritySettings` object.
+
+### PUT /api/admin/security-settings
+- **Description:** Updates the platform security settings.
+- **Request Body:** `SecuritySettings` object.
+- **Response:** The updated `SecuritySettings` object.
+
+### GET /api/admin/reports/enrollments
+- **Description:** Retrieves a report of all student enrollments.
+- **Response:** `Array<{ studentName, courseTitle, programName, programId, enrollmentDate }>`
+
+### GET /api/admin/reports/course-completion
+- **Description:** Retrieves a report on course completion rates.
+- **Response:** `Array<{ courseTitle, completionRate }>`
+
+### GET /api/admin/reports/instructor-activity
+- **Description:** Retrieves a report on instructor activity.
+- **Response:** `Array<{ instructorId, instructorName, coursesTaught, totalStudents }>`
+
+### GET /api/admin/reports/grade-distribution
+- **Description:** Retrieves a report on the distribution of grades across the platform.
+- **Response:** `Array<{ range, count }>`
+
+### GET /api/admin/examinations
+- **Description:** Retrieves all examinations from all instructors in the system.
+- **Response:** `(Examination & { instructorName: string })[]`
+
+### GET /api/admin/certificate-settings
+- **Description:** Retrieves the current platform-wide certificate settings.
+- **Response:** `CertificateSettings` object.
+
+### PUT /api/admin/certificate-settings
+- **Description:** Updates the platform certificate settings.
+- **Request Body:** `CertificateSettings` object.
+- **Response:** The updated `CertificateSettings` object.
+
+### GET /api/admin/certificate-requests
+- **Description:** Retrieves all pending certificate requests.
+- **Response:** `CertificateRequest[]`
+
+### POST /api/admin/certificate-requests/:requestId/approve
+- **Description:** Approves a certificate request.
+- **Response:** `{ success: boolean }`
+
+### POST /api/admin/certificate-requests/:requestId/deny
+- **Description:** Denies a certificate request.
 - **Response:** `{ success: boolean }`
 
 
@@ -192,18 +282,18 @@
   ```
 
 ### GET /api/submissions/:submissionId
-- **Description:** Retrieves the details of a specific quiz submission for manual grading.
+- **Description:** Retrieves the details of a specific submission (quiz or assignment) for manual grading.
 - **Response:** 
   ```json
   {
-    "submission": "QuizSubmission",
-    "questions": "Question[]",
+    "submission": "Submission", 
+    "questions": "Question[] | null",
     "rubric": "Rubric | null"
   }
   ```
 
 ### POST /api/submissions/grade-manual
-- **Description:** Calculates and saves the final score for a manually reviewed submission.
+- **Description:** Calculates and saves the final score for a manually reviewed submission. Generates a notification for the student.
 - **Request Body:**
   ```json
   {
@@ -214,7 +304,7 @@
 - **Response:** The final, updated `Grade` object.
 
 ### PUT /api/grades
-- **Description:** Creates or updates a specific grade for a student.
+- **Description:** Creates or updates a specific grade for a student. Generates a notification for the student.
 - **Request Body:**
   ```json
   {
@@ -249,6 +339,23 @@
 - **Description:** Deletes a question.
 - **Response:** `{ success: boolean }`
 
+### GET /api/instructor/examinations?instructorId={id}
+- **Description:** Retrieves all examinations for a specific instructor.
+- **Response:** `Examination[]`
+
+### POST /api/instructor/examinations
+- **Description:** Creates a new examination.
+- **Request Body:** `Omit<Examination, 'id' | 'status' | 'courseTitle'>`
+- **Response:** The newly created `Examination` object.
+
+### PUT /api/instructor/examinations/:examId
+- **Description:** Updates an existing examination.
+- **Request Body:** `Partial<Omit<Examination, 'id' | 'instructorId'>>`
+- **Response:** The updated `Examination` object or `null`.
+
+### DELETE /api/instructor/examinations/:examId
+- **Description:** Deletes an examination.
+- **Response:** `{ success: boolean }`
 
 ---
 ## Student
@@ -258,9 +365,33 @@
 - **Description:** Retrieves the academic program details for the logged-in student.
 - **Response:** `StudentProgramDetails` object or `null`.
 
+### GET /api/student/transcript
+- **Description:** Retrieves a complete academic transcript for the logged-in student.
+- **Response:** `StudentTranscript` object or `null`.
+
 ### GET /api/student/courses
 - **Description:** Retrieves all courses the logged-in student is enrolled in.
 - **Response:** `CourseSummary[]`
+
+### GET /api/student/overdue-items?userId={id}
+- **Description:** Retrieves all overdue assignments and quizzes for the student's dashboard.
+- **Response:** `OverdueItem[]`
+
+### GET /api/student/upcoming-deadlines?userId={id}
+- **Description:** Retrieves all upcoming deadlines for the student's dashboard.
+- **Response:** `UpcomingDeadline[]`
+
+### GET /api/student/recent-activity?userId={id}
+- **Description:** Retrieves a feed of recent events for the student's dashboard.
+- **Response:** `RecentActivity[]`
+
+### GET /api/student/submissions?studentId={id}&contentItemId={id}
+- **Description:** Retrieves all of a student's past quiz submissions for a specific content item.
+- **Response:** `QuizSubmission[]`
+
+### GET /api/student/assignment-submission?studentId={id}&contentItemId={id}
+- **Description:** Retrieves a student's file submission for a specific assignment.
+- **Response:** `AssignmentSubmission` or `null`.
 
 ### GET /api/grades/student/:studentId/course/:courseId
 - **Description:** Retrieves a specific student's grades for a given course.
@@ -276,7 +407,7 @@
   ```
 
 ### POST /api/quizzes/submit
-- **Description:** Submits a student's quiz answers for grading.
+- **Description:** Submits a student's quiz answers for grading. Generates a notification for the student if grading is complete.
 - **Request Body:**
   ```json
   {
@@ -288,14 +419,93 @@
   ```
 - **Response:** The resulting `Grade` object, which may have a status of 'graded' or 'pending review'.
 
+### POST /api/assignments/submit
+- **Description:** Submits a student's file for an assignment. Creates a grade in 'pending review' status and notifies the instructor.
+- **Request Body:**
+  ```json
+  {
+    "studentId": "string",
+    "courseId": "string",
+    "contentItemId": "string",
+    "file": "{ name: string, size: number }"
+  }
+  ```
+- **Response:** The newly created `AssignmentSubmission` object.
+
+### GET /api/student/messages
+- **Description:** Retrieves all message threads for the logged-in student.
+- **Response:** `MessageThread[]`
+
+### GET /api/student/messages/:threadId
+- **Description:** Retrieves the details and all messages for a specific thread.
+- **Response:** `MessageThread` object (with `messages` property populated) or `null`.
+
+### POST /api/student/messages/:threadId
+- **Description:** Sends a new message (reply) in a thread. Generates a notification for other participants.
+- **Request Body:**
+  ```json
+  {
+    "content": "string",
+    "author": "User"
+  }
+  ```
+- **Response:** The newly created `Message` object.
+
+### POST /api/messages/threads
+- **Description:** Creates a new message thread with initial participants, subject, and message.
+- **Request Body:**
+  ```json
+  {
+    "participants": "Pick<User, 'id' | 'name' | 'avatarUrl'>[]",
+    "subject": "string",
+    "content": "string",
+    "author": "User"
+  }
+  ```
+- **Response:** The newly created `MessageThread` object.
+
+### GET /api/student/certificates
+- **Description:** Retrieves all earned certificates for the logged-in student.
+- **Response:** `Certificate[]`
+
+### GET /api/student/achievements
+- **Description:** Retrieves all available achievements and their unlocked status for the logged-in student.
+- **Response:** `Achievement[]`
+
 
 ---
 ## General
 ---
 
+### GET /api/content/:contentItemId
+- **Description:** Retrieves the detailed HTML content for a specific content item (lesson, resource, assignment).
+# Note: The HTML content returned by this endpoint for lessons now uses a more structured format with custom classes for enhanced styling (e.g., 'lesson-section-header').
+- **Response:** `ContentItemDetails` object or `null`.
+
+### GET /api/notifications?userId={id}
+- **Description:** Retrieves all notifications for a specific user.
+- **Response:** `Notification[]`
+
+### POST /api/notifications/:notificationId/read
+- **Description:** Marks a single notification as read.
+- **Response:** `{ success: boolean }`
+
+### POST /api/notifications/read-all?userId={id}
+- **Description:** Marks all of a user's notifications as read.
+- **Response:** `{ success: boolean }`
+
+### GET /api/institution/settings
+- **Description:** Retrieves the current institution settings (name, logo, etc.).
+- **Response:** `InstitutionSettings` object.
+
+### PUT /api/institution/settings
+- **Description:** Updates the institution settings.
+- **Request Body:** `InstitutionSettings` object.
+- **Response:** The updated `InstitutionSettings` object.
+
 ### GET /api/courses/:courseId
 - **Description:** Retrieves detailed information for a specific course.
-- **Response:** `Course` object or `null`.
+- **Response:** `Course` object or `null`. The `ContentItem` objects within the response may now contain an `instructions` string property for quizzes and assignments.
 
 ### GET /api/calendar/events
 - **Description:** Retrieves all calendar events relevant to the user.
@@ -304,6 +514,10 @@
 ### GET /api/discussions/:discussionId/threads
 - **Description:** Retrieves all threads for a specific discussion content item.
 - **Response:** `DiscussionThread[]` (with posts included)
+
+### POST /api/discussions/threads/:threadId/read
+- **Description:** Marks a discussion thread as read.
+- **Response:** `{ success: boolean }`
 
 ### POST /api/discussions/threads
 - **Description:** Creates a new discussion thread.

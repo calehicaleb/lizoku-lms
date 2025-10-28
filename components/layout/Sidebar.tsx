@@ -13,9 +13,10 @@ interface SidebarProps {
     navItems: NavItem[];
     isOpen: boolean;
     onClose: () => void;
+    onToggleSidebar: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ navItems, isOpen, onClose }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ navItems, isOpen, onClose, onToggleSidebar }) => {
     const groupedNavItems = navItems.reduce((acc, item) => {
         const section = item.section || 'Main';
         if (acc[section]) {
@@ -28,7 +29,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ navItems, isOpen, onClose }) =
 
     const sidebarContent = (
         <div className="flex flex-col h-full">
-            <nav className="flex-1 px-2 py-4 space-y-1">
+            <nav className="flex-grow px-2 py-4 space-y-1 overflow-y-auto">
                 {/* FIX: Replaced `Object.entries` with `Object.keys` for more robust type inference. This ensures the array of items is correctly typed, resolving the error where `.map` was called on an `unknown` type. */}
                 {Object.keys(groupedNavItems).map((section) => (
                     <div key={section} className="mb-4">
@@ -53,6 +54,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ navItems, isOpen, onClose }) =
                     </div>
                 ))}
             </nav>
+            <div className="border-t p-2">
+                <button
+                    onClick={onToggleSidebar}
+                    className="w-full items-center p-2 rounded-md text-gray-600 hover:bg-gray-100 hidden lg:flex"
+                    aria-label="Collapse menu"
+                >
+                    <Icon name="ChevronLeft" className="h-6 w-6 mr-3" />
+                    <span className="text-sm font-medium">Collapse menu</span>
+                </button>
+            </div>
         </div>
     );
     
@@ -60,14 +71,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ navItems, isOpen, onClose }) =
         <>
             {/* Mobile overlay */}
             <div
-                className={`fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity lg:hidden ${
+                className={`fixed inset-0 z-30 bg-black bg-opacity-50 transition-opacity duration-300 ease-in-out lg:hidden ${
                     isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
                 }`}
                 onClick={onClose}
             ></div>
 
             {/* Sidebar */}
-            <aside className={`fixed top-0 left-0 z-40 w-64 h-full bg-white shadow-xl transition-transform transform lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <aside className={`fixed z-40 w-64 bg-white shadow-xl transition-transform duration-300 ease-in-out transform lg:rounded-3xl lg:top-20 lg:left-4 lg:h-[calc(100vh-6rem)] top-0 left-0 h-full ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                  <div className="flex items-center justify-between h-16 px-4 border-b lg:hidden">
                     <div className="flex items-center text-xl font-bold text-gray-800">
                         <Icon name="GraduationCap" className="h-7 w-7 text-primary" />

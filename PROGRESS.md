@@ -18,6 +18,7 @@ This document tracks the implementation status of features as defined in the Use
 | **Layout** | ✅ | Main layout with Header, Sidebar, and Content area is complete. |
 | **Responsiveness** | ✅ | Basic responsiveness for key layouts is implemented. |
 | **Theming** | ✅ | Colors and fonts from URS are applied via Tailwind. |
+| **Notification System**| ✅ | Header notification bell, panel, and backend triggers implemented. |
 
 ---
 
@@ -25,14 +26,14 @@ This document tracks the implementation status of features as defined in the Use
 
 | ID | Requirement | Status | Notes |
 |---|---|---|---|
-| AUTH-01 | **User Sign-Up** | 🎨 | UI and modal are functional. Connects to mock API. |
+| AUTH-01 | **User Sign-Up** | ✅ | Full sign-up flow now creates a 'pending' user in the mock backend. |
 | AUTH-02 | **User Sign-In** | ✅ | Fully functional with mock API and role-based logic. |
 | AUTH-03 | **Role-Based Redirect** | ✅ | Users are redirected to their respective dashboards upon login. |
-| AUTH-04 | **AI Password Hint** | 🎨 | UI and Gemini API call are implemented. |
-| AUTH-05 | **Automatic Avatar Gen**| 🎨 | Gemini API call is implemented but signup flow is mocked. |
-| AUTH-06 | **Password Policy** | ⏳ | |
-| AUTH-07 | **Idle Session Timeout** | ⏳ | |
-| AUTH-08 | **Account Approval** | ✅ | Mocked in user data and visible in Admin User Management. |
+| AUTH-04 | **AI Password Hint** | ✅ | UI and Gemini API call are implemented. |
+| AUTH-05 | **Automatic Avatar Gen**| ✅ | Gemini API call is now integrated into the sign-up flow. |
+| AUTH-06 | **Password Policy** | ✅ | Implemented on the sign-up modal with real-time validation. |
+| AUTH-07 | **Idle Session Timeout** | ✅ | Automatically logs out users after a period of inactivity, with a warning modal. |
+| AUTH-08 | **Account Approval** | ✅ | Is now functional; admins can approve users created via the sign-up form. |
 
 ---
 
@@ -43,21 +44,21 @@ This document tracks the implementation status of features as defined in the Use
 | **Dashboard** | ✅ | Stats, Recent Signups, and Announcement widgets are implemented. Charts are placeholders. |
 | **Calendar** | ✅ | Unified calendar page implemented. |
 | **User Management** | ✅ | Full CRUD functionality implemented, including user creation, editing, and deletion. |
-| **Communications** | ⏳ | Page route exists, but content is a placeholder. |
+| **Communications** | ✅ | Full compose and history functionality implemented. |
 | **Departments** | ✅ | Full CRUD functionality implemented. |
 | **Programs** | ✅ | Full CRUD functionality implemented. |
 | **Semesters** | ✅ | Full CRUD functionality implemented. |
 | **Courses** | ✅ | Full CRUD functionality implemented. |
-| **Examinations** | ⏳ | |
-| **Reporting** | ⏳ | |
-| **Certificate Settings** | ⏳ | |
-| **Certificate Requests** | ⏳ | |
-| **Quick Setup** | ⏳ | |
+| **Examinations** | ✅ | Implemented a system-wide, filterable view of all examinations. |
+| **Reporting** | ✅ | Implemented a dashboard with multiple filterable reports on enrollments, completion, and grades. |
+| **Certificate Settings** | ✅ | Implemented a settings page with a live preview for designing and configuring certificates. |
+| **Certificate Requests** | ✅ | Implemented a page to review, approve, and deny student certificate requests. |
+| **Quick Setup** | ✅ | Implemented a multi-step wizard for initial platform configuration. |
 | **Site Announcements** | ✅ | Full CRUD functionality implemented on a dedicated management page. Dashboard widget is now dynamic. |
-| **Question Bank** | ⏳ | |
-| **Activity Logs** | ⏳ | |
-| **Security Management**| 🎨 | UI page created as a placeholder. No backend logic. |
-| **Session Management** | ⏳ | |
+| **Question Bank** | ✅ | Implemented a system-wide, filterable view of all questions. |
+| **Activity Logs** | ✅ | Implemented a filterable and searchable view of system events. |
+| **Security Management**| ✅ | Full functionality implemented with mock API. |
+| **Session Management** | ✅ | Implemented view and force logout functionality. |
 
 ---
 
@@ -69,11 +70,12 @@ This document tracks the implementation status of features as defined in the Use
 | **Calendar** | ✅ | Unified calendar page implemented. |
 | **My Courses** | ✅ | Instructors can now create new draft courses. |
 | **Course Builder** | ✅ | Includes AI outline generation, multi-type quiz assembly, and quiz settings. Can now attach rubrics. |
-| **Gradebook** | ✅ | Includes manual grading interface for subjective questions and now displays interactive rubrics. |
-| **Examinations** | ⏳ | |
+| **Gradebook** | ✅ | Includes manual grading interface for subjective questions, displays interactive rubrics, and now shows links to download submitted files. |
+| **Examinations** | ✅ | Full CRUD functionality for creating, scheduling, and managing timed exams from the question bank. |
 | **Question Bank** | ✅ | Upgraded to support multiple question types. |
 | **Rubrics** | ✅ | Full CRUD functionality for creating and managing reusable grading rubrics. |
-| **My Profile** | ⏳ | |
+| **Example Course Content** | ✅ | Implemented a comprehensive 8-week example course ('Intro to CS') with detailed, professionally styled content for all lessons and assignments. |
+| **My Profile** | ✅ | Implemented profile editing, password management, and AI avatar regeneration. |
 
 ---
 
@@ -81,15 +83,15 @@ This document tracks the implementation status of features as defined in the Use
 
 | Page / Feature | Status | Notes |
 |---|---|---|
-| **Dashboard** | ✅ | Stats, Continue Learning, Deadlines, and Grades widgets are implemented with mock data. |
+| **Dashboard** | ✅ | Redesigned to show urgent items, deadlines, recent activity, and courses. |
 | **Explore Courses** | ✅ | Implemented a course catalog with search, filtering, and simulated enrollment. |
 | **My Courses** | ✅ | Page displays all enrolled courses. |
-| **Course Viewer** | ✅ | Supports taking multi-type quizzes with settings and randomization. Functional discussion boards implemented. |
+| **Course Viewer** | ✅ | Supports taking multi-type quizzes, file upload submissions, and discussion boards. Now displays detailed, professionally styled content for lessons, resources, and assignments. |
 | **My Program** | ✅ | Displays student's academic roadmap, course status, grades, and overall progress. |
 | **Calendar** | ✅ | Unified calendar page implemented. |
-| **My Messages** | ⏳ | |
+| **My Messages** | ✅ | Full messaging functionality with conversation composition, multiple participants, and pre-filling from course pages. |
 | **My Grades** | ✅ | Implemented a page for students to view their grades by course. |
-| **My Transcript** | ⏳ | |
-| **My Certificates** | ⏳ | |
-| **My Achievements**| ⏳ | |
-| **My Profile** | ⏳ | |
+| **My Transcript** | ✅ | Implemented a formal, printable academic transcript with GPA calculation. |
+| **My Certificates** | ✅ | Implemented a gallery page for students to view and download their earned certificates. |
+| **My Achievements**| ✅ | Implemented a gallery page for students to view earned and locked achievements. |
+| **My Profile** | ✅ | Implemented profile editing, password management, and AI avatar regeneration. |

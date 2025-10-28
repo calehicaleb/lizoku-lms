@@ -8,20 +8,29 @@ import { useAuth } from '../../contexts/AuthContext';
 
 type FormData = Omit<Question, 'id' | 'instructorId'>;
 
-// Fix: Removed explicit FormData return type to allow for correct type inference of the returned object literal union.
-const getEmptyQuestion = (type: QuestionType) => {
+const getEmptyQuestion = (type: QuestionType): FormData => {
     switch (type) {
-        case QuestionType.TrueFalse:
-            return { type, stem: '', correctAnswer: true };
-        case QuestionType.ShortAnswer:
-            return { type, stem: '', acceptableAnswers: [''] };
-        case QuestionType.MultipleSelect:
-            return { type, stem: '', options: ['', ''], correctAnswerIndices: [] };
-        case QuestionType.FillBlank:
-            return { type, stem: '', acceptableAnswers: [''] };
+        case QuestionType.TrueFalse: {
+            const question: Omit<TrueFalseQuestion, 'id' | 'instructorId'> = { type: QuestionType.TrueFalse, stem: '', correctAnswer: true };
+            return question;
+        }
+        case QuestionType.ShortAnswer: {
+            const question: Omit<ShortAnswerQuestion, 'id' | 'instructorId'> = { type: QuestionType.ShortAnswer, stem: '', acceptableAnswers: [''] };
+            return question;
+        }
+        case QuestionType.MultipleSelect: {
+            const question: Omit<MultipleSelectQuestion, 'id' | 'instructorId'> = { type: QuestionType.MultipleSelect, stem: '', options: ['', ''], correctAnswerIndices: [] };
+            return question;
+        }
+        case QuestionType.FillBlank: {
+            const question: Omit<FillBlankQuestion, 'id' | 'instructorId'> = { type: QuestionType.FillBlank, stem: '', acceptableAnswers: [''] };
+            return question;
+        }
         case QuestionType.MultipleChoice:
-        default:
-            return { type: QuestionType.MultipleChoice, stem: '', options: ['', ''], correctAnswerIndex: 0 };
+        default: {
+            const question: Omit<MultipleChoiceQuestion, 'id' | 'instructorId'> = { type: QuestionType.MultipleChoice, stem: '', options: ['', ''], correctAnswerIndex: 0 };
+            return question;
+        }
     }
 };
 
@@ -136,9 +145,8 @@ const QuestionBankPage: React.FC = () => {
 
     const renderFormFields = () => {
         switch (formData.type) {
-            // FIX: Use 'in' operator as a type guard to allow TypeScript to correctly narrow the formData type.
             case QuestionType.MultipleChoice: {
-                if ('options' in formData) {
+                // FIX: Removed redundant 'if ('options' in formData)' which was causing incorrect type inference.
                 return (
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Options</label>
@@ -150,7 +158,7 @@ const QuestionBankPage: React.FC = () => {
                                         const newOptions = [...formData.options];
                                         newOptions[index] = e.target.value;
                                         setFormData({ ...formData, options: newOptions });
-                                    }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder={`Option ${index + 1}`} />
+                                    }} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder={`Option ${index + 1}`} />
                                      <button type="button" onClick={() => {
                                          if (formData.options.length > 2) {
                                             const newOptions = formData.options.filter((_, i) => i !== index);
@@ -167,12 +175,9 @@ const QuestionBankPage: React.FC = () => {
                         </button>
                     </div>
                 );
-                }
-                return null;
             }
-            // FIX: Use 'in' operator as a type guard to allow TypeScript to correctly narrow the formData type.
             case QuestionType.TrueFalse: {
-                if ('correctAnswer' in formData) {
+                // FIX: Removed redundant 'if ('correctAnswer' in formData)' which was causing incorrect type inference.
                 return (
                      <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Correct Answer</label>
@@ -182,25 +187,19 @@ const QuestionBankPage: React.FC = () => {
                         </div>
                     </div>
                 );
-                }
-                return null;
             }
-            // FIX: Use 'in' operator as a type guard to allow TypeScript to correctly narrow the formData type.
              case QuestionType.ShortAnswer: {
-                if ('acceptableAnswers' in formData) {
+                // FIX: Removed redundant 'if ('acceptableAnswers' in formData)' which was causing incorrect type inference.
                  return (
                      <div>
                         <label htmlFor="acceptableAnswers" className="block text-sm font-medium text-gray-700 mb-1">Acceptable Answer(s)</label>
-                        <input type="text" id="acceptableAnswers" value={formData.acceptableAnswers.join(',')} onChange={(e) => setFormData({ ...formData, acceptableAnswers: e.target.value.split(',').map(s => s.trim()) })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="text" id="acceptableAnswers" value={formData.acceptableAnswers.join(',')} onChange={(e) => setFormData({ ...formData, acceptableAnswers: e.target.value.split(',').map(s => s.trim()) })} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                          <p className="text-xs text-gray-500 mt-1">Separate multiple correct answers with a comma. For manually graded essays, this can be left blank.</p>
                     </div>
                  );
-                }
-                return null;
             }
-            // FIX: Use 'in' operator as a type guard to allow TypeScript to correctly narrow the formData type.
             case QuestionType.MultipleSelect: {
-                if ('correctAnswerIndices' in formData) {
+                // FIX: Removed redundant 'if ('correctAnswerIndices' in formData)' which was causing incorrect type inference.
                 const handleCorrectAnswerChange = (index: number) => {
                     const newIndices = new Set(formData.correctAnswerIndices);
                     if (newIndices.has(index)) {
@@ -221,7 +220,7 @@ const QuestionBankPage: React.FC = () => {
                                         const newOptions = [...formData.options];
                                         newOptions[index] = e.target.value;
                                         setFormData({ ...formData, options: newOptions });
-                                    }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder={`Option ${index + 1}`} />
+                                    }} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder={`Option ${index + 1}`} />
                                      <button type="button" onClick={() => {
                                          if (formData.options.length > 2) {
                                             const newOptions = formData.options.filter((_, i) => i !== index);
@@ -239,22 +238,17 @@ const QuestionBankPage: React.FC = () => {
                         </button>
                     </div>
                 );
-                }
-                return null;
             }
-            // FIX: Use 'in' operator as a type guard to allow TypeScript to correctly narrow the formData type.
             case QuestionType.FillBlank: {
-                if ('acceptableAnswers' in formData) {
+                // FIX: Removed redundant 'if ('acceptableAnswers' in formData)' which was causing incorrect type inference.
                 return (
                      <div>
                         <label htmlFor="acceptableAnswersFB" className="block text-sm font-medium text-gray-700 mb-1">Acceptable Answer(s)</label>
-                        <input type="text" id="acceptableAnswersFB" value={formData.acceptableAnswers.join(',')} onChange={(e) => setFormData({ ...formData, acceptableAnswers: e.target.value.split(',').map(s => s.trim()) })} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="text" id="acceptableAnswersFB" value={formData.acceptableAnswers.join(',')} onChange={(e) => setFormData({ ...formData, acceptableAnswers: e.target.value.split(',').map(s => s.trim()) })} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                          <p className="text-xs text-gray-500 mt-1">Separate multiple correct answers with a comma. Case-insensitive.</p>
                          <p className="text-xs text-gray-500 mt-1">Use three underscores `___` in the question text to indicate the blank.</p>
                     </div>
                 );
-                }
-                return null;
             }
             default: return null;
         }
@@ -305,7 +299,7 @@ const QuestionBankPage: React.FC = () => {
                     {!selectedQuestion && (
                          <div>
                             <label htmlFor="question-type" className="block text-sm font-medium text-gray-700 mb-1">Question Type</label>
-                            <select id="question-type" value={formData.type} onChange={e => setFormData(getEmptyQuestion(e.target.value as QuestionType))} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary capitalize">
+                            <select id="question-type" value={formData.type} onChange={e => setFormData(getEmptyQuestion(e.target.value as QuestionType))} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary capitalize">
                                 <option value={QuestionType.MultipleChoice}>Multiple Choice</option>
                                 <option value={QuestionType.MultipleSelect}>Multiple Select</option>
                                 <option value={QuestionType.TrueFalse}>True / False</option>
@@ -316,7 +310,7 @@ const QuestionBankPage: React.FC = () => {
                     )}
                     <div>
                         <label htmlFor="stem" className="block text-sm font-medium text-gray-700 mb-1">Question Text (Stem)</label>
-                        <textarea id="stem" value={formData.stem} onChange={e => setFormData(prev => ({ ...prev, stem: e.target.value }))} rows={3} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <textarea id="stem" value={formData.stem} onChange={e => setFormData(prev => ({ ...prev, stem: e.target.value }))} rows={3} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     {renderFormFields()}
                     <div className="pt-4 flex justify-end space-x-2">

@@ -116,12 +116,12 @@ const UserManagementPage: React.FC = () => {
 
             <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                    <input type="text" placeholder="Search by name or email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="lg:col-span-2 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
-                    <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as any)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                    <input type="text" placeholder="Search by name or email..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="lg:col-span-2 w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as any)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="all">All Roles</option>
                         {Object.values(UserRole).map(role => <option key={role} value={role} className="capitalize">{role}</option>)}
                     </select>
-                     <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                     <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as any)} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="all">All Statuses</option>
                         {Object.values(UserStatus).map(status => <option key={status} value={status} className="capitalize">{status}</option>)}
                     </select>
@@ -181,22 +181,22 @@ const UserManagementPage: React.FC = () => {
                  <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <div>
                         <label htmlFor="user-name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input type="text" id="user-name" value={formData.name} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="text" id="user-name" value={formData.name} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                      <div>
                         <label htmlFor="user-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                        <input type="email" id="user-email" value={formData.email} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="email" id="user-email" value={formData.email} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="user-role" className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                            <select id="user-role" value={formData.role} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary capitalize">
+                            <select id="user-role" value={formData.role} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary capitalize">
                                 {Object.values(UserRole).map(role => <option key={role} value={role}>{role}</option>)}
                             </select>
                         </div>
                          <div>
                             <label htmlFor="user-status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                            <select id="user-status" value={formData.status} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary capitalize">
+                            <select id="user-status" value={formData.status} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary capitalize">
                                 {Object.values(UserStatus).map(status => <option key={status} value={status}>{status}</option>)}
                             </select>
                         </div>

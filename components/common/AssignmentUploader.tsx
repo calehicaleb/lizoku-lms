@@ -1,0 +1,184 @@
+import React, { useState, useCallback, useEffect } from 'react';
+import { ContentItem, AssignmentSubmission } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
+import * as api from '../../services/api';
+import { Icon } from '../icons';
+
+interface AssignmentUploaderProps {
+    assignment: ContentItem;
+    courseId: string;
+    onSubmissionComplete: () => void;
+}
+
+const ALLOWED_MIME_TYPES = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'application/vnd.ms-powerpoint',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+    'text/plain', // .txt
+];
+
+const formatBytes = (bytes: number, decimals = 2) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+};
+
+export const AssignmentUploader: React.FC<AssignmentUploaderProps> = ({ assignment, courseId, onSubmissionComplete }) => {
+    const { user } = useAuth();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submission, setSubmission] = useState<AssignmentSubmission | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if (!user) return;
+        setIsLoading(true);
+        api.getAssignmentSubmissionForStudent(user.id, assignment.id)
+            .then(setSubmission)
+            .catch(err => console.error("Failed to check for existing submission", err))
+            .finally(() => setIsLoading(false));
+    }, [user, assignment.id]);
+
+    const handleFileSelect = (file: File | null) => {
+        setError('');
+        if (file) {
+            if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+                setError('Invalid file type. Please upload a Word, PDF, Excel, PowerPoint, or Text file.');
+                return;
+            }
+            setSelectedFile(file);
+        }
+    };
+
+    const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    }, []);
+
+    const onDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    }, []);
+
+    const onDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            handleFileSelect(e.dataTransfer.files[0]);
+            e.dataTransfer.clearData();
+        }
+    }, []);
+
+    const handleSubmit = async () => {
+        if (!selectedFile || !user) return;
+        setIsSubmitting(true);
+        setError('');
+        try {
+            const newSubmission = await api.submitAssignment(user.id, courseId, assignment.id, {
+                name: selectedFile.name,
+                size: selectedFile.size,
+            });
+            setSubmission(newSubmission);
+            onSubmissionComplete();
+        } catch (err) {
+            setError('Failed to submit your assignment. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (isLoading) {
+        return <div className="text-center p-8">Checking submission status...</div>;
+    }
+    
+    if (submission) {
+        return (
+            <div>
+                 <h1 className="text-3xl font-bold text-gray-800 mb-4">{assignment.title}</h1>
+                 <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-6 rounded-md shadow-sm">
+                    <div className="flex">
+                        <div className="py-1"><Icon name="CheckCircle" className="h-8 w-8 text-green-500 mr-4" /></div>
+                        <div>
+                            <p className="font-bold text-lg text-green-800">Submitted!</p>
+                            <p className="mt-2">You submitted <strong className="text-green-900">{submission.file.name}</strong> on {new Date(submission.submittedAt).toLocaleString()}.</p>
+                            <p className="text-sm mt-1">Your submission is now pending review by your instructor.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-4">{assignment.title}</h1>
+
+            <div 
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onDrop={onDrop}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 ${isDragging ? 'border-primary bg-primary/10' : 'border-gray-300 bg-gray-50'}`}
+            >
+                <input
+                    type="file"
+                    id="file-upload"
+                    className="hidden"
+                    onChange={(e) => handleFileSelect(e.target.files ? e.target.files[0] : null)}
+                    accept={ALLOWED_MIME_TYPES.join(',')}
+                />
+                <Icon name="FileText" className="h-12 w-12 mx-auto text-gray-400" />
+                <label htmlFor="file-upload" className="mt-4 block font-semibold text-secondary hover:underline cursor-pointer">
+                    Click to select a file
+                </label>
+                <p className="text-sm text-gray-500">or drag and drop here</p>
+                <p className="text-xs text-gray-400 mt-2">Allowed types: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT</p>
+            </div>
+
+            {error && <p className="mt-4 text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
+            
+            {selectedFile && !error && (
+                <div className="mt-4 p-4 bg-secondary-light rounded-md flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <Icon name="FileText" className="h-6 w-6 text-secondary" />
+                        <div>
+                            <p className="font-medium text-gray-800">{selectedFile.name}</p>
+                            <p className="text-sm text-gray-500">{formatBytes(selectedFile.size)}</p>
+                        </div>
+                    </div>
+                    <button onClick={() => setSelectedFile(null)} className="text-gray-500 hover:text-red-600">
+                        <Icon name="X" className="h-5 w-5" />
+                    </button>
+                </div>
+            )}
+            
+            <div className="mt-6 text-right">
+                <button
+                    onClick={handleSubmit}
+                    disabled={!selectedFile || isSubmitting}
+                    className="bg-primary text-gray-800 font-bold py-3 px-6 rounded-md hover:bg-primary-dark transition duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center ml-auto"
+                >
+                    {isSubmitting ? (
+                        <>
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            Submitting...
+                        </>
+                    ) : (
+                        "Submit Assignment"
+                    )}
+                </button>
+            </div>
+        </div>
+    );
+};

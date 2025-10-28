@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -22,9 +23,11 @@ const InstructorMyCoursesPage: React.FC = () => {
     const { user } = useAuth();
 
     useEffect(() => {
+        if (!user) return;
         const fetchCourses = async () => {
             try {
-                const data = await api.getInstructorCourses();
+                // FIX: Pass the instructor's ID to the API call.
+                const data = await api.getInstructorCourses(user.id);
                 setCourses(data);
             } catch (error) {
                 console.error("Failed to fetch instructor courses", error);
@@ -33,7 +36,7 @@ const InstructorMyCoursesPage: React.FC = () => {
             }
         };
         fetchCourses();
-    }, []);
+    }, [user]);
 
     const handleOpenModal = () => {
         setFormData(emptyCourse);
@@ -111,11 +114,11 @@ const InstructorMyCoursesPage: React.FC = () => {
                 <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                     <div>
                         <label htmlFor="course-title" className="block text-sm font-medium text-gray-700 mb-1">Course Title</label>
-                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
+                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" required />
                     </div>
                     <div>
                         <label htmlFor="course-description" className="block text-sm font-medium text-gray-700 mb-1">Course Description</label>
-                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     <div className="pt-4 flex justify-end space-x-2">
                         <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">Cancel</button>

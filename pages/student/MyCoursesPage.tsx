@@ -1,18 +1,23 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader } from '../../components/ui/PageHeader';
 import * as api from '../../services/api';
 import { CourseSummary } from '../../types';
 import { Icon } from '../../components/icons';
+import { useAuth } from '../../contexts/AuthContext';
 
 const MyCoursesPage: React.FC = () => {
+    const { user } = useAuth();
     const [courses, setCourses] = useState<CourseSummary[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!user) return;
         const fetchCourses = async () => {
             try {
-                const coursesData = await api.getStudentCourses();
+                // FIX: Pass the student's ID to the API call.
+                const coursesData = await api.getStudentCourses(user.id);
                 setCourses(coursesData);
             } catch (error) {
                 console.error("Failed to fetch student courses", error);
@@ -21,7 +26,7 @@ const MyCoursesPage: React.FC = () => {
             }
         };
         fetchCourses();
-    }, []);
+    }, [user]);
 
     if (loading) return <div>Loading courses...</div>;
 

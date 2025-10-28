@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import * as api from '../../services/api';
 import { Course, ContentItem, Grade } from '../../types';
 import { Icon } from '../../components/icons';
 import { ManualGrader } from '../../components/common/ManualGrader';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface StudentGradeData {
     studentId: string;
@@ -17,6 +19,7 @@ interface GradebookData {
 }
 
 const GradebookPage: React.FC = () => {
+    const { user } = useAuth();
     const [courses, setCourses] = useState<Course[]>([]);
     const [selectedCourseId, setSelectedCourseId] = useState<string>('');
     const [gradebookData, setGradebookData] = useState<GradebookData | null>(null);
@@ -42,9 +45,11 @@ const GradebookPage: React.FC = () => {
     };
 
     useEffect(() => {
+        if (!user) return;
         const fetchCourses = async () => {
             try {
-                const data = await api.getInstructorCourses();
+                // FIX: Pass the instructor's ID to the API call.
+                const data = await api.getInstructorCourses(user.id);
                 setCourses(data);
                 if (data.length > 0) {
                     setSelectedCourseId(data[0].id);
@@ -56,7 +61,7 @@ const GradebookPage: React.FC = () => {
             }
         };
         fetchCourses();
-    }, []);
+    }, [user]);
 
     useEffect(() => {
         fetchGrades(selectedCourseId);
@@ -100,7 +105,7 @@ const GradebookPage: React.FC = () => {
                         id="course-select"
                         value={selectedCourseId}
                         onChange={e => setSelectedCourseId(e.target.value)}
-                        className="w-full max-w-sm px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full max-w-sm px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         disabled={loadingCourses}
                     >
                         {loadingCourses ? <option>Loading...</option> : courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}

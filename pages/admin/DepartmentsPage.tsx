@@ -131,11 +131,11 @@ const DepartmentsPage: React.FC = () => {
                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <div>
                         <label htmlFor="dept-name" className="block text-sm font-medium text-gray-700 mb-1">Department Name</label>
-                        <input type="text" id="dept-name" value={formData.name} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="text" id="dept-name" value={formData.name} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                      <div>
                         <label htmlFor="dept-head" className="block text-sm font-medium text-gray-700 mb-1">Head of Department</label>
-                        <input type="text" id="dept-head" value={formData.head} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="text" id="dept-head" value={formData.head} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     <div className="pt-4 flex justify-end space-x-2">
                         <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">Cancel</button>

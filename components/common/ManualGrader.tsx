@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import * as api from '../../services/api';
-import { Question, QuizSubmission, QuestionType, Rubric, RubricCriterion, RubricLevel } from '../../types';
+import { Question, Submission, QuestionType, Rubric } from '../../types';
 import { Icon } from '../icons';
 
 interface ManualGraderProps {
@@ -12,8 +12,8 @@ interface ManualGraderProps {
 }
 
 interface GraderData {
-    submission: QuizSubmission;
-    questions: Question[];
+    submission: Submission;
+    questions: Question[] | null;
     rubric: Rubric | null;
 }
 
@@ -37,7 +37,7 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                         initialScores[`criterion-${c.id}`] = result.rubric!.levels[0].points;
                     });
                 } else {
-                    result?.questions.forEach(q => {
+                    result?.questions?.forEach(q => {
                         if (q.type === QuestionType.ShortAnswer) {
                             initialScores[q.id] = 1; // Default to full marks
                         }
@@ -148,30 +148,40 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                 {loading && <p>Loading submission...</p>}
                 {!loading && data && (
                     <div className="space-y-6">
-                        {data.rubric ? renderRubricGrader(data.rubric) : (
-                            data.questions.map((q, index) => (
-                                <div key={q.id} className="pb-4 border-b last:border-b-0">
-                                    <p className="font-bold text-gray-800">{index + 1}. {q.stem}</p>
-                                    <div className="mt-2">
-                                        {renderAnswer(q, data.submission.answers[q.id])}
-                                    </div>
-                                    {q.type === QuestionType.ShortAnswer && (
-                                        <div className="mt-3 flex items-center justify-end space-x-2">
-                                            <label htmlFor={`score-${q.id}`} className="text-sm font-medium">Score:</label>
-                                            <select
-                                                id={`score-${q.id}`}
-                                                value={manualScores[q.id] ?? 1}
-                                                onChange={e => handleScoreChange(q.id, parseInt(e.target.value, 10))}
-                                                className="border-gray-300 rounded-md shadow-sm"
-                                            >
-                                                <option value="1">Correct (1 pt)</option>
-                                                <option value="0">Incorrect (0 pts)</option>
-                                            </select>
-                                        </div>
-                                    )}
-                                </div>
-                            ))
+                        {data.submission.type === 'assignment' && (
+                            <div className="bg-secondary-light p-4 rounded-md">
+                                <h3 className="font-bold text-secondary mb-2">Submitted File</h3>
+                                <a href={data.submission.file.url} download={data.submission.file.name} className="flex items-center gap-2 text-blue-600 hover:underline">
+                                    <Icon name="FileText" className="h-5 w-5" />
+                                    <span>{data.submission.file.name}</span>
+                                </a>
+                            </div>
                         )}
+
+                        {data.submission.type === 'quiz' && data.questions && data.questions.map((q, index) => (
+                            <div key={q.id} className="pb-4 border-b last:border-b-0">
+                                <p className="font-bold text-gray-800">{index + 1}. {q.stem}</p>
+                                <div className="mt-2">
+                                    {renderAnswer(q, data.submission.answers[q.id])}
+                                </div>
+                                {q.type === QuestionType.ShortAnswer && (
+                                    <div className="mt-3 flex items-center justify-end space-x-2">
+                                        <label htmlFor={`score-${q.id}`} className="text-sm font-medium">Score:</label>
+                                        <select
+                                            id={`score-${q.id}`}
+                                            value={manualScores[q.id] ?? 1}
+                                            onChange={e => handleScoreChange(q.id, parseInt(e.target.value, 10))}
+                                            className="border-gray-300 rounded-md shadow-sm"
+                                        >
+                                            <option value="1">Correct (1 pt)</option>
+                                            <option value="0">Incorrect (0 pts)</option>
+                                        </select>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+
+                        {data.rubric && renderRubricGrader(data.rubric)}
                     </div>
                 )}
             </div>

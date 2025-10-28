@@ -36,13 +36,20 @@ import {
     Link,
     GripVertical,
     Sparkles,
+    History,
+    Send,
+    Bell,
+    ChevronLeft,
+    ChevronRight,
+    AlertTriangle,
 } from 'lucide-react';
 
 const iconMap = {
     LayoutDashboard, Users, Book, Shield, BarChart2, Settings, GraduationCap, FileText, Presentation,
     BadgeCheck, ListChecks, BookOpen, Trophy, Calendar, MessageSquare, LogOut, Menu, X, Building, BookCopy,
     PenSquare, FilePieChart, Banknote, Wrench, ScrollText, KeyRound, Clock, Search, User, ChevronDown, CheckCircle,
-    FileVideo, ClipboardCheck, Link, GripVertical, Sparkles
+    FileVideo, ClipboardCheck, Link, GripVertical, Sparkles, History, Send, Bell, ChevronLeft, ChevronRight,
+    AlertTriangle
 };
 
 export type IconName = keyof typeof iconMap;

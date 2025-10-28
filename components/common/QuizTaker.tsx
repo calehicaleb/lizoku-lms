@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as api from '../../services/api';
-import { Question, QuestionType, Grade, ContentItem } from '../../types';
+import { Question, QuestionType, Grade, ContentItem, QuizSubmission } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../icons';
 
@@ -23,44 +23,60 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComplete }) => {
-    // Fix: Destructure all needed properties from quizItem at the top and rename id.
-    const { id: contentItemId, questionIds = [], title: quizTitle, timeLimit, randomizeQuestions } = quizItem;
+    const { id: contentItemId, questionIds = [], title: quizTitle, timeLimit, attemptsLimit, randomizeQuestions, instructions } = quizItem;
     const { user } = useAuth();
+
     const [questions, setQuestions] = useState<Question[]>([]);
+    const [questionTypes, setQuestionTypes] = useState<string[]>([]);
+    const [previousAttempts, setPreviousAttempts] = useState<QuizSubmission[]>([]);
     const [loading, setLoading] = useState(true);
+    
+    const [quizStarted, setQuizStarted] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState<Record<string, Answer>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [finalGrade, setFinalGrade] = useState<Grade | null>(null);
-    // Fix: Use the destructured timeLimit variable.
     const [timeLeft, setTimeLeft] = useState<number | null>(timeLimit ? timeLimit * 60 : null);
     
-    // FIX: Changed NodeJS.Timeout to `number` which is the correct type for browser environments.
     const timerRef = useRef<number | null>(null);
+    
+    const currentAttemptNumber = useMemo(() => previousAttempts.length + 1, [previousAttempts]);
+    const canAttempt = useMemo(() => !attemptsLimit || currentAttemptNumber <= attemptsLimit, [currentAttemptNumber, attemptsLimit]);
 
     useEffect(() => {
-        if (questionIds.length === 0) {
-            setLoading(false);
-            return;
-        }
-        const fetchQuestions = async () => {
+        if (!user) return;
+        
+        const fetchInitialData = async () => {
+            setLoading(true);
             try {
-                let data = await api.getQuestionsByIds(questionIds);
-                if (randomizeQuestions) {
-                    data = shuffleArray(data);
+                let fetchedQuestions: Question[] = [];
+                if (questionIds.length > 0) {
+                     fetchedQuestions = await api.getQuestionsByIds(questionIds);
                 }
-                setQuestions(data);
+                
+                const submissions = await api.getStudentSubmissionsForContent(user.id, contentItemId);
+
+                // This logic belongs here, before any randomization happens
+                const types = [...new Set(fetchedQuestions.map(q => q.type.replace('-', ' ')))];
+                setQuestionTypes(types);
+                
+                if (randomizeQuestions) {
+                    fetchedQuestions = shuffleArray(fetchedQuestions);
+                }
+                setQuestions(fetchedQuestions);
+                setPreviousAttempts(submissions);
+
             } catch (error) {
-                console.error("Failed to fetch quiz questions", error);
+                console.error("Failed to fetch quiz data", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchQuestions();
-    }, [questionIds, randomizeQuestions]);
+        fetchInitialData();
+    }, [contentItemId, questionIds, randomizeQuestions, user]);
 
     useEffect(() => {
-        if (timeLeft === null || isSubmitted) return;
+        if (timeLeft === null || isSubmitted || !quizStarted) return;
 
         timerRef.current = window.setInterval(() => {
             setTimeLeft(prev => {
@@ -76,7 +92,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
         return () => {
             if (timerRef.current) window.clearInterval(timerRef.current);
         };
-    }, [timeLeft, isSubmitted]);
+    }, [timeLeft, isSubmitted, quizStarted]);
 
     const handleAnswerSelect = (questionId: string, answer: Answer) => {
         setAnswers(prev => ({ ...prev, [questionId]: answer }));
@@ -94,14 +110,12 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
     };
 
     const handleSubmit = async () => {
-        if (!user) return; // Add a check to ensure user is defined.
+        if (!user || isSubmitted) return;
 
-        if (isSubmitted) return; // Prevent double submission
         setIsSubmitted(true);
         if (timerRef.current) window.clearInterval(timerRef.current);
 
         try {
-            // Fix: Use the correctly named contentItemId from the top-level destructuring.
             const resultGrade = await api.submitQuiz(user.id, courseId, contentItemId, answers);
             setFinalGrade(resultGrade);
         } catch (error) {
@@ -112,12 +126,11 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
     };
     
     const renderQuestion = (question: Question) => {
-        // Fix: Added a type guard using 'in' operator to safely access 'options'.
-        if (question.type === QuestionType.MultipleChoice && 'options' in question) {
+        if (question.type === QuestionType.MultipleChoice) {
             return (
                 <div className="mt-4 space-y-3">
                     {question.options.map((option, index) => (
-                        <label key={index} className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-white">
+                        <label key={index} className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-gray-800">
                             <input
                                 type="radio"
                                 name={question.id}
@@ -131,12 +144,11 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                     ))}
                 </div>
             );
-        // Fix: Added a type guard using 'in' operator to safely access 'correctAnswer'.
-        } else if (question.type === QuestionType.TrueFalse && 'correctAnswer' in question) {
+        } else if (question.type === QuestionType.TrueFalse) {
              return (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[true, false].map(value => (
-                            <label key={String(value)} className="flex items-center justify-center p-4 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-white">
+                            <label key={String(value)} className="flex items-center justify-center p-4 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-gray-800">
                                  <input
                                     type="radio"
                                     name={question.id}
@@ -165,7 +177,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
              return (
                 <div className="mt-4 space-y-3">
                     {question.options.map((option, index) => (
-                        <label key={index} className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-white">
+                        <label key={index} className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-gray-800">
                             <input
                                 type="checkbox"
                                 name={question.id}
@@ -212,7 +224,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
 
     if (loading) return <div className="text-center p-8">Loading Quiz...</div>;
     
-    if (!questionIds || questionIds.length === 0) {
+    if (questionIds.length === 0) {
         return (
             <div>
                  <h1 className="text-3xl font-bold text-gray-800 mb-4">{quizTitle}</h1>
@@ -244,6 +256,46 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                 <button onClick={onComplete} className="mt-6 bg-secondary text-white font-bold py-2 px-6 rounded-md hover:bg-secondary-dark transition duration-300">
                     Back to Course
                 </button>
+            </div>
+        );
+    }
+    
+    if (!quizStarted) {
+        return (
+            <div>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">{quizTitle}</h1>
+                <p className="text-gray-500 mb-6">Before you begin, please review the following information.</p>
+
+                <div className="bg-white p-6 rounded-lg shadow-sm border">
+                    <h2 className="text-xl font-bold text-gray-800 mb-4">Instructions</h2>
+                    {instructions && <p className="mb-4 text-gray-700">{instructions}</p>}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div className="bg-gray-50 p-4 rounded-md">
+                            <h3 className="font-bold text-gray-700 mb-2">Details</h3>
+                            <ul className="space-y-2 text-sm">
+                                <li className="flex items-center text-gray-700"><Icon name="Clock" className="h-4 w-4 mr-2 text-secondary"/>Time Limit: <span className="font-bold ml-1 text-gray-800">{timeLimit || 'None'} minutes</span></li>
+                                <li className="flex items-center text-gray-700"><Icon name="History" className="h-4 w-4 mr-2 text-secondary"/>Attempts: <span className="font-bold ml-1 text-gray-800">{attemptsLimit ? `${currentAttemptNumber} of ${attemptsLimit}` : 'Unlimited'}</span></li>
+                                <li className="flex items-center text-gray-700"><Icon name="ListChecks" className="h-4 w-4 mr-2 text-secondary"/>Number of Questions: <span className="font-bold ml-1 text-gray-800">{questions.length}</span></li>
+                                <li className="flex items-center text-gray-700"><Icon name="FileText" className="h-4 w-4 mr-2 text-secondary"/>Question Types: <span className="font-bold ml-1 capitalize text-gray-800">{questionTypes.join(', ') || 'N/A'}</span></li>
+                            </ul>
+                        </div>
+                        <div className="bg-yellow-50 p-4 rounded-md border-l-4 border-yellow-400">
+                            <h3 className="font-bold text-yellow-800 mb-2">Academic Integrity</h3>
+                            <p className="text-sm text-yellow-700">This is an individual assessment. Do not collaborate with others. All submissions will be checked for plagiarism. By starting this quiz, you agree to uphold the institution's academic integrity policy.</p>
+                        </div>
+                    </div>
+                    
+                    <div className="text-center">
+                        <button 
+                            onClick={() => setQuizStarted(true)}
+                            disabled={!canAttempt}
+                            className="bg-primary text-gray-800 font-bold py-3 px-8 rounded-md hover:bg-primary-dark transition duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        >
+                            {canAttempt ? `Start Attempt ${currentAttemptNumber}` : 'No Attempts Remaining'}
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { StatCard } from '../../components/common/StatCard';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -5,19 +6,23 @@ import * as api from '../../services/api';
 // Fix: Use the richer Course type which now includes summary data.
 import { StatCardData, Course } from '../../types';
 import { Icon } from '../../components/icons';
+import { useAuth } from '../../contexts/AuthContext';
 
 const InstructorDashboard: React.FC = () => {
+    const { user } = useAuth();
     const [stats, setStats] = useState<StatCardData[]>([]);
     // Fix: Changed state to use Course[] as the API now returns a merged object.
     const [courses, setCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (!user) return;
         const fetchData = async () => {
             try {
+                // FIX: Pass the instructor's ID to the API calls.
                 const [statsData, coursesData] = await Promise.all([
-                    api.getInstructorStats(),
-                    api.getInstructorCourses()
+                    api.getInstructorStats(user.id),
+                    api.getInstructorCourses(user.id)
                 ]);
                 setStats(statsData);
                 setCourses(coursesData);
@@ -28,7 +33,7 @@ const InstructorDashboard: React.FC = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [user]);
 
     if (loading) return <div>Loading dashboard...</div>;
 

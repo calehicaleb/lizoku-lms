@@ -152,16 +152,16 @@ const CoursesPage: React.FC = () => {
                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <div>
                         <label htmlFor="course-title" className="block text-sm font-medium text-gray-700 mb-1">Course Title</label>
-                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <input type="text" id="course-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                      <div>
                         <label htmlFor="course-description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <textarea id="course-description" rows={3} value={formData.description} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <div>
                             <label htmlFor="course-departmentId" className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                            <select id="course-departmentId" value={formData.departmentId} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <select id="course-departmentId" value={formData.departmentId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="d1">School of Computing</option>
                                 <option value="d2">Business School</option>
                                 <option value="d3">School of Design</option>
@@ -169,7 +169,7 @@ const CoursesPage: React.FC = () => {
                         </div>
                         <div>
                             <label htmlFor="course-instructorId" className="block text-sm font-medium text-gray-700 mb-1">Instructor</label>
-                             <select id="course-instructorId" value={formData.instructorId} onChange={handleFormChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                             <select id="course-instructorId" value={formData.instructorId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="2">Instructor Sam</option>
                                 <option value="6">Inactive Bob</option>
                             </select>
