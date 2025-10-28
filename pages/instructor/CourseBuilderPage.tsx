@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import * as api from '../../services/api';
@@ -36,6 +34,13 @@ const CourseBuilderPage: React.FC = () => {
         randomizeQuestions?: boolean;
         rubricId?: string;
     }>({ selectedQuestionIds: new Set() });
+
+    const questionsById = useMemo(() => 
+        instructorQuestions.reduce((acc, q) => {
+            acc[q.id] = q;
+            return acc;
+        }, {} as Record<string, Question>), 
+    [instructorQuestions]);
 
 
     useEffect(() => {
@@ -203,13 +208,6 @@ const CourseBuilderPage: React.FC = () => {
         });
     };
     
-    const questionsById = useMemo(() => 
-        instructorQuestions.reduce((acc, q) => {
-            acc[q.id] = q;
-            return acc;
-        }, {} as Record<string, Question>), 
-    [instructorQuestions]);
-
     return (
         <div>
              <div className="mb-6">

@@ -130,7 +130,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
             return (
                 <div className="mt-4 space-y-3">
                     {question.options.map((option, index) => (
-                        <label key={index} className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-gray-800">
+                        <label key={index} className="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer hover:bg-secondary-light dark:hover:bg-secondary/20 transition-colors has-[:checked]:bg-primary has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:text-gray-800">
                             <input
                                 type="radio"
                                 name={question.id}
@@ -139,7 +139,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                                 onChange={() => handleAnswerSelect(question.id, index)}
                                 className="h-4 w-4 text-primary focus:ring-primary border-gray-300"
                             />
-                            <span className="ml-3 text-gray-700">{option}</span>
+                            <span className="ml-3 text-gray-700 dark:text-gray-300">{option}</span>
                         </label>
                     ))}
                 </div>
@@ -148,7 +148,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
              return (
                     <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {[true, false].map(value => (
-                            <label key={String(value)} className="flex items-center justify-center p-4 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-gray-800">
+                            <label key={String(value)} className="flex items-center justify-center p-4 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer hover:bg-secondary-light dark:hover:bg-secondary/20 transition-colors has-[:checked]:bg-primary has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:text-gray-800">
                                  <input
                                     type="radio"
                                     name={question.id}
@@ -167,7 +167,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                          <textarea
                             value={(answers[question.id] as string) || ''}
                             onChange={(e) => handleAnswerSelect(question.id, e.target.value)}
-                            className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            className="w-full p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-gray-200"
                             rows={4}
                             placeholder="Type your answer here..."
                         />
@@ -177,7 +177,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
              return (
                 <div className="mt-4 space-y-3">
                     {question.options.map((option, index) => (
-                        <label key={index} className="flex items-center p-3 border rounded-md cursor-pointer hover:bg-secondary-light transition-colors has-[:checked]:bg-primary-dark has-[:checked]:border-primary-dark has-[:checked]:text-gray-800">
+                        <label key={index} className="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-md cursor-pointer hover:bg-secondary-light dark:hover:bg-secondary/20 transition-colors has-[:checked]:bg-primary has-[:checked]:border-primary dark:has-[:checked]:border-primary has-[:checked]:text-gray-800">
                             <input
                                 type="checkbox"
                                 name={question.id}
@@ -186,7 +186,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                                 onChange={() => handleMultipleSelect(question.id, index)}
                                 className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                             />
-                            <span className="ml-3 text-gray-700">{option}</span>
+                            <span className="ml-3 text-gray-700 dark:text-gray-300">{option}</span>
                         </label>
                     ))}
                 </div>
@@ -197,13 +197,13 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                 <div className="mt-4 flex items-center flex-wrap gap-2 text-lg">
                     {parts.map((part, index) => (
                         <React.Fragment key={index}>
-                            <span>{part}</span>
+                            <span className="dark:text-gray-300">{part}</span>
                             {index < parts.length - 1 && (
                                 <input
                                     type="text"
                                     value={(answers[question.id] as string) || ''}
                                     onChange={(e) => handleAnswerSelect(question.id, e.target.value)}
-                                    className="px-2 py-1 border-b-2 border-gray-300 focus:border-primary focus:outline-none bg-transparent w-40"
+                                    className="px-2 py-1 border-b-2 border-gray-300 dark:border-gray-500 focus:border-primary focus:outline-none bg-transparent w-40 dark:text-gray-200"
                                 />
                             )}
                         </React.Fragment>
@@ -227,11 +227,11 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
     if (questionIds.length === 0) {
         return (
             <div>
-                 <h1 className="text-3xl font-bold text-gray-800 mb-4">{quizTitle}</h1>
-                 <div className="text-center py-16 px-6 bg-gray-50 rounded-lg border-2 border-dashed">
+                 <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">{quizTitle}</h1>
+                 <div className="text-center py-16 px-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-2 border-dashed dark:border-gray-600">
                     <Icon name="ClipboardCheck" className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-lg font-medium text-gray-900">Quiz Not Ready</h3>
-                    <p className="mt-1 text-sm text-gray-500">This quiz has no questions yet. Please check back later.</p>
+                    <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">Quiz Not Ready</h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">This quiz has no questions yet. Please check back later.</p>
                 </div>
             </div>
         );
@@ -241,16 +241,16 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
         return (
             <div className="text-center p-8">
                 <Icon name={finalGrade?.status === 'graded' ? 'BadgeCheck' : 'Clock'} className={`mx-auto h-16 w-16 mb-4 ${finalGrade?.status === 'graded' ? 'text-green-500' : 'text-yellow-500'}`} />
-                <h2 className="text-2xl font-bold text-gray-800">Quiz Submitted!</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Quiz Submitted!</h2>
                 {finalGrade?.status === 'graded' ? (
                     <>
-                        <p className="text-lg text-gray-600 mt-2">Your score for "{quizTitle}" is:</p>
+                        <p className="text-lg text-gray-600 dark:text-gray-300 mt-2">Your score for "{quizTitle}" is:</p>
                         <p className="text-5xl font-bold text-primary my-4">{finalGrade.score}%</p>
                     </>
                 ) : (
                     <>
-                        <p className="text-lg text-gray-600 mt-2">This quiz contains questions that require manual grading.</p>
-                        <p className="text-gray-500">Your score will be available once your instructor has reviewed your submission.</p>
+                        <p className="text-lg text-gray-600 dark:text-gray-300 mt-2">This quiz contains questions that require manual grading.</p>
+                        <p className="text-gray-500 dark:text-gray-400">Your score will be available once your instructor has reviewed your submission.</p>
                     </>
                 )}
                 <button onClick={onComplete} className="mt-6 bg-secondary text-white font-bold py-2 px-6 rounded-md hover:bg-secondary-dark transition duration-300">
@@ -263,26 +263,26 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
     if (!quizStarted) {
         return (
             <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">{quizTitle}</h1>
-                <p className="text-gray-500 mb-6">Before you begin, please review the following information.</p>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">{quizTitle}</h1>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Before you begin, please review the following information.</p>
 
-                <div className="bg-white p-6 rounded-lg shadow-sm border">
-                    <h2 className="text-xl font-bold text-gray-800 mb-4">Instructions</h2>
-                    {instructions && <p className="mb-4 text-gray-700">{instructions}</p>}
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Instructions</h2>
+                    {instructions && <p className="mb-4 text-gray-700 dark:text-gray-300">{instructions}</p>}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="bg-gray-50 p-4 rounded-md">
-                            <h3 className="font-bold text-gray-700 mb-2">Details</h3>
+                        <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-md">
+                            <h3 className="font-bold text-gray-700 dark:text-gray-300 mb-2">Details</h3>
                             <ul className="space-y-2 text-sm">
-                                <li className="flex items-center text-gray-700"><Icon name="Clock" className="h-4 w-4 mr-2 text-secondary"/>Time Limit: <span className="font-bold ml-1 text-gray-800">{timeLimit || 'None'} minutes</span></li>
-                                <li className="flex items-center text-gray-700"><Icon name="History" className="h-4 w-4 mr-2 text-secondary"/>Attempts: <span className="font-bold ml-1 text-gray-800">{attemptsLimit ? `${currentAttemptNumber} of ${attemptsLimit}` : 'Unlimited'}</span></li>
-                                <li className="flex items-center text-gray-700"><Icon name="ListChecks" className="h-4 w-4 mr-2 text-secondary"/>Number of Questions: <span className="font-bold ml-1 text-gray-800">{questions.length}</span></li>
-                                <li className="flex items-center text-gray-700"><Icon name="FileText" className="h-4 w-4 mr-2 text-secondary"/>Question Types: <span className="font-bold ml-1 capitalize text-gray-800">{questionTypes.join(', ') || 'N/A'}</span></li>
+                                <li className="flex items-center text-gray-700 dark:text-gray-300"><Icon name="Clock" className="h-4 w-4 mr-2 text-secondary dark:text-blue-400"/>Time Limit: <span className="font-bold ml-1 text-gray-800 dark:text-gray-200">{timeLimit || 'None'} minutes</span></li>
+                                <li className="flex items-center text-gray-700 dark:text-gray-300"><Icon name="History" className="h-4 w-4 mr-2 text-secondary dark:text-blue-400"/>Attempts: <span className="font-bold ml-1 text-gray-800 dark:text-gray-200">{attemptsLimit ? `${currentAttemptNumber} of ${attemptsLimit}` : 'Unlimited'}</span></li>
+                                <li className="flex items-center text-gray-700 dark:text-gray-300"><Icon name="ListChecks" className="h-4 w-4 mr-2 text-secondary dark:text-blue-400"/>Number of Questions: <span className="font-bold ml-1 text-gray-800 dark:text-gray-200">{questions.length}</span></li>
+                                <li className="flex items-center text-gray-700 dark:text-gray-300"><Icon name="FileText" className="h-4 w-4 mr-2 text-secondary dark:text-blue-400"/>Question Types: <span className="font-bold ml-1 capitalize text-gray-800 dark:text-gray-200">{questionTypes.join(', ') || 'N/A'}</span></li>
                             </ul>
                         </div>
-                        <div className="bg-yellow-50 p-4 rounded-md border-l-4 border-yellow-400">
-                            <h3 className="font-bold text-yellow-800 mb-2">Academic Integrity</h3>
-                            <p className="text-sm text-yellow-700">This is an individual assessment. Do not collaborate with others. All submissions will be checked for plagiarism. By starting this quiz, you agree to uphold the institution's academic integrity policy.</p>
+                        <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-md border-l-4 border-yellow-400 dark:border-yellow-500">
+                            <h3 className="font-bold text-yellow-800 dark:text-yellow-200 mb-2">Academic Integrity</h3>
+                            <p className="text-sm text-yellow-700 dark:text-yellow-300">This is an individual assessment. Do not collaborate with others. All submissions will be checked for plagiarism. By starting this quiz, you agree to uphold the institution's academic integrity policy.</p>
                         </div>
                     </div>
                     
@@ -306,7 +306,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
     return (
         <div>
             <div className="flex justify-between items-start mb-1">
-                <h1 className="text-3xl font-bold text-gray-800 ">{quizTitle}</h1>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 ">{quizTitle}</h1>
                 {timeLeft !== null && (
                      <div className="bg-red-100 text-red-700 font-bold text-lg py-2 px-4 rounded-md">
                         <Icon name="Clock" className="inline-block h-5 w-5 mr-2" />
@@ -314,10 +314,10 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                     </div>
                 )}
             </div>
-            <p className="text-gray-500 mb-6">Question {currentQuestionIndex + 1} of {questions.length}</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">Question {currentQuestionIndex + 1} of {questions.length}</p>
 
-            <div className="bg-gray-50 p-6 rounded-lg">
-                <p className="text-lg font-semibold text-gray-800">{currentQuestion.stem}</p>
+            <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg">
+                <p className="text-lg font-semibold text-gray-800 dark:text-gray-100">{currentQuestion.stem}</p>
                 {renderQuestion(currentQuestion)}
             </div>
 
@@ -325,7 +325,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                 <button 
                     onClick={() => setCurrentQuestionIndex(prev => prev - 1)}
                     disabled={currentQuestionIndex === 0}
-                    className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300 disabled:opacity-50"
+                    className="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                     Previous
                 </button>

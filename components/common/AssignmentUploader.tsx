@@ -106,13 +106,13 @@ export const AssignmentUploader: React.FC<AssignmentUploaderProps> = ({ assignme
     if (submission) {
         return (
             <div>
-                 <h1 className="text-3xl font-bold text-gray-800 mb-4">{assignment.title}</h1>
-                 <div className="bg-green-50 border-l-4 border-green-500 text-green-700 p-6 rounded-md shadow-sm">
+                 <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">{assignment.title}</h1>
+                 <div className="bg-green-50 dark:bg-green-900/30 border-l-4 border-green-500 text-green-700 dark:text-green-300 p-6 rounded-md shadow-sm">
                     <div className="flex">
                         <div className="py-1"><Icon name="CheckCircle" className="h-8 w-8 text-green-500 mr-4" /></div>
                         <div>
-                            <p className="font-bold text-lg text-green-800">Submitted!</p>
-                            <p className="mt-2">You submitted <strong className="text-green-900">{submission.file.name}</strong> on {new Date(submission.submittedAt).toLocaleString()}.</p>
+                            <p className="font-bold text-lg text-green-800 dark:text-green-200">Submitted!</p>
+                            <p className="mt-2">You submitted <strong className="text-green-900 dark:text-green-100">{submission.file.name}</strong> on {new Date(submission.submittedAt).toLocaleString()}.</p>
                             <p className="text-sm mt-1">Your submission is now pending review by your instructor.</p>
                         </div>
                     </div>
@@ -123,13 +123,13 @@ export const AssignmentUploader: React.FC<AssignmentUploaderProps> = ({ assignme
 
     return (
         <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">{assignment.title}</h1>
+            <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-4">{assignment.title}</h1>
 
             <div 
                 onDragOver={onDragOver}
                 onDragLeave={onDragLeave}
                 onDrop={onDrop}
-                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 ${isDragging ? 'border-primary bg-primary/10' : 'border-gray-300 bg-gray-50'}`}
+                className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-300 ${isDragging ? 'border-primary bg-primary/10 dark:bg-primary/20' : 'border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50'}`}
             >
                 <input
                     type="file"
@@ -139,25 +139,25 @@ export const AssignmentUploader: React.FC<AssignmentUploaderProps> = ({ assignme
                     accept={ALLOWED_MIME_TYPES.join(',')}
                 />
                 <Icon name="FileText" className="h-12 w-12 mx-auto text-gray-400" />
-                <label htmlFor="file-upload" className="mt-4 block font-semibold text-secondary hover:underline cursor-pointer">
+                <label htmlFor="file-upload" className="mt-4 block font-semibold text-secondary dark:text-blue-400 hover:underline cursor-pointer">
                     Click to select a file
                 </label>
-                <p className="text-sm text-gray-500">or drag and drop here</p>
-                <p className="text-xs text-gray-400 mt-2">Allowed types: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">or drag and drop here</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">Allowed types: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT</p>
             </div>
 
-            {error && <p className="mt-4 text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</p>}
+            {error && <p className="mt-4 text-sm text-red-600 dark:text-red-300 bg-red-50 dark:bg-red-900/30 p-3 rounded-md">{error}</p>}
             
             {selectedFile && !error && (
-                <div className="mt-4 p-4 bg-secondary-light rounded-md flex items-center justify-between">
+                <div className="mt-4 p-4 bg-secondary-light dark:bg-secondary/20 rounded-md flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <Icon name="FileText" className="h-6 w-6 text-secondary" />
+                        <Icon name="FileText" className="h-6 w-6 text-secondary dark:text-blue-400" />
                         <div>
-                            <p className="font-medium text-gray-800">{selectedFile.name}</p>
-                            <p className="text-sm text-gray-500">{formatBytes(selectedFile.size)}</p>
+                            <p className="font-medium text-gray-800 dark:text-gray-200">{selectedFile.name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{formatBytes(selectedFile.size)}</p>
                         </div>
                     </div>
-                    <button onClick={() => setSelectedFile(null)} className="text-gray-500 hover:text-red-600">
+                    <button onClick={() => setSelectedFile(null)} className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400">
                         <Icon name="X" className="h-5 w-5" />
                     </button>
                 </div>
