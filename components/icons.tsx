@@ -52,8 +52,6 @@ import {
     Minimize2,
     PanelRightClose,
     PanelLeftOpen,
-    ZoomIn,
-    ZoomOut,
 } from 'lucide-react';
 
 const iconMap = {
@@ -66,8 +64,6 @@ const iconMap = {
     Minimize: Minimize2,
     PanelRightClose,
     PanelLeftOpen,
-    ZoomIn,
-    ZoomOut,
 };
 
 export type IconName = keyof typeof iconMap;

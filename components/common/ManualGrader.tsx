@@ -23,16 +23,15 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
     const [manualScores, setManualScores] = useState<Record<string, number>>({});
     const [criterionComments, setCriterionComments] = useState<Record<string, string>>({});
     const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
-    const [isMaximized, setIsMaximized] = useState(false);
-    const [zoom, setZoom] = useState(1);
-    const viewerContainerRef = useRef<HTMLDivElement>(null);
+    // The grader now opens in maximized view by default for better visibility.
+    const [isMaximized, setIsMaximized] = useState(true);
 
     useEffect(() => {
         if (!isOpen) {
             // Reset states when modal is closed
             setIsPreviewExpanded(false);
-            setIsMaximized(false);
-            setZoom(1);
+            // Reset to maximized for the next time it opens.
+            setIsMaximized(true);
             return;
         };
         const fetchData = async () => {
@@ -66,14 +65,6 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
         };
         fetchData();
     }, [submissionId, isOpen]);
-
-    const handleResetZoom = () => {
-        setZoom(1);
-        if (viewerContainerRef.current) {
-            viewerContainerRef.current.scrollTop = 0;
-            viewerContainerRef.current.scrollLeft = 0;
-        }
-    };
     
     const handleScoreChange = (id: string, score: number) => {
         setManualScores(prev => ({ ...prev, [id]: score }));
@@ -189,9 +180,9 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                     <td key={level.id} className="p-1 border dark:border-gray-600 align-top">
                                         <button 
                                             onClick={() => handleScoreChange(`criterion-${criterion.id}`, level.points)}
-                                            className={`w-full h-full p-2 rounded text-left transition-colors ${manualScores[`criterion-${criterion.id}`] === level.points ? 'bg-primary text-gray-800 ring-2 ring-primary-dark' : 'bg-gray-100 dark:bg-gray-700 hover:bg-primary/50 dark:hover:bg-primary/20'}`}
+                                            className={`w-full h-full p-2 rounded text-left transition-colors ${manualScores[`criterion-${criterion.id}`] === level.points ? 'bg-secondary text-white' : 'bg-gray-100 dark:bg-gray-700 hover:bg-secondary-light dark:hover:bg-secondary/20'}`}
                                         >
-                                            <p className="text-xs text-gray-600 dark:text-gray-300">{criterion.levelDescriptions?.[level.id]}</p>
+                                            <p className="text-xs">{criterion.levelDescriptions?.[level.id]}</p>
                                         </button>
                                     </td>
                                 ))}
@@ -216,7 +207,7 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
 
     const viewerUrl = data?.submission.type === 'assignment'
         ? isOfficeDoc
-            ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(data.submission.file.url)}`
+            ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(data.submission.file.url)}&action=embedview`
             : isPdf
                 ? data.submission.file.url
                 : ''
@@ -241,19 +232,6 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                 <div className="flex justify-between items-center mb-2 flex-shrink-0">
                                     <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Submission Preview</h3>
                                     <div className="flex items-center gap-4">
-                                        {(isOfficeDoc || isPdf) && (
-                                            <div className="flex items-center gap-2 border-r pr-4 mr-2 dark:border-gray-600">
-                                                <button onClick={() => setZoom(z => Math.max(0.2, z - 0.2))} disabled={zoom <= 0.2} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50" title="Zoom Out">
-                                                    <Icon name="ZoomOut" className="h-5 w-5" />
-                                                </button>
-                                                <button onClick={handleResetZoom} className="text-sm font-semibold w-12 text-center tabular-nums" title="Reset Zoom">
-                                                    {Math.round(zoom * 100)}%
-                                                </button>
-                                                <button onClick={() => setZoom(z => Math.min(3, z + 0.2))} disabled={zoom >= 3} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50" title="Zoom In">
-                                                    <Icon name="ZoomIn" className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        )}
                                         {data.submission.type === 'assignment' && (
                                             <a href={data.submission.file.url} download={data.submission.file.name} className="flex items-center gap-2 text-sm text-secondary dark:text-blue-400 hover:underline">
                                                 <Icon name="FileText" className="h-4 w-4" />
@@ -272,17 +250,23 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                         )}
                                     </div>
                                 </div>
-                                <div className="flex-1 min-h-0">
-                                    {data.submission.type === 'assignment' && (isOfficeDoc || isPdf) ? (
-                                        <div ref={viewerContainerRef} className="h-full border dark:border-gray-600 rounded-md overflow-auto bg-gray-200 dark:bg-gray-900">
-                                            <div
-                                                style={{
-                                                    width: '100%',
-                                                    height: '100%',
-                                                    transform: `scale(${zoom})`,
-                                                    transformOrigin: '0 0'
-                                                }}
+                                <div className="flex-1 min-h-0 relative">
+                                    {/* Add an overlay to encourage maximization when not in full-screen mode */}
+                                    {!isMaximized && (
+                                        <div className="absolute inset-0 bg-gray-800 bg-opacity-75 z-10 flex flex-col items-center justify-center text-white p-4 rounded-md">
+                                            <Icon name="Maximize" className="h-12 w-12 mb-4" />
+                                            <p className="text-lg font-semibold text-center mb-4">To see the full document, please click maximize.</p>
+                                            <button
+                                                onClick={() => setIsMaximized(true)}
+                                                className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 flex items-center"
                                             >
+                                                Maximize
+                                            </button>
+                                        </div>
+                                    )}
+                                    {data.submission.type === 'assignment' ? (
+                                        (isOfficeDoc || isPdf) ? (
+                                            <div className="h-full border dark:border-gray-600 rounded-md overflow-hidden bg-gray-200 dark:bg-gray-900">
                                                 {isOfficeDoc ? (
                                                     <div className="w-full h-full" style={{ overflow: 'hidden' }}>
                                                         <iframe
@@ -296,11 +280,11 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                                     <iframe src={viewerUrl} className="w-full h-full bg-white" style={{ border: 'none' }} title="Document Preview" />
                                                 )}
                                             </div>
-                                        </div>
-                                    ) : data.submission.type === 'assignment' ? ( // non-document assignment
-                                        <div className="border rounded-md h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700/50">
-                                            <p className="text-gray-500 dark:text-gray-400">No preview available for this file type.</p>
-                                        </div>
+                                        ) : (
+                                            <div className="border rounded-md h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700/50">
+                                                <p className="text-gray-500 dark:text-gray-400">No preview available for this file type.</p>
+                                            </div>
+                                        )
                                     ) : ( // Quiz
                                         <div className="h-full overflow-y-auto pr-4 border dark:border-gray-600 rounded-md p-4 bg-gray-50 dark:bg-gray-900/50">
                                             <div className="space-y-6">
