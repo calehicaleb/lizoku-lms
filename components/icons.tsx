@@ -50,6 +50,8 @@ import {
     FileMusic,
     Maximize2,
     Minimize2,
+    PanelRightClose,
+    PanelLeftOpen,
 } from 'lucide-react';
 
 const iconMap = {
@@ -60,6 +62,8 @@ const iconMap = {
     AlertTriangle, Globe, Lock, UploadCloud, FileImage, Info, FileMusic,
     Maximize: Maximize2,
     Minimize: Minimize2,
+    PanelRightClose,
+    PanelLeftOpen,
 };
 
 export type IconName = keyof typeof iconMap;

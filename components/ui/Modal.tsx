@@ -85,7 +85,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
                         </button>
                     </div>
                 </div>
-                <div className={`flex-grow overflow-y-auto ${isMaximized ? '' : 'p-6'}`}>
+                <div className={`flex-grow overflow-y-auto ${isMaximized ? 'p-6' : 'p-6'}`}>
                     {children}
                 </div>
             </div>

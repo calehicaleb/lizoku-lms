@@ -22,14 +22,16 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
     const [loading, setLoading] = useState(true);
     const [manualScores, setManualScores] = useState<Record<string, number>>({});
     const [criterionComments, setCriterionComments] = useState<Record<string, string>>({});
+    const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
     const [isMaximized, setIsMaximized] = useState(false);
 
-    const handleToggleMaximize = () => {
-        setIsMaximized(prev => !prev);
-    };
-
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen) {
+            // Reset states when modal is closed
+            setIsPreviewExpanded(false);
+            setIsMaximized(false);
+            return;
+        };
         const fetchData = async () => {
             setLoading(true);
             try {
@@ -203,7 +205,7 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
 
     const viewerUrl = data?.submission.type === 'assignment'
         ? isOfficeDoc
-            ? `https://docs.google.com/gview?url=${encodeURIComponent(data.submission.file.url)}&embedded=true`
+            ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(data.submission.file.url)}`
             : isPdf
                 ? data.submission.file.url
                 : ''
@@ -216,71 +218,88 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
             title={`Grade Submission for ${studentName}`}
             size="5xl"
             isMaximized={isMaximized}
-            onToggleMaximize={handleToggleMaximize}
+            onToggleMaximize={() => setIsMaximized(p => !p)}
         >
             {loading && <p>Loading submission...</p>}
             {!loading && data && (
-                <div className={`flex flex-col h-full ${isMaximized ? 'p-6' : ''}`}>
+                <div className="flex flex-col h-full">
                     <div className="flex-1 overflow-hidden">
-                        {data.submission.type === 'assignment' ? (
-                            <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                <div className="flex flex-col overflow-hidden">
-                                    <div className="flex justify-between items-center mb-2 flex-shrink-0">
-                                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Submission Preview</h3>
-                                        <a href={data.submission.file.url} download={data.submission.file.name} className="flex items-center gap-2 text-sm text-secondary dark:text-blue-400 hover:underline">
-                                            <Icon name="FileText" className="h-4 w-4" />
-                                            <span>Download File</span>
-                                        </a>
+                        <div className={`h-full grid grid-cols-1 ${isPreviewExpanded ? 'lg:grid-cols-[1fr_min-content]' : 'lg:grid-cols-2'} gap-6`}>
+                            {/* Column 1: Submission Preview */}
+                            <div className="flex flex-col overflow-hidden">
+                                <div className="flex justify-between items-center mb-2 flex-shrink-0">
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Submission Preview</h3>
+                                    <div className="flex items-center gap-4">
+                                        {data.submission.type === 'assignment' && (
+                                            <a href={data.submission.file.url} download={data.submission.file.name} className="flex items-center gap-2 text-sm text-secondary dark:text-blue-400 hover:underline">
+                                                <Icon name="FileText" className="h-4 w-4" />
+                                                <span>Download File</span>
+                                            </a>
+                                        )}
+                                        <button 
+                                            onClick={() => setIsPreviewExpanded(prev => !prev)} 
+                                            className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                                            title={isPreviewExpanded ? "Show Grader" : "Expand Preview"}
+                                        >
+                                            <Icon name={!isPreviewExpanded ? "PanelRightClose" : "PanelLeftOpen"} className="h-5 w-5" />
+                                        </button>
                                     </div>
-                                    {isOfficeDoc || isPdf ? (
-                                        <iframe
-                                            src={viewerUrl}
-                                            className="w-full h-full border dark:border-gray-600 rounded-md bg-white"
-                                            title="Document Preview"
-                                        ></iframe>
+                                </div>
+                                <div className="flex-1 min-h-0">
+                                    {data.submission.type === 'assignment' ? (
+                                        <>
+                                            {isOfficeDoc || isPdf ? (
+                                                <iframe
+                                                    src={viewerUrl}
+                                                    className="w-full h-full border dark:border-gray-600 rounded-md bg-white"
+                                                    title="Document Preview"
+                                                ></iframe>
+                                            ) : (
+                                                <div className="border rounded-md h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700/50">
+                                                    <p className="text-gray-500 dark:text-gray-400">No preview available for this file type.</p>
+                                                </div>
+                                            )}
+                                        </>
                                     ) : (
-                                        <div className="border rounded-md h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700/50">
-                                            <p className="text-gray-500 dark:text-gray-400">No preview available for this file type.</p>
+                                        <div className="h-full overflow-y-auto pr-4 border dark:border-gray-600 rounded-md p-4 bg-gray-50 dark:bg-gray-900/50">
+                                            <div className="space-y-6">
+                                                {data.submission.type === 'quiz' && data.questions && data.questions.map((q, index) => (
+                                                    <div key={q.id} className="pb-4 border-b dark:border-gray-700 last:border-b-0">
+                                                        <p className="font-bold text-gray-800 dark:text-gray-200">{index + 1}. {q.stem}</p>
+                                                        <div className="mt-2">{renderAnswer(q, (data.submission as QuizSubmission).answers[q.id])}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-                                <div className="flex flex-col overflow-hidden">
-                                    <h3 className="text-lg font-bold mb-2 flex-shrink-0 text-gray-800 dark:text-gray-200">Grading</h3>
-                                    <div className="overflow-y-auto pr-2 -mr-2">
-                                        {data.rubric ? renderRubricGrader(data.rubric) : <p className="text-gray-500">No rubric attached to this assignment.</p>}
+                            </div>
+                            {/* Column 2: Grading Panel */}
+                            <div className="flex flex-col overflow-hidden">
+                                {isPreviewExpanded ? (
+                                    <div className="flex flex-col items-center justify-start h-full pt-4">
+                                        <button 
+                                            onClick={() => setIsPreviewExpanded(false)} 
+                                            className="p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+                                            title="Show Grader"
+                                        >
+                                            <Icon name="PanelLeftOpen" className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                                        </button>
                                     </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="h-full overflow-y-auto pr-4">
-                                <div className="space-y-6">
-                                    {data.submission.type === 'quiz' && data.questions && data.questions.map((q, index) => (
-                                        <div key={q.id} className="pb-4 border-b dark:border-gray-700 last:border-b-0">
-                                            <p className="font-bold text-gray-800 dark:text-gray-200">{index + 1}. {q.stem}</p>
-                                            <div className="mt-2">{renderAnswer(q, (data.submission as QuizSubmission).answers[q.id])}</div>
-                                            {q.type === QuestionType.ShortAnswer && (
-                                                <div className="mt-3 flex items-center justify-end space-x-2">
-                                                    <label htmlFor={`score-${q.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">Score:</label>
-                                                    <select
-                                                        id={`score-${q.id}`}
-                                                        value={manualScores[q.id] ?? 1}
-                                                        onChange={e => handleScoreChange(q.id, parseInt(e.target.value, 10))}
-                                                        className="border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 rounded-md shadow-sm"
-                                                    >
-                                                        <option value="1">Correct (1 pt)</option>
-                                                        <option value="0">Incorrect (0 pts)</option>
-                                                    </select>
-                                                </div>
-                                            )}
+                                ) : (
+                                    <>
+                                        <h3 className="text-lg font-bold mb-2 flex-shrink-0 text-gray-800 dark:text-gray-200">Grading</h3>
+                                        <div className="overflow-y-auto pr-2 -mr-2">
+                                            {data.rubric ? renderRubricGrader(data.rubric) : <p className="text-gray-500">No rubric attached. Grade out of 100.</p>}
                                         </div>
-                                    ))}
-                                </div>
+                                    </>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
-
-                     <div className="flex-shrink-0 pt-4 mt-4 border-t dark:border-gray-700 flex justify-between items-center">
-                        {data?.rubric && (
+                    {/* Footer */}
+                    <div className="flex-shrink-0 pt-4 mt-4 border-t dark:border-gray-700 flex justify-between items-center">
+                        {data?.rubric && !isPreviewExpanded && (
                             <div className="font-bold text-lg dark:text-gray-200">
                                 Total Score: {rubricScore} / {maxRubricScore}
                             </div>
