@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback, useMemo } from 'react';
+// Fix: Import the Notification type.
 import { User, UserRole, Notification } from '../types';
 import * as api from '../services/api';
 

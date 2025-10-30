@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as api from '../../services/api';
-import { Question, QuestionType, Grade, ContentItem, QuizSubmission } from '../../types';
+import { Question, QuestionType, Grade, ContentItem, QuizSubmission, Rubric } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../icons';
+import { RubricViewer } from './RubricViewer';
 
 interface QuizTakerProps {
     courseId: string;
@@ -23,13 +24,14 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 };
 
 export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComplete }) => {
-    const { id: contentItemId, questionIds = [], title: quizTitle, timeLimit, attemptsLimit, randomizeQuestions, instructions } = quizItem;
+    const { id: contentItemId, questionIds = [], title: quizTitle, timeLimit, attemptsLimit, randomizeQuestions, instructions, rubricId } = quizItem;
     const { user } = useAuth();
 
     const [questions, setQuestions] = useState<Question[]>([]);
     const [questionTypes, setQuestionTypes] = useState<string[]>([]);
     const [previousAttempts, setPreviousAttempts] = useState<QuizSubmission[]>([]);
     const [loading, setLoading] = useState(true);
+    const [rubric, setRubric] = useState<Rubric | null>(null);
     
     const [quizStarted, setQuizStarted] = useState(false);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -49,22 +51,25 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
         const fetchInitialData = async () => {
             setLoading(true);
             try {
-                let fetchedQuestions: Question[] = [];
-                if (questionIds.length > 0) {
-                     fetchedQuestions = await api.getQuestionsByIds(questionIds);
-                }
-                
-                const submissions = await api.getStudentSubmissionsForContent(user.id, contentItemId);
+                const promises: [Promise<Question[]>, Promise<QuizSubmission[]>, Promise<Rubric | null>] = [
+                     questionIds.length > 0 ? api.getQuestionsByIds(questionIds) : Promise.resolve([]),
+                     api.getStudentSubmissionsForContent(user.id, contentItemId),
+                     rubricId ? api.getRubricById(rubricId) : Promise.resolve(null)
+                ];
 
+                const [fetchedQuestions, submissions, fetchedRubric] = await Promise.all(promises);
+                
                 // This logic belongs here, before any randomization happens
                 const types = [...new Set(fetchedQuestions.map(q => q.type.replace('-', ' ')))];
                 setQuestionTypes(types);
                 
                 if (randomizeQuestions) {
-                    fetchedQuestions = shuffleArray(fetchedQuestions);
+                    setQuestions(shuffleArray(fetchedQuestions));
+                } else {
+                    setQuestions(fetchedQuestions);
                 }
-                setQuestions(fetchedQuestions);
                 setPreviousAttempts(submissions);
+                setRubric(fetchedRubric);
 
             } catch (error) {
                 console.error("Failed to fetch quiz data", error);
@@ -73,7 +78,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
             }
         };
         fetchInitialData();
-    }, [contentItemId, questionIds, randomizeQuestions, user]);
+    }, [contentItemId, questionIds, randomizeQuestions, user, rubricId]);
 
     useEffect(() => {
         if (timeLeft === null || isSubmitted || !quizStarted) return;
@@ -269,6 +274,14 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Instructions</h2>
                     {instructions && <p className="mb-4 text-gray-700 dark:text-gray-300">{instructions}</p>}
+
+                    {rubric && (
+                        <div className="my-6">
+                            <h3 className="font-bold text-lg text-gray-700 dark:text-gray-300 mb-2">Grading Rubric</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Some questions in this quiz may be graded manually using the following rubric.</p>
+                            <RubricViewer rubric={rubric} />
+                        </div>
+                    )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-md">

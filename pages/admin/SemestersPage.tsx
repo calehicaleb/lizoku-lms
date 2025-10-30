@@ -144,7 +144,7 @@ const SemestersPage: React.FC = () => {
                 </div>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedSemester ? 'Edit Semester' : 'Add Semester'}>
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedSemester ? 'Edit Semester' : 'Add Semester'} size="lg">
                 <form className="space-y-4" onSubmit={e => e.preventDefault()}>
                     <div>
                         <label htmlFor="semester-name" className="block text-sm font-medium text-gray-700 mb-1">Semester Name</label>

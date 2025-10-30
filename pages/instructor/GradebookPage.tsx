@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import * as api from '../../services/api';
@@ -98,14 +97,14 @@ const GradebookPage: React.FC = () => {
         <div>
             <PageHeader title="Gradebook" subtitle="View and manage grades for your courses." />
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="mb-4 flex items-center gap-4">
-                    <label htmlFor="course-select" className="font-medium text-gray-700">Select Course:</label>
+                    <label htmlFor="course-select" className="font-medium text-gray-700 dark:text-gray-300">Select Course:</label>
                     <select
                         id="course-select"
                         value={selectedCourseId}
                         onChange={e => setSelectedCourseId(e.target.value)}
-                        className="w-full max-w-sm px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-full max-w-sm px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                         disabled={loadingCourses}
                     >
                         {loadingCourses ? <option>Loading...</option> : courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
@@ -117,28 +116,28 @@ const GradebookPage: React.FC = () => {
                 {!loadingGrades && gradebookData && (
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm border-collapse">
-                            <thead className="bg-gray-50">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-500 border">Student Name</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400 border dark:border-gray-700">Student Name</th>
                                     {gradebookData.gradableItems.map(item => (
-                                        <th key={item.id} className="px-4 py-3 text-center font-medium text-gray-500 border w-40">
+                                        <th key={item.id} className="px-4 py-3 text-center font-medium text-gray-500 dark:text-gray-400 border dark:border-gray-700 w-40">
                                             {item.title}
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="bg-white">
+                            <tbody className="bg-white dark:bg-gray-800">
                                 {gradebookData.studentGrades.map(sg => (
-                                    <tr key={sg.studentId} className="border-t">
-                                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 border">{sg.studentName}</td>
+                                    <tr key={sg.studentId} className="border-t dark:border-gray-700">
+                                        <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 dark:text-gray-200 border dark:border-gray-700">{sg.studentName}</td>
                                         {gradebookData.gradableItems.map(item => {
                                             const grade = sg.grades[item.id];
                                             return (
-                                                <td key={item.id} className="border p-0 text-center">
+                                                <td key={item.id} className="border dark:border-gray-700 p-0 text-center">
                                                     {grade?.status === 'pending review' && grade.submissionId ? (
                                                         <button 
                                                             onClick={() => handleOpenGrader(grade.submissionId!, sg.studentName)}
-                                                            className="w-full h-full p-3 bg-yellow-100 text-yellow-800 font-bold hover:bg-yellow-200 transition-colors">
+                                                            className="w-full h-full p-3 bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 font-bold hover:bg-yellow-200 dark:hover:bg-yellow-900/70 transition-colors">
                                                             Review
                                                         </button>
                                                     ) : (
@@ -146,7 +145,7 @@ const GradebookPage: React.FC = () => {
                                                             type="number"
                                                             defaultValue={grade?.score ?? ''}
                                                             onBlur={e => handleGradeSave(sg.studentId, item.id, e.target.value)}
-                                                            className="w-full h-full text-center p-3 bg-transparent focus:bg-yellow-100 focus:outline-none"
+                                                            className="w-full h-full text-center p-3 bg-transparent dark:text-gray-200 focus:bg-yellow-100 dark:focus:bg-yellow-900/50 focus:outline-none"
                                                             placeholder="-"
                                                             min="0"
                                                             max="100"
@@ -162,10 +161,10 @@ const GradebookPage: React.FC = () => {
                     </div>
                 )}
                  {!loadingGrades && (!gradebookData || gradebookData.studentGrades.length === 0) && (
-                     <div className="text-center py-16 px-6 bg-gray-50 rounded-lg border-2 border-dashed">
+                     <div className="text-center py-16 px-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-2 border-dashed dark:border-gray-700">
                         <Icon name="Users" className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-lg font-medium text-gray-900">No Students or Gradable Items</h3>
-                        <p className="mt-1 text-sm text-gray-500">This course may have no students enrolled or no gradable items (quizzes, assignments) yet.</p>
+                        <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">No Students or Gradable Items</h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">This course may have no students enrolled or no gradable items (quizzes, assignments) yet.</p>
                     </div>
                 )}
             </div>

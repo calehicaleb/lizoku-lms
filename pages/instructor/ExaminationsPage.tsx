@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Modal } from '../../components/ui/Modal';
@@ -150,10 +149,10 @@ const ExaminationsPage: React.FC = () => {
 
     const getStatusColor = (status: ExaminationStatus) => {
         switch (status) {
-            case ExaminationStatus.Scheduled: return 'bg-blue-100 text-blue-800';
-            case ExaminationStatus.Completed: return 'bg-green-100 text-green-800';
-            case ExaminationStatus.Draft: return 'bg-gray-100 text-gray-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case ExaminationStatus.Scheduled: return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+            case ExaminationStatus.Completed: return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+            case ExaminationStatus.Draft: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
         }
     };
     
@@ -163,7 +162,7 @@ const ExaminationsPage: React.FC = () => {
         <div>
             <PageHeader title="Examinations" subtitle="Create, schedule, and manage formal, timed assessments." />
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="flex justify-end mb-4">
                     <button onClick={() => handleOpenModal()} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 flex items-center">
                         <Icon name="ListChecks" className="h-5 w-5 mr-2" />
@@ -173,30 +172,30 @@ const ExaminationsPage: React.FC = () => {
 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Title</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Course</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Schedule Window</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Duration</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Status</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Actions</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Title</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Course</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Schedule Window</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Duration</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Status</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                              {examinations.map(exam => (
                                 <tr key={exam.id}>
-                                    <td className="px-4 py-3 font-medium text-gray-900">{exam.title}</td>
-                                    <td className="px-4 py-3 text-gray-500">{exam.courseTitle}</td>
-                                    <td className="px-4 py-3 text-gray-500">{new Date(exam.scheduledStart).toLocaleString()} - {new Date(exam.scheduledEnd).toLocaleString()}</td>
-                                    <td className="px-4 py-3 text-gray-500">{exam.durationMinutes} min</td>
+                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-200">{exam.title}</td>
+                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{exam.courseTitle}</td>
+                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{new Date(exam.scheduledStart).toLocaleString()} - {new Date(exam.scheduledEnd).toLocaleString()}</td>
+                                    <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{exam.durationMinutes} min</td>
                                     <td className="px-4 py-3">
                                         <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${getStatusColor(exam.status)}`}>
                                             {exam.status}
                                         </span>
                                     </td>
                                     <td className="px-4 py-3 space-x-4">
-                                        <button onClick={() => handleOpenModal(exam)} className="text-secondary hover:text-secondary-dark font-medium">Edit</button>
+                                        <button onClick={() => handleOpenModal(exam)} className="text-secondary dark:text-blue-400 hover:text-secondary-dark dark:hover:text-blue-300 font-medium">Edit</button>
                                         <button onClick={() => handleDelete(exam.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
                                     </td>
                                 </tr>
@@ -211,55 +210,55 @@ const ExaminationsPage: React.FC = () => {
                     {/* Basic Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
-                             <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                             <input type="text" id="title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                             <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+                             <input type="text" id="title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                         </div>
                         <div>
-                            <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 mb-1">Course</label>
-                             <select id="courseId" value={formData.courseId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border rounded-md">
+                            <label htmlFor="courseId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course</label>
+                             <select id="courseId" value={formData.courseId} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md">
                                  {courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
                             </select>
                         </div>
                          <div>
-                            <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-                             <input type="number" id="durationMinutes" value={formData.durationMinutes} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                            <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Duration (minutes)</label>
+                             <input type="number" id="durationMinutes" value={formData.durationMinutes} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                         </div>
                         <div>
-                             <label htmlFor="scheduledStart" className="block text-sm font-medium text-gray-700 mb-1">Schedule Start</label>
-                             <input type="datetime-local" id="scheduledStart" value={formData.scheduledStart} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                             <label htmlFor="scheduledStart" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Schedule Start</label>
+                             <input type="datetime-local" id="scheduledStart" value={formData.scheduledStart} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                         </div>
                         <div>
-                            <label htmlFor="scheduledEnd" className="block text-sm font-medium text-gray-700 mb-1">Schedule End</label>
-                             <input type="datetime-local" id="scheduledEnd" value={formData.scheduledEnd} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border rounded-md" />
+                            <label htmlFor="scheduledEnd" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Schedule End</label>
+                             <input type="datetime-local" id="scheduledEnd" value={formData.scheduledEnd} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                         </div>
                          <div className="md:col-span-2">
-                             <label htmlFor="instructions" className="block text-sm font-medium text-gray-700 mb-1">Instructions</label>
-                             <textarea id="instructions" value={formData.instructions} onChange={handleFormChange} rows={3} className="w-full px-3 py-2 bg-white border rounded-md" />
+                             <label htmlFor="instructions" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Instructions</label>
+                             <textarea id="instructions" value={formData.instructions} onChange={handleFormChange} rows={3} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
                         </div>
                          <div className="md:col-span-2 flex items-center">
                             <input type="checkbox" id="shuffleQuestions" checked={formData.shuffleQuestions} onChange={handleFormChange} className="h-4 w-4 text-primary rounded" />
-                            <label htmlFor="shuffleQuestions" className="ml-2 block text-sm text-gray-900">Shuffle question order for each student</label>
+                            <label htmlFor="shuffleQuestions" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">Shuffle question order for each student</label>
                         </div>
                     </div>
                     {/* Question Selector */}
                      <div>
-                        <h3 className="font-bold mb-2">Questions ({selectedQuestionIds.size} selected)</h3>
-                        <div className="space-y-2 max-h-60 overflow-y-auto border p-2 rounded-md">
+                        <h3 className="font-bold mb-2 dark:text-gray-100">Questions ({selectedQuestionIds.size} selected)</h3>
+                        <div className="space-y-2 max-h-60 overflow-y-auto border dark:border-gray-600 p-2 rounded-md">
                             {questions.map(q => (
-                                <label key={q.id} className="flex items-start p-2 bg-gray-50 rounded-md cursor-pointer">
+                                <label key={q.id} className="flex items-start p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md cursor-pointer">
                                     <input type="checkbox" checked={selectedQuestionIds.has(q.id)} onChange={() => handleQuestionToggle(q.id)} className="h-4 w-4 text-primary mt-1" />
                                     <div className="ml-3 text-sm">
-                                        <p className="font-medium text-gray-900">{q.stem}</p>
-                                        <p className="text-xs text-gray-500 capitalize">{q.type.replace('-', ' ')}</p>
+                                        <p className="font-medium text-gray-900 dark:text-gray-200">{q.stem}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{q.type.replace('-', ' ')}</p>
                                     </div>
                                 </label>
                             ))}
                         </div>
                     </div>
                 </div>
-                 <div className="pt-4 mt-4 border-t flex justify-end space-x-2">
-                    <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border rounded-md">Cancel</button>
-                    <button type="button" onClick={handleSave} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border rounded-md">Save Examination</button>
+                 <div className="pt-4 mt-4 border-t dark:border-gray-700 flex justify-end space-x-2">
+                    <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
+                    <button type="button" onClick={handleSave} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark">Save Examination</button>
                 </div>
             </Modal>
         </div>

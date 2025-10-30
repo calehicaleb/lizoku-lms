@@ -174,6 +174,18 @@
 - **Request Body:** `Omit<Communication, 'id' | 'sentAt'>`
 - **Response:** The newly created `Communication` object.
 
+### POST /api/communications/bulk
+- **Description:** Sends a bulk communication message to a list of student IDs.
+- **Request Body:** 
+  ```json
+  {
+    "studentIds": "string[]",
+    "subject": "string",
+    "message": "string"
+  }
+  ```
+- **Response:** `{ success: boolean }`
+
 ### GET /api/admin/questions
 - **Description:** Retrieves all questions from all instructors in the system.
 - **Response:** `(Question & { instructorName: string })[]`
@@ -252,6 +264,14 @@
 ### GET /api/instructor/courses
 - **Description:** Retrieves all courses assigned to the logged-in instructor.
 - **Response:** `Course[]` (merged with summary data)
+
+### GET /api/instructor/grading-summary?instructorId={id}
+- **Description:** Retrieves a summary of all gradable items and submission counts for an instructor's courses.
+- **Response:** `CourseGradingSummary[]`
+
+### GET /api/instructor/submissions?contentItemId={id}
+- **Description:** Retrieves a detailed list of all enrolled students and their submission status for a specific gradable item.
+- **Response:** `StudentSubmissionDetails[]`
 
 ### GET /api/instructor/rubrics
 - **Description:** Retrieves all rubrics for the logged-in instructor.

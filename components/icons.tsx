@@ -42,6 +42,14 @@ import {
     ChevronLeft,
     ChevronRight,
     AlertTriangle,
+    Globe,
+    Lock,
+    UploadCloud,
+    FileImage,
+    Info,
+    FileMusic,
+    Maximize2,
+    Minimize2,
 } from 'lucide-react';
 
 const iconMap = {
@@ -49,7 +57,9 @@ const iconMap = {
     BadgeCheck, ListChecks, BookOpen, Trophy, Calendar, MessageSquare, LogOut, Menu, X, Building, BookCopy,
     PenSquare, FilePieChart, Banknote, Wrench, ScrollText, KeyRound, Clock, Search, User, ChevronDown, CheckCircle,
     FileVideo, ClipboardCheck, Link, GripVertical, Sparkles, History, Send, Bell, ChevronLeft, ChevronRight,
-    AlertTriangle
+    AlertTriangle, Globe, Lock, UploadCloud, FileImage, Info, FileMusic,
+    Maximize: Maximize2,
+    Minimize: Minimize2,
 };
 
 export type IconName = keyof typeof iconMap;

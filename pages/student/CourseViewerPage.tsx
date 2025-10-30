@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import * as api from '../../services/api';
-import { Course, ContentItem, ContentType, ContentItemDetails } from '../../types';
+import { Course, ContentItem, ContentType, ContentItemDetails, Rubric } from '../../types';
 import { Icon, IconName } from '../../components/icons';
 import { DiscussionBoard } from '../../components/common/DiscussionBoard';
 import { QuizTaker } from '../../components/common/QuizTaker';
 import { useAuth } from '../../contexts/AuthContext';
 import { AssignmentUploader } from '../../components/common/AssignmentUploader';
+import { RubricViewer } from '../../components/common/RubricViewer';
 
 const CourseViewerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
@@ -17,6 +18,9 @@ const CourseViewerPage: React.FC = () => {
     const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
     const [itemContent, setItemContent] = useState<ContentItemDetails | null>(null);
     const [itemLoading, setItemLoading] = useState(false);
+    const [itemRubric, setItemRubric] = useState<Rubric | null>(null);
+    const [itemRubricLoading, setItemRubricLoading] = useState(false);
+
 
     useEffect(() => {
         if (!courseId) return;
@@ -40,27 +44,33 @@ const CourseViewerPage: React.FC = () => {
         window.scrollTo(0, 0);
 
         if (selectedItem) {
-            // Only skip content fetching for components that handle their own full-screen state
-            if (selectedItem.type === ContentType.Quiz || selectedItem.type === ContentType.Examination || (selectedItem.type === ContentType.Assignment && selectedItem.requiresFileUpload)) {
-                setItemContent(null);
-            } else {
-                // Fetch content for Lessons, Resources, and now Discussions prompts
-                const fetchContent = async () => {
-                    setItemLoading(true);
-                    try {
-                        const data = await api.getContentItemDetails(selectedItem.id);
-                        setItemContent(data);
-                    } catch (error) {
+            setItemContent(null);
+            setItemRubric(null); // Reset rubric on item change
+
+            const shouldFetchContent = ![ContentType.Quiz, ContentType.Examination].includes(selectedItem.type) && !(selectedItem.type === ContentType.Assignment && selectedItem.requiresFileUpload);
+
+            if (shouldFetchContent) {
+                setItemLoading(true);
+                api.getContentItemDetails(selectedItem.id)
+                    .then(setItemContent)
+                    .catch(error => {
                         console.error("Failed to load content:", error);
                         setItemContent({ id: selectedItem.id, content: "<p>Could not load content for this item.</p>" });
-                    } finally {
-                        setItemLoading(false);
-                    }
-                };
-                fetchContent();
+                    })
+                    .finally(() => setItemLoading(false));
             }
+
+            if (selectedItem.rubricId) {
+                setItemRubricLoading(true);
+                api.getRubricById(selectedItem.rubricId)
+                    .then(setItemRubric)
+                    .catch(err => console.error("Failed to load rubric", err))
+                    .finally(() => setItemRubricLoading(false));
+            }
+
         } else {
             setItemContent(null);
+            setItemRubric(null);
         }
     }, [selectedItem]);
 
@@ -138,6 +148,14 @@ const CourseViewerPage: React.FC = () => {
                             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{selectedItem.title}</h1>
                         </div>
                     </div>
+                    {itemRubricLoading && <p>Loading rubric...</p>}
+                    {itemRubric && (
+                        <div className="my-6">
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2">Grading Rubric</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">This examination may contain questions that are graded using the following rubric.</p>
+                            <RubricViewer rubric={itemRubric} />
+                        </div>
+                    )}
                     <div className="mt-6 bg-secondary-light/50 dark:bg-secondary/20 border-l-4 border-secondary p-6 rounded-r-lg">
                         <h3 className="text-xl font-bold text-secondary dark:text-blue-300 mb-2">Formal Examination</h3>
                         <p className="text-gray-700 dark:text-gray-300">This is a formal, timed examination. It will open in a new, full-screen browser tab to provide a distraction-free environment.</p>

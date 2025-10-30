@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Icon } from '../icons';
 
@@ -7,9 +6,12 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: React.ReactNode;
+    size?: 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl';
+    isMaximized?: boolean;
+    onToggleMaximize?: () => void;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md', isMaximized, onToggleMaximize }) => {
     // Controls if the modal is in the DOM
     const [isMounted, setIsMounted] = useState(false);
     // Controls the animation state (in or out)
@@ -43,24 +45,47 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
         }
     };
 
+    const sizeClasses = {
+      md: 'max-w-md',
+      lg: 'max-w-lg',
+      xl: 'max-w-xl',
+      '2xl': 'max-w-2xl',
+      '3xl': 'max-w-3xl',
+      '4xl': 'max-w-4xl',
+      '5xl': 'max-w-5xl',
+    };
+
+    const modalContainerClasses = isMaximized
+        ? 'w-screen h-screen max-w-none max-h-none rounded-none'
+        : `${sizeClasses[size]} max-h-[90vh] rounded-lg`;
+        
+    const backdropPadding = isMaximized ? 'p-0' : 'p-4';
+
     return (
         <div
-            className={`fixed inset-0 bg-black z-50 flex justify-center items-center p-4 transition-opacity duration-300 ease-out ${isAnimating ? 'bg-opacity-50' : 'bg-opacity-0'}`}
+            className={`fixed inset-0 bg-black z-50 flex justify-center items-center transition-opacity duration-300 ease-out ${backdropPadding} ${isAnimating ? 'bg-opacity-50' : 'bg-opacity-0'}`}
             onClick={handleBackdropClick}
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
         >
             <div
-                className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md max-h-full overflow-y-auto transform transition-all duration-300 ease-out ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}
+                className={`bg-white dark:bg-gray-800 shadow-xl w-full flex flex-col transform transition-all duration-300 ease-out ${modalContainerClasses} ${isAnimating ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}`}
             >
-                <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+                <div className="flex-shrink-0 flex justify-between items-center p-4 border-b dark:border-gray-700">
                     <h3 id="modal-title" className="text-xl font-bold text-gray-800 dark:text-gray-100">{title}</h3>
-                    <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
-                        <Icon name="X" className="h-6 w-6" />
-                    </button>
+                    <div className="flex items-center space-x-2">
+                        {onToggleMaximize && (
+                            <button onClick={onToggleMaximize} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                                {isMaximized ? <Icon name="Minimize" className="h-5 w-5" /> : <Icon name="Maximize" className="h-5 w-5" />}
+                            </button>
+                        )}
+                        <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
+                            <Icon name="X" className="h-6 w-6" />
+                        </button>
+                    </div>
                 </div>
-                <div className="p-6">
+                <div className={`flex-grow overflow-y-auto ${isMaximized ? '' : 'p-6'}`}>
                     {children}
                 </div>
             </div>

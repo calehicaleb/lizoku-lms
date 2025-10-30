@@ -140,7 +140,7 @@ const ProgramsPage: React.FC = () => {
                 </div>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedProgram ? 'Edit Program' : 'Add Program'}>
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedProgram ? 'Edit Program' : 'Add Program'} size="lg">
                 <form className="space-y-4" onSubmit={e => e.preventDefault()}>
                     <div>
                         <label htmlFor="prog-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Program Name</label>

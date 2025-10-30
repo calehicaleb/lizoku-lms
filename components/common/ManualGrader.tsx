@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import * as api from '../../services/api';
-import { Question, Submission, QuestionType, Rubric } from '../../types';
+import { Question, Submission, QuestionType, Rubric, Grade, QuizSubmission } from '../../types';
 import { Icon } from '../icons';
 
 interface ManualGraderProps {
@@ -21,6 +21,12 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
     const [data, setData] = useState<GraderData | null>(null);
     const [loading, setLoading] = useState(true);
     const [manualScores, setManualScores] = useState<Record<string, number>>({});
+    const [criterionComments, setCriterionComments] = useState<Record<string, string>>({});
+    const [isMaximized, setIsMaximized] = useState(false);
+
+    const handleToggleMaximize = () => {
+        setIsMaximized(prev => !prev);
+    };
 
     useEffect(() => {
         if (!isOpen) return;
@@ -29,12 +35,14 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
             try {
                 const result = await api.getSubmissionDetails(submissionId);
                 setData(result);
-                // Initialize scores
+                // Initialize scores and comments
                 const initialScores: Record<string, number> = {};
+                const initialComments: Record<string, string> = {};
                 if (result?.rubric) {
                     result.rubric.criteria.forEach(c => {
                         // Default to the best score
-                        initialScores[`criterion-${c.id}`] = result.rubric!.levels[0].points;
+                        const highestLevel = result.rubric!.levels.reduce((max, level) => level.points > max.points ? level : max, result.rubric!.levels[0]);
+                        initialScores[`criterion-${c.id}`] = highestLevel.points;
                     });
                 } else {
                     result?.questions?.forEach(q => {
@@ -44,6 +52,7 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                     });
                 }
                 setManualScores(initialScores);
+                setCriterionComments(initialComments);
             } catch (error) {
                 console.error("Failed to fetch submission details", error);
             } finally {
@@ -57,9 +66,31 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
         setManualScores(prev => ({ ...prev, [id]: score }));
     };
 
+    const handleCommentChange = (criterionId: string, comment: string) => {
+        setCriterionComments(prev => ({ ...prev, [criterionId]: comment }));
+    };
+
     const handleSaveGrade = async () => {
+        if (!data) return;
+        
+        const { score, maxScore } = calculateRubricScore();
+        const finalPercentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+        
+        const rubricFeedback: Grade['rubricFeedback'] = {};
+        if (data.rubric) {
+            data.rubric.criteria.forEach(c => {
+                rubricFeedback[c.id] = {
+                    points: manualScores[`criterion-${c.id}`] || 0,
+                    comment: criterionComments[c.id] || ''
+                };
+            });
+        }
+
         try {
-            await api.gradeManualSubmission(submissionId, manualScores);
+            await api.gradeManualSubmission(submissionId, {
+                score: finalPercentage,
+                rubricFeedback: data.rubric ? rubricFeedback : undefined,
+            });
             onClose(true); // Signal that an update occurred
         } catch (error) {
             console.error("Failed to save manual grade", error);
@@ -108,96 +139,161 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
         }
     };
 
-    const renderRubricGrader = (rubric: Rubric) => (
-        <div className="overflow-x-auto">
-            <table className="min-w-full border-collapse text-sm">
-                <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-700">
-                        <th className="p-2 border dark:border-gray-600 font-medium text-left text-gray-700 dark:text-gray-300">Criteria</th>
-                        {rubric.levels.map(level => (
-                             <th key={level.id} className="p-2 border dark:border-gray-600 font-medium text-center text-gray-700 dark:text-gray-300">{level.name} ({level.points} pts)</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {rubric.criteria.map(criterion => (
-                        <tr key={criterion.id} className="border-t dark:border-gray-600">
-                            <td className="p-2 border dark:border-gray-600 font-medium text-gray-800 dark:text-gray-200">{criterion.description}</td>
-                             {rubric.levels.map(level => (
-                                <td key={level.id} className="p-2 border dark:border-gray-600 text-center">
-                                    <button 
-                                        onClick={() => handleScoreChange(`criterion-${criterion.id}`, level.points)}
-                                        className={`w-full h-full p-3 rounded transition-colors ${manualScores[`criterion-${criterion.id}`] === level.points ? 'bg-primary-dark ring-2 ring-primary-dark' : 'bg-primary/50 dark:bg-primary/30 hover:bg-primary dark:hover:bg-primary/60'}`}
-                                    >
-                                        &nbsp;
-                                    </button>
-                                </td>
+    const renderRubricGrader = (rubric: Rubric) => {
+        const sortedLevels = [...rubric.levels].sort((a,b) => b.points - a.points);
+        return (
+            <div className="overflow-x-auto">
+                <table className="min-w-full border-collapse text-sm">
+                    <thead>
+                        <tr className="bg-gray-100 dark:bg-gray-700">
+                            <th className="p-2 border dark:border-gray-600 font-medium text-left text-gray-700 dark:text-gray-300 w-1/4">Criteria</th>
+                            {sortedLevels.map(level => (
+                                 <th key={level.id} className="p-2 border dark:border-gray-600 font-medium text-center text-gray-700 dark:text-gray-300">{level.name} ({level.points} pts)</th>
                             ))}
                         </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
+                    </thead>
+                    <tbody>
+                        {rubric.criteria.map(criterion => (
+                            <tr key={criterion.id} className="border-t dark:border-gray-600">
+                                <td className="p-2 border dark:border-gray-600 align-top">
+                                    <div className="flex items-start gap-2 font-medium text-gray-800 dark:text-gray-200">
+                                        <span>{criterion.description} ({criterion.points} pts)</span>
+                                        {criterion.longDescription && (
+                                            <span title={criterion.longDescription} className="cursor-help text-gray-400">
+                                                <Icon name="Info" className="h-4 w-4" />
+                                            </span>
+                                        )}
+                                    </div>
+                                    <textarea
+                                        value={criterionComments[criterion.id] || ''}
+                                        onChange={(e) => handleCommentChange(criterion.id, e.target.value)}
+                                        placeholder="Add feedback for this criterion..."
+                                        rows={2}
+                                        className="w-full text-xs mt-2 p-1 bg-white dark:bg-gray-600 border dark:border-gray-500 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                                    />
+                                </td>
+                                 {sortedLevels.map(level => (
+                                    <td key={level.id} className="p-1 border dark:border-gray-600 align-top">
+                                        <button 
+                                            onClick={() => handleScoreChange(`criterion-${criterion.id}`, level.points)}
+                                            className={`w-full h-full p-2 rounded text-left transition-colors ${manualScores[`criterion-${criterion.id}`] === level.points ? 'bg-primary text-gray-800 ring-2 ring-primary-dark' : 'bg-gray-100 dark:bg-gray-700 hover:bg-primary/50 dark:hover:bg-primary/20'}`}
+                                        >
+                                            <p className="text-xs text-gray-600 dark:text-gray-300">{criterion.levelDescriptions?.[level.id]}</p>
+                                        </button>
+                                    </td>
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        );
+    };
     
     const { score: rubricScore, maxScore: maxRubricScore } = calculateRubricScore();
 
+    const isOfficeDoc = data?.submission.type === 'assignment' && (
+        data.submission.file.name.endsWith('.docx') ||
+        data.submission.file.name.endsWith('.doc') ||
+        data.submission.file.name.endsWith('.pptx') ||
+        data.submission.file.name.endsWith('.xlsx')
+    );
+    
+    const isPdf = data?.submission.type === 'assignment' && data.submission.file.name.endsWith('.pdf');
+
+    const viewerUrl = data?.submission.type === 'assignment'
+        ? isOfficeDoc
+            ? `https://docs.google.com/gview?url=${encodeURIComponent(data.submission.file.url)}&embedded=true`
+            : isPdf
+                ? data.submission.file.url
+                : ''
+        : '';
+
     return (
-        <Modal isOpen={isOpen} onClose={() => onClose(false)} title={`Grade Submission for ${studentName}`}>
-            <div className="max-h-[70vh] overflow-y-auto pr-4">
-                {loading && <p>Loading submission...</p>}
-                {!loading && data && (
-                    <div className="space-y-6">
-                        {data.submission.type === 'assignment' && (
-                            <div className="bg-secondary-light dark:bg-secondary/20 p-4 rounded-md">
-                                <h3 className="font-bold text-secondary dark:text-blue-300 mb-2">Submitted File</h3>
-                                <a href={data.submission.file.url} download={data.submission.file.name} className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline">
-                                    <Icon name="FileText" className="h-5 w-5" />
-                                    <span>{data.submission.file.name}</span>
-                                </a>
+        <Modal
+            isOpen={isOpen}
+            onClose={() => onClose(false)}
+            title={`Grade Submission for ${studentName}`}
+            size="5xl"
+            isMaximized={isMaximized}
+            onToggleMaximize={handleToggleMaximize}
+        >
+            {loading && <p>Loading submission...</p>}
+            {!loading && data && (
+                <div className={`flex flex-col h-full ${isMaximized ? 'p-6' : ''}`}>
+                    <div className="flex-1 overflow-hidden">
+                        {data.submission.type === 'assignment' ? (
+                            <div className="h-full grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="flex flex-col overflow-hidden">
+                                    <div className="flex justify-between items-center mb-2 flex-shrink-0">
+                                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Submission Preview</h3>
+                                        <a href={data.submission.file.url} download={data.submission.file.name} className="flex items-center gap-2 text-sm text-secondary dark:text-blue-400 hover:underline">
+                                            <Icon name="FileText" className="h-4 w-4" />
+                                            <span>Download File</span>
+                                        </a>
+                                    </div>
+                                    {isOfficeDoc || isPdf ? (
+                                        <iframe
+                                            src={viewerUrl}
+                                            className="w-full h-full border dark:border-gray-600 rounded-md bg-white"
+                                            title="Document Preview"
+                                        ></iframe>
+                                    ) : (
+                                        <div className="border rounded-md h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700/50">
+                                            <p className="text-gray-500 dark:text-gray-400">No preview available for this file type.</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex flex-col overflow-hidden">
+                                    <h3 className="text-lg font-bold mb-2 flex-shrink-0 text-gray-800 dark:text-gray-200">Grading</h3>
+                                    <div className="overflow-y-auto pr-2 -mr-2">
+                                        {data.rubric ? renderRubricGrader(data.rubric) : <p className="text-gray-500">No rubric attached to this assignment.</p>}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="h-full overflow-y-auto pr-4">
+                                <div className="space-y-6">
+                                    {data.submission.type === 'quiz' && data.questions && data.questions.map((q, index) => (
+                                        <div key={q.id} className="pb-4 border-b dark:border-gray-700 last:border-b-0">
+                                            <p className="font-bold text-gray-800 dark:text-gray-200">{index + 1}. {q.stem}</p>
+                                            <div className="mt-2">{renderAnswer(q, (data.submission as QuizSubmission).answers[q.id])}</div>
+                                            {q.type === QuestionType.ShortAnswer && (
+                                                <div className="mt-3 flex items-center justify-end space-x-2">
+                                                    <label htmlFor={`score-${q.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">Score:</label>
+                                                    <select
+                                                        id={`score-${q.id}`}
+                                                        value={manualScores[q.id] ?? 1}
+                                                        onChange={e => handleScoreChange(q.id, parseInt(e.target.value, 10))}
+                                                        className="border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 rounded-md shadow-sm"
+                                                    >
+                                                        <option value="1">Correct (1 pt)</option>
+                                                        <option value="0">Incorrect (0 pts)</option>
+                                                    </select>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
+                    </div>
 
-                        {data.submission.type === 'quiz' && data.questions && data.questions.map((q, index) => (
-                            <div key={q.id} className="pb-4 border-b dark:border-gray-700 last:border-b-0">
-                                <p className="font-bold text-gray-800 dark:text-gray-200">{index + 1}. {q.stem}</p>
-                                <div className="mt-2">
-                                    {renderAnswer(q, data.submission.answers[q.id])}
-                                </div>
-                                {q.type === QuestionType.ShortAnswer && (
-                                    <div className="mt-3 flex items-center justify-end space-x-2">
-                                        <label htmlFor={`score-${q.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">Score:</label>
-                                        <select
-                                            id={`score-${q.id}`}
-                                            value={manualScores[q.id] ?? 1}
-                                            onChange={e => handleScoreChange(q.id, parseInt(e.target.value, 10))}
-                                            className="border-gray-300 dark:border-gray-600 dark:bg-gray-600 dark:text-gray-200 rounded-md shadow-sm"
-                                        >
-                                            <option value="1">Correct (1 pt)</option>
-                                            <option value="0">Incorrect (0 pts)</option>
-                                        </select>
-                                    </div>
-                                )}
+                     <div className="flex-shrink-0 pt-4 mt-4 border-t dark:border-gray-700 flex justify-between items-center">
+                        {data?.rubric && (
+                            <div className="font-bold text-lg dark:text-gray-200">
+                                Total Score: {rubricScore} / {maxRubricScore}
                             </div>
-                        ))}
-
-                        {data.rubric && renderRubricGrader(data.rubric)}
+                        )}
+                        <div className="flex-grow flex justify-end space-x-2">
+                            <button onClick={() => onClose(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
+                            <button onClick={handleSaveGrade} className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">
+                                Save Final Grade
+                            </button>
+                        </div>
                     </div>
-                )}
-            </div>
-            <div className="pt-4 mt-4 border-t dark:border-gray-700 flex justify-between items-center">
-                {data?.rubric && (
-                    <div className="font-bold text-lg dark:text-gray-200">
-                        Total Score: {rubricScore} / {maxRubricScore}
-                    </div>
-                )}
-                <div className="flex-grow flex justify-end space-x-2">
-                    <button onClick={() => onClose(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
-                    <button onClick={handleSaveGrade} className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700">
-                        Save Final Grade
-                    </button>
                 </div>
-            </div>
+            )}
         </Modal>
     );
 };

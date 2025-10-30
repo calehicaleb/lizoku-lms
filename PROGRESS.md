@@ -70,6 +70,7 @@ This document tracks the implementation status of features as defined in the Use
 | **Calendar** | ✅ | Unified calendar page implemented. |
 | **My Courses** | ✅ | Instructors can now create new draft courses. |
 | **Course Builder** | ✅ | Includes AI outline generation, multi-type quiz assembly, and quiz settings. Can now attach rubrics. |
+| **Grading Hub** | ✅ | Centralized hub for viewing submission status across all activities and sending targeted communications. |
 | **Gradebook** | ✅ | Includes manual grading interface for subjective questions, displays interactive rubrics, and now shows links to download submitted files. |
 | **Examinations** | ✅ | Full CRUD functionality for creating, scheduling, and managing timed exams from the question bank. |
 | **Question Bank** | ✅ | Upgraded to support multiple question types. |

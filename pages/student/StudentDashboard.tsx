@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { useAuth } from '../../contexts/AuthContext';
 import * as api from '../../services/api';
+// Fix: Import missing types for dashboard components.
 import { CourseSummary, OverdueItem, UpcomingDeadline, RecentActivity } from '../../types';
 import { Icon, IconName } from '../../components/icons';
 import { Link } from 'react-router-dom';

@@ -127,7 +127,7 @@ const DepartmentsPage: React.FC = () => {
                 </div>
             </div>
 
-            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedDept ? 'Edit Department' : 'Add Department'}>
+            <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedDept ? 'Edit Department' : 'Add Department'} size="lg">
                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <div>
                         <label htmlFor="dept-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department Name</label>

@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon, IconName } from '../icons';
+// Fix: Import the Notification type. The NotificationType enum members are now available from the updated types.ts.
 import { Notification, NotificationType } from '../../types';
 
 const NOTIFICATION_ICONS: Record<NotificationType, IconName> = {
@@ -83,7 +83,7 @@ export const Header: React.FC<{ onToggleSidebar: () => void }> = ({ onToggleSide
     const [isNotificationsOpen, setNotificationsOpen] = useState(false);
 
     return (
-        <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-none dark:border-b dark:border-gray-700 sticky top-0 z-30">
+        <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-none dark:border-b dark:border-l dark:border-r dark:border-gray-700 rounded-b-xl sticky top-0 z-30">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <div className="flex items-center">

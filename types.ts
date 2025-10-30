@@ -105,6 +105,8 @@ export interface ContentItem {
     instructions?: string; // Instructions for quiz/assignment
     requiresFileUpload?: boolean; // For assignments
     examinationId?: string;
+    dueDate?: string; // ISO String, e.g. for assignments/quizzes
+    maxPoints?: number; // for gradable discussions
 }
 
 export interface Module {
@@ -152,6 +154,8 @@ export interface Grade {
     score: number | null; // Can be a number or null if not graded
     status: 'graded' | 'pending review';
     submissionId?: string;
+    feedback?: string; // General text feedback
+    rubricFeedback?: Record<string, { points: number; comment?: string }>; // criterionId -> { points, comment }
 }
 
 export interface QuizSubmission {
@@ -204,6 +208,7 @@ export interface DiscussionPost {
     authorId: string;
     authorName: string;
     authorAvatarUrl: string;
+    authorRole: UserRole;
     content: string;
     createdAt: string; // ISO String
     isRead: boolean; // For unread indicators
@@ -219,12 +224,24 @@ export enum QuestionType {
     FillBlank = 'fill-in-the-blank',
 }
 
+export enum QuestionDifficulty {
+    Easy = 'easy',
+    Medium = 'medium',
+    Hard = 'hard',
+}
+
 // Base interface for all question types
 interface BaseQuestion {
     id: string;
     instructorId: string;
     stem: string; // The question text itself
     type: QuestionType;
+    difficulty: QuestionDifficulty;
+    topics: string[];
+    courseId?: string;
+    moduleId?: string;
+    isPublic: boolean;
+    imageUrl?: string;
 }
 
 export interface MultipleChoiceQuestion extends BaseQuestion {
@@ -271,7 +288,9 @@ export interface RubricLevel {
 export interface RubricCriterion {
     id: string;
     description: string;
+    longDescription?: string;
     points: number; // Max points for this criterion
+    levelDescriptions?: { [levelId: string]: string };
 }
 
 export interface Rubric {
@@ -469,6 +488,7 @@ export interface UserSession {
 }
 
 // --- Notifications ---
+// Fix: Completed the NotificationType enum with all required values.
 export enum NotificationType {
   NewGrade = 'new_grade',
   NewMessage = 'new_message',
@@ -476,18 +496,19 @@ export enum NotificationType {
   AssignmentDueSoon = 'assignment_due_soon',
 }
 
+// Fix: Added Notification interface.
 export interface Notification {
   id: string;
   userId: string;
   type: NotificationType;
   title: string;
   message: string;
-  link: string; // e.g., /grades, /my-messages/threadId, etc.
+  link: string;
   isRead: boolean;
-  createdAt: string; // ISO String
+  createdAt: string;
 }
 
-// For Student Dashboard
+// Fix: Added types for Student Dashboard.
 export interface OverdueItem {
     id: string;
     title: string;
@@ -506,7 +527,7 @@ export interface UpcomingDeadline {
 
 export interface RecentActivity {
     id: string;
-    type: 'grade' | 'message' | 'announcement';
+    type: string;
     title: string;
     summary: string;
     timestamp: string;
@@ -514,7 +535,50 @@ export interface RecentActivity {
     icon: IconName;
 }
 
+// Fix: Added type for content viewers.
 export interface ContentItemDetails {
     id: string;
-    content: string; // HTML content
+    content: string;
+}
+
+// --- Media Library ---
+export enum MediaType {
+    Image = 'image',
+    Video = 'video',
+    Audio = 'audio',
+    Document = 'document',
+}
+
+export interface MediaItem {
+    id: string;
+    instructorId: string;
+    name: string;
+    type: MediaType;
+    url: string;
+    size: number; // in bytes
+    uploadedAt: string; // ISO String
+}
+
+
+// --- Grading Hub ---
+export interface GradableItemSummary {
+    id: string;
+    title: string;
+    type: ContentType;
+    dueDate: string;
+    totalEnrolled: number;
+    submittedCount: number;
+    gradedCount: number;
+}
+
+export interface CourseGradingSummary {
+    courseId: string;
+    courseTitle: string;
+    items: GradableItemSummary[];
+}
+
+export interface StudentSubmissionDetails {
+    student: Pick<User, 'id' | 'name' | 'avatarUrl'>;
+    submission: Submission | null;
+    grade: Grade | null;
 }

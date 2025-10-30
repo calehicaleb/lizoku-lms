@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as api from '../../services/api';
-import { DiscussionPost, ContentItemDetails } from '../../types';
+// Fix: Import ContentItemDetails type.
+import { DiscussionPost, ContentItemDetails, UserRole } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../icons';
 
@@ -85,6 +86,9 @@ const PostItem: React.FC<PostItemProps> = ({ post, onReply, level, isCollapsed: 
                     <div className="flex items-center justify-between">
                          <div className="flex items-center gap-3">
                             <p className="font-bold text-gray-800 dark:text-gray-200">{post.authorName}</p>
+                            {post.authorRole === UserRole.Instructor && (
+                                <span className="text-xs bg-primary text-gray-800 font-semibold px-2 py-0.5 rounded-full">Instructor</span>
+                            )}
                              {level === 0 && (
                                 <span className="text-xs bg-secondary-light dark:bg-secondary/20 text-secondary dark:text-blue-300 font-semibold px-2 py-0.5 rounded-full">Thread Starter</span>
                             )}
@@ -168,7 +172,9 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
     }, [discussionId]);
 
     const handleNewReply = (newPost: DiscussionPost) => {
-        setPosts(prev => [...prev, newPost]);
+        // Fix: Add new post to the flat list. `buildPostTree` will correctly place it in the hierarchy.
+        // Adding an empty children array helps with type consistency within the list.
+        setPosts(prev => [...prev, {...newPost, children: []}]);
     };
 
     const handleNewThread = async (e: React.FormEvent) => {
@@ -177,8 +183,9 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
         setIsSubmitting(true);
         try {
             const newPost = await api.createDiscussionPost(discussionId, newThreadContent, user);
-            setPosts(prev => [newPost, ...prev]);
-            setNewThreadContent('');
+            // Fix: Add new post to the flat list. `buildPostTree` will correctly place it in the hierarchy.
+            // Prepending the new post with an explicit `children` property avoids potential type inference issues.
+            setPosts(prev => [{ ...newPost, children: [] }, ...prev]);
         } catch (error) {
             alert('Failed to create new thread.');
         } finally {
@@ -208,7 +215,7 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
     };
 
     return (
-        <div>
+        <div className="h-full flex flex-col">
             {isLoadingPrompt ? <p>Loading prompt...</p> : (
                 <div
                     className="mb-8 p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-primary dark:border-primary-dark prose prose-sans max-w-none dark:prose-invert"
@@ -236,26 +243,28 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
                 </form>
             </div>
             
-            {postTree.length > 0 && (
-                <div className="flex justify-between items-center mb-4 border-b dark:border-gray-700 pb-2">
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{postTree.length} Thread{postTree.length > 1 ? 's' : ''}</h3>
-                    <button onClick={toggleCollapseAll} className="text-sm font-medium text-secondary dark:text-blue-400 hover:underline">
-                        {areAllCollapsed ? 'Show All' : 'Hide All'}
-                    </button>
-                </div>
-            )}
+            <div className="flex-1 overflow-y-auto pr-4 -mr-4">
+                {postTree.length > 0 && (
+                    <div className="flex justify-between items-center mb-4 border-b dark:border-gray-700 pb-2">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">{postTree.length} Thread{postTree.length > 1 ? 's' : ''}</h3>
+                        <button onClick={toggleCollapseAll} className="text-sm font-medium text-secondary dark:text-blue-400 hover:underline">
+                            {areAllCollapsed ? 'Show All' : 'Hide All'}
+                        </button>
+                    </div>
+                )}
 
-            <div className="space-y-6">
-                {loading ? <p>Loading discussion...</p> : postTree.map(post => (
-                    <PostItem 
-                        key={post.id} 
-                        post={post} 
-                        onReply={handleNewReply} 
-                        level={0} 
-                        isCollapsed={collapsedThreads.has(post.id)}
-                        onToggleCollapse={() => toggleThreadCollapse(post.id)}
-                    />
-                ))}
+                <div className="space-y-6">
+                    {loading ? <p>Loading discussion...</p> : postTree.map(post => (
+                        <PostItem 
+                            key={post.id} 
+                            post={post} 
+                            onReply={handleNewReply} 
+                            level={0} 
+                            isCollapsed={collapsedThreads.has(post.id)}
+                            onToggleCollapse={() => toggleThreadCollapse(post.id)}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );

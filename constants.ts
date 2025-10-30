@@ -29,8 +29,10 @@ export const INSTRUCTOR_NAV_ITEMS: NavItem[] = [
   { path: '/calendar', name: 'Calendar', icon: 'Calendar', section: 'Main' },
   
   { path: '/instructor/courses', name: 'My Courses', icon: 'Book', section: 'Course Management' },
-  { path: '/instructor/gradebook', name: 'Gradebook', icon: 'PenSquare', section: 'Course Management' },
-  { path: '/instructor/examinations', name: 'Examinations', icon: 'ListChecks', section: 'Course Management' },
+  { path: '/instructor/grading-hub', name: 'Grading Hub', icon: 'PenSquare', section: 'Course Management' },
+  { path: '/instructor/media-library', name: 'Media Library', icon: 'FileImage', section: 'Course Management' },
+  { path: '/instructor/gradebook', name: 'Gradebook', icon: 'ListChecks', section: 'Course Management' },
+  { path: '/instructor/examinations', name: 'Examinations', icon: 'ScrollText', section: 'Course Management' },
   { path: '/instructor/question-bank', name: 'Question Bank', icon: 'FileText', section: 'Course Management' },
   { path: '/instructor/rubrics', name: 'Rubrics', icon: 'ClipboardCheck', section: 'Course Management' },
 

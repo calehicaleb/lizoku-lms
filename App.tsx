@@ -1,4 +1,5 @@
 
+
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -44,6 +45,8 @@ import CalendarPage from './pages/CalendarPage';
 import ExamTakerPage from './pages/student/ExamTakerPage';
 import { UserRole } from './types';
 import { IdleTimeoutModal } from './components/common/IdleTimeoutModal';
+import MediaLibraryPage from './pages/instructor/MediaLibraryPage';
+import GradingHubPage from './pages/instructor/GradingHubPage';
 
 const ProtectedRoute: React.FC<{ allowedRoles: UserRole[] }> = ({ allowedRoles }) => {
     const { isAuthenticated, user, loading } = useAuth();
@@ -116,6 +119,8 @@ const AppRoutes: React.FC = () => {
                     <Route path="/instructor" element={<InstructorDashboard />} />
                     <Route path="/instructor/courses" element={<InstructorMyCoursesPage />} />
                     <Route path="/instructor/courses/:courseId" element={<CourseBuilderPage />} />
+                    <Route path="/instructor/grading-hub" element={<GradingHubPage />} />
+                    <Route path="/instructor/media-library" element={<MediaLibraryPage />} />
                     <Route path="/instructor/gradebook" element={<GradebookPage />} />
                     <Route path="/instructor/examinations" element={<ExaminationsPage />} />
                     <Route path="/instructor/question-bank" element={<QuestionBankPage />} />
