@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal } from '../ui/Modal';
 import * as api from '../../services/api';
 import { Question, Submission, QuestionType, Rubric, Grade, QuizSubmission } from '../../types';
@@ -24,12 +24,15 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
     const [criterionComments, setCriterionComments] = useState<Record<string, string>>({});
     const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
     const [isMaximized, setIsMaximized] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const viewerContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!isOpen) {
             // Reset states when modal is closed
             setIsPreviewExpanded(false);
             setIsMaximized(false);
+            setZoom(1);
             return;
         };
         const fetchData = async () => {
@@ -64,6 +67,14 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
         fetchData();
     }, [submissionId, isOpen]);
 
+    const handleResetZoom = () => {
+        setZoom(1);
+        if (viewerContainerRef.current) {
+            viewerContainerRef.current.scrollTop = 0;
+            viewerContainerRef.current.scrollLeft = 0;
+        }
+    };
+    
     const handleScoreChange = (id: string, score: number) => {
         setManualScores(prev => ({ ...prev, [id]: score }));
     };
@@ -230,37 +241,67 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                 <div className="flex justify-between items-center mb-2 flex-shrink-0">
                                     <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200">Submission Preview</h3>
                                     <div className="flex items-center gap-4">
+                                        {(isOfficeDoc || isPdf) && (
+                                            <div className="flex items-center gap-2 border-r pr-4 mr-2 dark:border-gray-600">
+                                                <button onClick={() => setZoom(z => Math.max(0.2, z - 0.2))} disabled={zoom <= 0.2} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50" title="Zoom Out">
+                                                    <Icon name="ZoomOut" className="h-5 w-5" />
+                                                </button>
+                                                <button onClick={handleResetZoom} className="text-sm font-semibold w-12 text-center tabular-nums" title="Reset Zoom">
+                                                    {Math.round(zoom * 100)}%
+                                                </button>
+                                                <button onClick={() => setZoom(z => Math.min(3, z + 0.2))} disabled={zoom >= 3} className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50" title="Zoom In">
+                                                    <Icon name="ZoomIn" className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        )}
                                         {data.submission.type === 'assignment' && (
                                             <a href={data.submission.file.url} download={data.submission.file.name} className="flex items-center gap-2 text-sm text-secondary dark:text-blue-400 hover:underline">
                                                 <Icon name="FileText" className="h-4 w-4" />
                                                 <span>Download File</span>
                                             </a>
                                         )}
-                                        <button 
-                                            onClick={() => setIsPreviewExpanded(prev => !prev)} 
-                                            className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
-                                            title={isPreviewExpanded ? "Show Grader" : "Expand Preview"}
-                                        >
-                                            <Icon name={!isPreviewExpanded ? "PanelRightClose" : "PanelLeftOpen"} className="h-5 w-5" />
-                                        </button>
+                                        {!isPreviewExpanded && (
+                                            <button 
+                                                onClick={() => setIsPreviewExpanded(true)} 
+                                                className="flex items-center gap-1.5 text-sm font-medium text-secondary dark:text-blue-400 hover:bg-secondary-light dark:hover:bg-secondary/20 p-2 rounded-md transition-colors"
+                                                title="Focus on Document"
+                                            >
+                                                <Icon name="PanelRightClose" className="h-5 w-5" />
+                                                <span>Focus</span>
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex-1 min-h-0">
-                                    {data.submission.type === 'assignment' ? (
-                                        <>
-                                            {isOfficeDoc || isPdf ? (
-                                                <iframe
-                                                    src={viewerUrl}
-                                                    className="w-full h-full border dark:border-gray-600 rounded-md bg-white"
-                                                    title="Document Preview"
-                                                ></iframe>
-                                            ) : (
-                                                <div className="border rounded-md h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700/50">
-                                                    <p className="text-gray-500 dark:text-gray-400">No preview available for this file type.</p>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
+                                    {data.submission.type === 'assignment' && (isOfficeDoc || isPdf) ? (
+                                        <div ref={viewerContainerRef} className="h-full border dark:border-gray-600 rounded-md overflow-auto bg-gray-200 dark:bg-gray-900">
+                                            <div
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    transform: `scale(${zoom})`,
+                                                    transformOrigin: '0 0'
+                                                }}
+                                            >
+                                                {isOfficeDoc ? (
+                                                    <div className="w-full h-full" style={{ overflow: 'hidden' }}>
+                                                        <iframe
+                                                            src={viewerUrl}
+                                                            style={{ width: '100%', height: 'calc(100% + 50px)', border: 'none' }}
+                                                            className="bg-white"
+                                                            title="Document Preview"
+                                                        />
+                                                    </div>
+                                                ) : ( // isPdf
+                                                    <iframe src={viewerUrl} className="w-full h-full bg-white" style={{ border: 'none' }} title="Document Preview" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    ) : data.submission.type === 'assignment' ? ( // non-document assignment
+                                        <div className="border rounded-md h-full flex items-center justify-center bg-gray-50 dark:bg-gray-700/50">
+                                            <p className="text-gray-500 dark:text-gray-400">No preview available for this file type.</p>
+                                        </div>
+                                    ) : ( // Quiz
                                         <div className="h-full overflow-y-auto pr-4 border dark:border-gray-600 rounded-md p-4 bg-gray-50 dark:bg-gray-900/50">
                                             <div className="space-y-6">
                                                 {data.submission.type === 'quiz' && data.questions && data.questions.map((q, index) => (
@@ -277,15 +318,19 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                             {/* Column 2: Grading Panel */}
                             <div className="flex flex-col overflow-hidden">
                                 {isPreviewExpanded ? (
-                                    <div className="flex flex-col items-center justify-start h-full pt-4">
-                                        <button 
-                                            onClick={() => setIsPreviewExpanded(false)} 
-                                            className="p-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
-                                            title="Show Grader"
+                                    <button 
+                                        onClick={() => setIsPreviewExpanded(false)}
+                                        className="w-full h-full flex flex-col items-center justify-center p-2 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-primary hover:bg-primary/10 hover:text-primary-dark dark:hover:text-primary transition-all"
+                                        title="Show Grader"
+                                    >
+                                        <Icon name="PanelLeftOpen" className="h-8 w-8 mb-4" />
+                                        <span
+                                            className="font-bold text-lg tracking-wider uppercase"
+                                            style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
                                         >
-                                            <Icon name="PanelLeftOpen" className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-                                        </button>
-                                    </div>
+                                            Show Grader
+                                        </span>
+                                    </button>
                                 ) : (
                                     <>
                                         <h3 className="text-lg font-bold mb-2 flex-shrink-0 text-gray-800 dark:text-gray-200">Grading</h3>
