@@ -205,7 +205,7 @@ const ExaminationsPage: React.FC = () => {
                 </div>
             </div>
             
-             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedExam ? 'Edit Examination' : 'Create Examination'}>
+             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selectedExam ? 'Edit Examination' : 'Create Examination'} size="3xl">
                 <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
                     {/* Basic Info */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -243,7 +243,7 @@ const ExaminationsPage: React.FC = () => {
                     {/* Question Selector */}
                      <div>
                         <h3 className="font-bold mb-2 dark:text-gray-100">Questions ({selectedQuestionIds.size} selected)</h3>
-                        <div className="space-y-2 max-h-60 overflow-y-auto border dark:border-gray-600 p-2 rounded-md">
+                        <div className="space-y-2 max-h-96 overflow-y-auto border dark:border-gray-600 p-2 rounded-md">
                             {questions.map(q => (
                                 <label key={q.id} className="flex items-start p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md cursor-pointer">
                                     <input type="checkbox" checked={selectedQuestionIds.has(q.id)} onChange={() => handleQuestionToggle(q.id)} className="h-4 w-4 text-primary mt-1" />

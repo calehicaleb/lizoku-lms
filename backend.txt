@@ -377,6 +377,7 @@
 - **Description:** Deletes an examination.
 - **Response:** `{ success: boolean }`
 
+
 ---
 ## Student
 ---
@@ -563,3 +564,28 @@
   }
   ```
 - **Response:** The newly created `DiscussionPost` object.
+---
+## Media Library
+---
+
+### GET /api/media?instructorId={id}
+- **Description:** Retrieves all media items for a specific instructor.
+- **Response:** `MediaItem[]`
+
+### GET /api/media/public?currentInstructorId={id}
+- **Description:** Retrieves all public media items from other instructors.
+- **Response:** `(MediaItem & { instructorName: string })[]`
+
+### POST /api/media/upload
+- **Description:** Uploads a new media file.
+- **Request Body:** `FormData` containing the file.
+- **Response:** The newly created `MediaItem` object.
+
+### PUT /api/media/:mediaId/visibility
+- **Description:** Updates the public visibility of a media item.
+- **Request Body:** `{ isPublic: boolean }`
+- **Response:** The updated `MediaItem` object.
+
+### DELETE /api/media/:mediaId
+- **Description:** Deletes a media item.
+- **Response:** `{ success: boolean }`

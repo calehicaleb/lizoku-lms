@@ -33,10 +33,10 @@ const CalendarPage: React.FC = () => {
     };
 
     const eventColors: Record<CalendarEventType, string> = {
-        [CalendarEventType.Assignment]: 'bg-yellow-100 border-yellow-500 text-yellow-800',
-        [CalendarEventType.Quiz]: 'bg-blue-100 border-blue-500 text-blue-800',
-        [CalendarEventType.Holiday]: 'bg-green-100 border-green-500 text-green-800',
-        [CalendarEventType.Maintenance]: 'bg-red-100 border-red-500 text-red-800',
+        [CalendarEventType.Assignment]: 'bg-yellow-100 border-yellow-500 text-yellow-800 dark:bg-yellow-900/30 dark:border-yellow-700 dark:text-yellow-200',
+        [CalendarEventType.Quiz]: 'bg-blue-100 border-blue-500 text-blue-800 dark:bg-blue-900/30 dark:border-blue-700 dark:text-blue-200',
+        [CalendarEventType.Holiday]: 'bg-green-100 border-green-500 text-green-800 dark:bg-green-900/30 dark:border-green-700 dark:text-green-200',
+        [CalendarEventType.Maintenance]: 'bg-red-100 border-red-500 text-red-800 dark:bg-red-900/30 dark:border-red-700 dark:text-red-200',
     };
 
     const renderCalendar = () => {
@@ -48,7 +48,7 @@ const CalendarPage: React.FC = () => {
         const calendarDays = [];
         // Add blank cells for days before the 1st
         for (let i = 0; i < firstDay; i++) {
-            calendarDays.push(<div key={`empty-${i}`} className="border-r border-b"></div>);
+            calendarDays.push(<div key={`empty-${i}`} className="border-r border-b dark:border-gray-700"></div>);
         }
 
         for (let day = 1; day <= daysInMonth; day++) {
@@ -56,8 +56,8 @@ const CalendarPage: React.FC = () => {
             const dayEvents = events.filter(e => e.date === dateStr);
 
             calendarDays.push(
-                <div key={day} className="border-r border-b p-2 min-h-[120px]">
-                    <div className="font-bold text-gray-700">{day}</div>
+                <div key={day} className="border-r border-b dark:border-gray-700 p-2 min-h-[120px]">
+                    <div className="font-bold text-gray-700 dark:text-gray-200">{day}</div>
                     <div className="mt-1 space-y-1">
                         {dayEvents.map(event => (
                             <div key={event.id} className={`p-1 text-xs rounded border-l-4 ${eventColors[event.type]}`}>
@@ -77,22 +77,22 @@ const CalendarPage: React.FC = () => {
         <div>
             <PageHeader title="Calendar" subtitle="View deadlines, holidays, and important events." />
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="flex justify-between items-center mb-4">
-                    <button onClick={handlePrevMonth} className="p-2 rounded-full hover:bg-gray-100">
+                    <button onClick={handlePrevMonth} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                         <Icon name="ChevronDown" className="h-6 w-6 rotate-90" />
                     </button>
-                    <h2 className="text-xl font-bold text-gray-800">
+                    <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">
                         {currentDate.toLocaleString('default', { month: 'long' })} {currentDate.getFullYear()}
                     </h2>
-                    <button onClick={handleNextMonth} className="p-2 rounded-full hover:bg-gray-100">
+                    <button onClick={handleNextMonth} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                         <Icon name="ChevronDown" className="h-6 w-6 -rotate-90" />
                     </button>
                 </div>
                 
-                <div className="grid grid-cols-7 border-t border-l">
+                <div className="grid grid-cols-7 border-t border-l dark:border-gray-700">
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                        <div key={day} className="text-center font-medium text-gray-500 p-2 border-r border-b bg-gray-50">
+                        <div key={day} className="text-center font-medium text-gray-500 dark:text-gray-400 p-2 border-r border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
                             {day}
                         </div>
                     ))}

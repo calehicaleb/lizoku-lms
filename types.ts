@@ -242,6 +242,7 @@ interface BaseQuestion {
     moduleId?: string;
     isPublic: boolean;
     imageUrl?: string;
+    maxPoints?: number;
 }
 
 export interface MultipleChoiceQuestion extends BaseQuestion {
@@ -557,6 +558,7 @@ export interface MediaItem {
     url: string;
     size: number; // in bytes
     uploadedAt: string; // ISO String
+    isPublic: boolean;
 }
 
 

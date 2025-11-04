@@ -119,12 +119,12 @@ const CommunicationsPage: React.FC = () => {
         <div>
             <PageHeader title="Communications" subtitle="Send messages to users and view history." />
 
-            <div className="mb-6 border-b border-gray-200">
+            <div className="mb-6 border-b border-gray-200 dark:border-gray-700">
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
                     <button
                         onClick={() => setActiveTab('compose')}
                         className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                            activeTab === 'compose' ? 'border-primary text-secondary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            activeTab === 'compose' ? 'border-primary text-secondary dark:text-primary' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                         }`}
                     >
                         Compose Message
@@ -132,7 +132,7 @@ const CommunicationsPage: React.FC = () => {
                     <button
                         onClick={() => setActiveTab('history')}
                         className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                            activeTab === 'history' ? 'border-primary text-secondary' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            activeTab === 'history' ? 'border-primary text-secondary dark:text-primary' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                         }`}
                     >
                         History
@@ -142,36 +142,36 @@ const CommunicationsPage: React.FC = () => {
 
             {activeTab === 'compose' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">New Message</h3>
+                    <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">New Message</h3>
                         <form className="space-y-4">
                             <div>
-                                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subject</label>
                                 <input
                                     type="text"
                                     id="subject"
                                     value={subject}
                                     onChange={e => setSubject(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                             <div>
-                                <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                                <label htmlFor="content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message</label>
                                 <textarea
                                     id="content"
                                     rows={10}
                                     value={content}
                                     onChange={e => setContent(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                                    className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                                 />
                             </div>
                         </form>
                     </div>
 
-                    <div className="bg-white p-6 rounded-lg shadow-sm self-start">
-                        <h3 className="text-lg font-bold text-gray-800 mb-4">Recipients</h3>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm self-start">
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Recipients</h3>
                         <div className="space-y-4">
-                            <select value={recipientType} onChange={e => setRecipientType(e.target.value as RecipientType)} className="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <select value={recipientType} onChange={e => setRecipientType(e.target.value as RecipientType)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md">
                                 <option value="all">All Users</option>
                                 <option value="role">By Role</option>
                                 <option value="individual">Specific Individuals</option>
@@ -185,9 +185,9 @@ const CommunicationsPage: React.FC = () => {
                                                 type="checkbox"
                                                 checked={selectedRoles.includes(role)}
                                                 onChange={() => handleRoleToggle(role)}
-                                                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                                                className="h-4 w-4 text-primary focus:ring-primary border-gray-300 dark:border-gray-600 rounded"
                                             />
-                                            <span className="ml-2 text-sm text-gray-700 capitalize">{role}</span>
+                                            <span className="ml-2 text-sm text-gray-700 dark:text-gray-300 capitalize">{role}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -200,12 +200,12 @@ const CommunicationsPage: React.FC = () => {
                                         placeholder="Search for users..."
                                         value={userSearchTerm}
                                         onChange={e => setUserSearchTerm(e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                                        className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
                                     />
                                     {userSearchTerm && filteredUsers.length > 0 && (
-                                        <ul className="absolute z-10 w-full bg-white border mt-1 rounded-md shadow-lg max-h-60 overflow-auto">
+                                        <ul className="absolute z-10 w-full bg-white dark:bg-gray-600 border dark:border-gray-500 mt-1 rounded-md shadow-lg max-h-60 overflow-auto">
                                             {filteredUsers.map(u => (
-                                                <li key={u.id} onClick={() => handleUserSelect(u)} className="px-3 py-2 hover:bg-gray-100 cursor-pointer text-sm">
+                                                <li key={u.id} onClick={() => handleUserSelect(u)} className="px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-500 cursor-pointer text-sm">
                                                     {u.name} ({u.email})
                                                 </li>
                                             ))}
@@ -213,9 +213,9 @@ const CommunicationsPage: React.FC = () => {
                                     )}
                                     <div className="mt-2 space-x-1">
                                         {selectedUsers.map(u => (
-                                            <span key={u.id} className="inline-flex items-center bg-secondary-light text-secondary text-xs font-medium px-2 py-1 rounded-full">
+                                            <span key={u.id} className="inline-flex items-center bg-secondary-light dark:bg-secondary/20 text-secondary dark:text-blue-300 text-xs font-medium px-2 py-1 rounded-full">
                                                 {u.name}
-                                                <button onClick={() => handleUserSelect(u)} className="ml-1 text-secondary hover:text-secondary-dark">
+                                                <button onClick={() => handleUserSelect(u)} className="ml-1 text-secondary dark:text-blue-300 hover:text-secondary-dark dark:hover:text-blue-100">
                                                     <Icon name="X" className="h-3 w-3" />
                                                 </button>
                                             </span>
@@ -232,25 +232,25 @@ const CommunicationsPage: React.FC = () => {
             )}
             
             {activeTab === 'history' && (
-                 <div className="bg-white p-6 rounded-lg shadow-sm">
+                 <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                     {loadingHistory ? <p>Loading history...</p> : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-gray-50 dark:bg-gray-700/50">
                                     <tr>
-                                        <th className="px-4 py-2 text-left font-medium text-gray-500">Subject</th>
-                                        <th className="px-4 py-2 text-left font-medium text-gray-500">Recipients</th>
-                                        <th className="px-4 py-2 text-left font-medium text-gray-500">Sent Date</th>
-                                        <th className="px-4 py-2 text-left font-medium text-gray-500">Author</th>
+                                        <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Subject</th>
+                                        <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Recipients</th>
+                                        <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Sent Date</th>
+                                        <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Author</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     {history.map(comm => (
                                         <tr key={comm.id}>
-                                            <td className="px-4 py-3 font-medium text-gray-900">{comm.subject}</td>
-                                            <td className="px-4 py-3 text-gray-500">{comm.recipientsSummary}</td>
-                                            <td className="px-4 py-3 text-gray-500">{new Date(comm.sentAt).toLocaleString()}</td>
-                                            <td className="px-4 py-3 text-gray-500">{comm.authorName}</td>
+                                            <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-200">{comm.subject}</td>
+                                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{comm.recipientsSummary}</td>
+                                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{new Date(comm.sentAt).toLocaleString()}</td>
+                                            <td className="px-4 py-3 text-gray-500 dark:text-gray-400">{comm.authorName}</td>
                                         </tr>
                                     ))}
                                 </tbody>

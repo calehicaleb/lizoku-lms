@@ -94,7 +94,7 @@ const AnnouncementsPage: React.FC = () => {
         <div>
             <PageHeader title="Site Announcements" subtitle="Manage communications for all platform users." />
 
-            <div className="bg-white p-6 rounded-lg shadow-sm">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="flex justify-end mb-4">
                     <button onClick={() => handleOpenModal()} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 flex items-center">
                         <Icon name="ScrollText" className="h-5 w-5 mr-2" />
@@ -104,22 +104,22 @@ const AnnouncementsPage: React.FC = () => {
                 
                 <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
-                        <thead className="bg-gray-50">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
                             <tr>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Title</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Author</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Date</th>
-                                <th className="px-4 py-2 text-left font-medium text-gray-500">Actions</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Title</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Author</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Date</th>
+                                <th className="px-4 py-2 text-left font-medium text-gray-500 dark:text-gray-400">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {announcements.map(item => (
                                 <tr key={item.id}>
-                                    <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">{item.title}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500">{item.author}</td>
-                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500">{item.createdAt}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900 dark:text-gray-200">{item.title}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{item.author}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{item.createdAt}</td>
                                     <td className="px-4 py-3 whitespace-nowrap space-x-4">
-                                        <button onClick={() => handleOpenModal(item)} className="text-secondary hover:text-secondary-dark font-medium">Edit</button>
+                                        <button onClick={() => handleOpenModal(item)} className="text-secondary dark:text-blue-400 hover:text-secondary-dark dark:hover:text-blue-300 font-medium">Edit</button>
                                         <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
                                     </td>
                                 </tr>
@@ -132,15 +132,15 @@ const AnnouncementsPage: React.FC = () => {
             <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={selected ? 'Edit Announcement' : 'Add Announcement'}>
                 <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
                     <div>
-                        <label htmlFor="ann-title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <input type="text" id="ann-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <label htmlFor="ann-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
+                        <input type="text" id="ann-title" value={formData.title} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                      <div>
-                        <label htmlFor="ann-content" className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                        <textarea id="ann-content" rows={4} value={formData.content} onChange={handleFormChange} className="w-full px-3 py-2 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <label htmlFor="ann-content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
+                        <textarea id="ann-content" rows={4} value={formData.content} onChange={handleFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" />
                     </div>
                     <div className="pt-4 flex justify-end space-x-2">
-                        <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">Cancel</button>
+                        <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
                         <button type="button" onClick={handleSave} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark">Save</button>
                     </div>
                 </form>

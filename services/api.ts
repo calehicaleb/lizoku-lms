@@ -201,25 +201,25 @@ let DISCUSSION_POSTS: DiscussionPost[] = [
 ];
 
 let QUESTIONS: Question[] = [
-    { id: 'q1', type: QuestionType.MultipleChoice, stem: 'What is the correct syntax to output "Hello World" in Python?', options: ['echo "Hello World"', 'printf("Hello World")', 'print("Hello World")', 'cout << "Hello World"'], correctAnswerIndex: 2, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['python', 'syntax', 'output'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: true, imageUrl: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713' },
-    { id: 'q2', type: QuestionType.MultipleChoice, stem: 'Which of the following data types is mutable in Python?', options: ['Tuple', 'String', 'List', 'Integer'], correctAnswerIndex: 2, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['python', 'data types', 'mutability'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: false },
-    { id: 'q3', type: QuestionType.MultipleChoice, stem: 'What does HTML stand for?', options: ['Hyper Text Markup Language', 'High Tech Modern Language', 'Hyperlink and Text Markup Language', 'Home Tool Markup Language'], correctAnswerIndex: 0, instructorId: '6', difficulty: QuestionDifficulty.Easy, topics: ['html', 'web dev'], courseId: 'wd101', isPublic: true },
-    { id: 'q4', type: QuestionType.TrueFalse, stem: 'The `main` function is the entry point for every C++ program.', correctAnswer: true, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['c++', 'fundamentals'], courseId: 'cs101', isPublic: false },
-    { id: 'q5', type: QuestionType.ShortAnswer, stem: 'What keyword is used to declare a variable that cannot be reassigned in JavaScript?', acceptableAnswers: ['const'], instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['javascript', 'variables'], courseId: 'wd101', isPublic: true },
-    { id: 'q6', type: QuestionType.MultipleSelect, stem: 'Which of the following are primitive data types in JavaScript?', options: ['String', 'Object', 'Boolean', 'Array'], correctAnswerIndices: [0, 2], instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['javascript', 'data types'], courseId: 'wd101', isPublic: true },
-    { id: 'q7', type: QuestionType.FillBlank, stem: 'The method to add an element to the end of an ____ is `.push()`.', acceptableAnswers: ['array'], instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['javascript', 'arrays'], courseId: 'wd101', isPublic: false },
+    { id: 'q1', type: QuestionType.MultipleChoice, stem: 'What is the correct syntax to output "Hello World" in Python?', options: ['echo "Hello World"', 'printf("Hello World")', 'print("Hello World")', 'cout << "Hello World"'], correctAnswerIndex: 2, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['python', 'syntax', 'output'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: true, imageUrl: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713', maxPoints: 5 },
+    { id: 'q2', type: QuestionType.MultipleChoice, stem: 'Which of the following data types is mutable in Python?', options: ['Tuple', 'String', 'List', 'Integer'], correctAnswerIndex: 2, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['python', 'data types', 'mutability'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: false, maxPoints: 5 },
+    { id: 'q3', type: QuestionType.MultipleChoice, stem: 'What does HTML stand for?', options: ['Hyper Text Markup Language', 'High Tech Modern Language', 'Hyperlink and Text Markup Language', 'Home Tool Markup Language'], correctAnswerIndex: 0, instructorId: '6', difficulty: QuestionDifficulty.Easy, topics: ['html', 'web dev'], courseId: 'wd101', isPublic: true, maxPoints: 5 },
+    { id: 'q4', type: QuestionType.TrueFalse, stem: 'The `main` function is the entry point for every C++ program.', correctAnswer: true, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['c++', 'fundamentals'], courseId: 'cs101', isPublic: false, maxPoints: 5 },
+    { id: 'q5', type: QuestionType.ShortAnswer, stem: 'What keyword is used to declare a variable that cannot be reassigned in JavaScript?', acceptableAnswers: ['const'], instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['javascript', 'variables'], courseId: 'wd101', isPublic: true, maxPoints: 10 },
+    { id: 'q6', type: QuestionType.MultipleSelect, stem: 'Which of the following are primitive data types in JavaScript?', options: ['String', 'Object', 'Boolean', 'Array'], correctAnswerIndices: [0, 2], instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['javascript', 'data types'], courseId: 'wd101', isPublic: true, maxPoints: 10 },
+    { id: 'q7', type: QuestionType.FillBlank, stem: 'The method to add an element to the end of an ____ is `.push()`.', acceptableAnswers: ['array'], instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['javascript', 'arrays'], courseId: 'wd101', isPublic: false, maxPoints: 5 },
     // New Questions for CS101
-    { id: 'q8', type: QuestionType.MultipleChoice, stem: 'In programming, what is a variable?', options: ['A fixed value that never changes', 'A named storage location for data', 'A type of function', 'A hardware component'], correctAnswerIndex: 1, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['programming concepts', 'variables'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: true },
-    { id: 'q9', type: QuestionType.TrueFalse, stem: 'In JavaScript, `x = 5` is used for comparing if x is equal to 5.', correctAnswer: false, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['javascript', 'operators'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: false },
-    { id: 'q10', type: QuestionType.MultipleChoice, stem: 'Which operator checks for both value and type equality in JavaScript?', options: ['=', '==', '===', '!='], correctAnswerIndex: 2, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['javascript', 'operators'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: true },
-    { id: 'q11', type: QuestionType.MultipleChoice, stem: 'What is the main purpose of a function in programming?', options: ['To store a single piece of data', 'To group reusable code that performs a specific task', 'To create loops', 'To define the color of a web page'], correctAnswerIndex: 1, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['programming concepts', 'functions'], courseId: 'cs101', moduleId: 'cs101-m4', isPublic: true },
-    { id: 'q12', type: QuestionType.ShortAnswer, stem: 'What keyword is used to send a value back from a function?', acceptableAnswers: ['return'], instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['functions'], courseId: 'cs101', moduleId: 'cs101-m4', isPublic: false },
-    { id: 'q13', type: QuestionType.TrueFalse, stem: 'Variables declared with `let` inside a function are accessible from anywhere in the program.', correctAnswer: false, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['scope', 'variables'], courseId: 'cs101', moduleId: 'cs101-m4', isPublic: false },
-    { id: 'q14', type: QuestionType.MultipleChoice, stem: 'Which data structure is best for storing a collection of key-value pairs?', options: ['Array', 'Object', 'Set', 'String'], correctAnswerIndex: 1, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['data structures', 'objects'], courseId: 'cs101', moduleId: 'cs101-m6', isPublic: true },
-    { id: 'q15', type: QuestionType.MultipleSelect, stem: 'Which of the following are common sorting algorithms? (Select all that apply)', options: ['Bubble Sort', 'Linear Search', 'Merge Sort', 'Binary Search'], correctAnswerIndices: [0, 2], instructorId: '2', difficulty: QuestionDifficulty.Hard, topics: ['algorithms', 'sorting'], courseId: 'cs101', moduleId: 'cs101-m7', isPublic: true },
-    { id: 'q16', type: QuestionType.FillBlank, stem: 'Big O notation is used to describe the ____ of an algorithm.', acceptableAnswers: ['efficiency', 'performance', 'complexity'], instructorId: '2', difficulty: QuestionDifficulty.Hard, topics: ['algorithms', 'big o'], courseId: 'ds202', isPublic: true },
-    { id: 'q17', type: QuestionType.TrueFalse, stem: 'On a large, sorted dataset, a linear search is generally faster than a binary search.', correctAnswer: false, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['algorithms', 'search'], courseId: 'ds202', isPublic: false },
-    { id: 'q18', type: QuestionType.ShortAnswer, stem: 'What does the acronym IDE stand for?', acceptableAnswers: ['Integrated Development Environment'], instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['tools'], courseId: 'cs101', isPublic: true },
+    { id: 'q8', type: QuestionType.MultipleChoice, stem: 'In programming, what is a variable?', options: ['A fixed value that never changes', 'A named storage location for data', 'A type of function', 'A hardware component'], correctAnswerIndex: 1, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['programming concepts', 'variables'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: true, maxPoints: 5 },
+    { id: 'q9', type: QuestionType.TrueFalse, stem: 'In JavaScript, `x = 5` is used for comparing if x is equal to 5.', correctAnswer: false, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['javascript', 'operators'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: false, maxPoints: 5 },
+    { id: 'q10', type: QuestionType.MultipleChoice, stem: 'Which operator checks for both value and type equality in JavaScript?', options: ['=', '==', '===', '!='], correctAnswerIndex: 2, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['javascript', 'operators'], courseId: 'cs101', moduleId: 'cs101-m2', isPublic: true, maxPoints: 5 },
+    { id: 'q11', type: QuestionType.MultipleChoice, stem: 'What is the main purpose of a function in programming?', options: ['To store a single piece of data', 'To group reusable code that performs a specific task', 'To create loops', 'To define the color of a web page'], correctAnswerIndex: 1, instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['programming concepts', 'functions'], courseId: 'cs101', moduleId: 'cs101-m4', isPublic: true, maxPoints: 5 },
+    { id: 'q12', type: QuestionType.ShortAnswer, stem: 'What keyword is used to send a value back from a function?', acceptableAnswers: ['return'], instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['functions'], courseId: 'cs101', moduleId: 'cs101-m4', isPublic: false, maxPoints: 10 },
+    { id: 'q13', type: QuestionType.TrueFalse, stem: 'Variables declared with `let` inside a function are accessible from anywhere in the program.', correctAnswer: false, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['scope', 'variables'], courseId: 'cs101', moduleId: 'cs101-m4', isPublic: false, maxPoints: 5 },
+    { id: 'q14', type: QuestionType.MultipleChoice, stem: 'Which data structure is best for storing a collection of key-value pairs?', options: ['Array', 'Object', 'Set', 'String'], correctAnswerIndex: 1, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['data structures', 'objects'], courseId: 'cs101', moduleId: 'cs101-m6', isPublic: true, maxPoints: 5 },
+    { id: 'q15', type: QuestionType.MultipleSelect, stem: 'Which of the following are common sorting algorithms? (Select all that apply)', options: ['Bubble Sort', 'Linear Search', 'Merge Sort', 'Binary Search'], correctAnswerIndices: [0, 2], instructorId: '2', difficulty: QuestionDifficulty.Hard, topics: ['algorithms', 'sorting'], courseId: 'cs101', moduleId: 'cs101-m7', isPublic: true, maxPoints: 10 },
+    { id: 'q16', type: QuestionType.FillBlank, stem: 'Big O notation is used to describe the ____ of an algorithm.', acceptableAnswers: ['efficiency', 'performance', 'complexity'], instructorId: '2', difficulty: QuestionDifficulty.Hard, topics: ['algorithms', 'big o'], courseId: 'ds202', isPublic: true, maxPoints: 5 },
+    { id: 'q17', type: QuestionType.TrueFalse, stem: 'On a large, sorted dataset, a linear search is generally faster than a binary search.', correctAnswer: false, instructorId: '2', difficulty: QuestionDifficulty.Medium, topics: ['algorithms', 'search'], courseId: 'ds202', isPublic: false, maxPoints: 5 },
+    { id: 'q18', type: QuestionType.ShortAnswer, stem: 'What does the acronym IDE stand for?', acceptableAnswers: ['Integrated Development Environment'], instructorId: '2', difficulty: QuestionDifficulty.Easy, topics: ['tools'], courseId: 'cs101', isPublic: true, maxPoints: 10 },
 ];
 
 let RUBRICS: Rubric[] = [
@@ -491,11 +491,11 @@ let NOTIFICATIONS: Notification[] = [
 ];
 
 let MEDIA_ITEMS: MediaItem[] = [
-    { id: 'media1', instructorId: '2', name: 'python_logo.png', type: MediaType.Image, url: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713', size: 125829, uploadedAt: new Date('2024-08-01T10:00:00Z').toISOString() },
-    { id: 'media2', instructorId: '2', name: 'lecture-intro.mp4', type: MediaType.Video, url: '#', size: 58291039, uploadedAt: new Date('2024-08-02T14:30:00Z').toISOString() },
-    { id: 'media3', instructorId: '2', name: 'syllabus.pdf', type: MediaType.Document, url: '#', size: 50293, uploadedAt: new Date('2024-07-30T09:00:00Z').toISOString() },
-    { id: 'media4', instructorId: '6', name: 'business-chart.png', type: MediaType.Image, url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71', size: 203948, uploadedAt: new Date('2024-07-25T11:00:00Z').toISOString() },
-    { id: 'media5', instructorId: '2', name: 'welcome-audio.mp3', type: MediaType.Audio, url: '#', size: 2048576, uploadedAt: new Date('2024-08-03T18:00:00Z').toISOString() },
+    { id: 'media1', instructorId: '2', name: 'python_logo.png', type: MediaType.Image, url: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713', size: 125829, uploadedAt: new Date('2024-08-01T10:00:00Z').toISOString(), isPublic: true },
+    { id: 'media2', instructorId: '2', name: 'lecture-intro.mp4', type: MediaType.Video, url: '#', size: 58291039, uploadedAt: new Date('2024-08-02T14:30:00Z').toISOString(), isPublic: false },
+    { id: 'media3', instructorId: '2', name: 'syllabus.pdf', type: MediaType.Document, url: '#', size: 50293, uploadedAt: new Date('2024-07-30T09:00:00Z').toISOString(), isPublic: true },
+    { id: 'media4', instructorId: '6', name: 'business-chart.png', type: MediaType.Image, url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71', size: 203948, uploadedAt: new Date('2024-07-25T11:00:00Z').toISOString(), isPublic: true },
+    { id: 'media5', instructorId: '2', name: 'welcome-audio.mp3', type: MediaType.Audio, url: '#', size: 2048576, uploadedAt: new Date('2024-08-03T18:00:00Z').toISOString(), isPublic: false },
 ];
 
 const CONTENT_ITEM_DETAILS: ContentItemDetails[] = [
@@ -1677,6 +1677,15 @@ export const getMediaItems = async (instructorId: string): Promise<MediaItem[]> 
         .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
 };
 
+export const getPublicMediaItems = async (currentInstructorId: string): Promise<(MediaItem & { instructorName: string })[]> => {
+    await delay(500);
+    const publicItems = MEDIA_ITEMS.filter(item => item.instructorId !== currentInstructorId && item.isPublic);
+    return publicItems.map(item => ({
+        ...item,
+        instructorName: USERS.find(u => u.id === item.instructorId)?.name || 'Unknown Instructor'
+    })).sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
+};
+
 export const uploadMediaItem = async (instructorId: string, file: File): Promise<MediaItem> => {
     await delay(1000); // Simulate upload time
     let type: MediaType;
@@ -1693,7 +1702,25 @@ export const uploadMediaItem = async (instructorId: string, file: File): Promise
         url: URL.createObjectURL(file), // Use a temporary local URL for the mock
         size: file.size,
         uploadedAt: new Date().toISOString(),
+        isPublic: false,
     };
     MEDIA_ITEMS.unshift(newItem);
     return newItem;
+};
+
+export const updateMediaItemVisibility = async (mediaId: string, isPublic: boolean): Promise<MediaItem | null> => {
+    await delay(300);
+    const itemIndex = MEDIA_ITEMS.findIndex(item => item.id === mediaId);
+    if (itemIndex > -1) {
+        MEDIA_ITEMS[itemIndex].isPublic = isPublic;
+        return MEDIA_ITEMS[itemIndex];
+    }
+    return null;
+}
+
+export const deleteMediaItem = async (mediaId: string): Promise<{ success: boolean }> => {
+    await delay(400);
+    const initialLength = MEDIA_ITEMS.length;
+    MEDIA_ITEMS = MEDIA_ITEMS.filter(item => item.id !== mediaId);
+    return { success: initialLength > MEDIA_ITEMS.length };
 };
