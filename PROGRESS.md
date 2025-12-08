@@ -1,3 +1,4 @@
+
 # Lizoku LMS Development Progress
 
 This document tracks the implementation status of features as defined in the User Requirement Specification.
@@ -19,6 +20,7 @@ This document tracks the implementation status of features as defined in the Use
 | **Responsiveness** | ✅ | Basic responsiveness for key layouts is implemented. |
 | **Theming** | ✅ | Colors and fonts from URS are applied via Tailwind. |
 | **Notification System**| ✅ | Header notification bell, panel, and backend triggers implemented. |
+| **Rich Text Editor (WYSIWYG)** | ✅ | Custom component created and integrated into Course Builder for lessons. |
 
 ---
 
@@ -41,7 +43,8 @@ This document tracks the implementation status of features as defined in the Use
 
 | Page / Feature | Status | Notes |
 |---|---|---|
-| **Dashboard** | ✅ | Stats, Recent Signups, and Announcement widgets are implemented. Charts are placeholders. |
+| **Dashboard** | ✅ | Stats, Recent Signups, and Announcement widgets are implemented. |
+| **Advanced Analytics** | ✅ | Interactive SVG charts (Bar, Donut, Line) implemented for visualizing platform data. |
 | **Calendar** | ✅ | Unified calendar page implemented. |
 | **User Management** | ✅ | Full CRUD functionality implemented, including user creation, editing, and deletion. |
 | **Communications** | ✅ | Full compose and history functionality implemented. |
@@ -70,11 +73,14 @@ This document tracks the implementation status of features as defined in the Use
 | **Calendar** | ✅ | Unified calendar page implemented. |
 | **My Courses** | ✅ | Instructors can now create new draft courses. |
 | **Course Builder** | ✅ | Includes AI outline generation, multi-type quiz assembly, and quiz settings. Can now attach rubrics. |
+| **Builder Drag-and-Drop** | ✅ | Implemented HTML5 Drag-and-Drop for Modules and Items within the builder. |
+| **Interactive Video Quizzes** | ✅ | Implemented `VideoQuizPlayer` and `VideoQuizEditor` to allow embedding timestamped questions in videos. |
 | **Grading Hub** | ✅ | Centralized hub for viewing submission status across all activities and sending targeted communications. |
 | **Gradebook** | ✅ | Includes manual grading interface for subjective questions, displays interactive rubrics, and now shows links to download submitted files. |
 | **Examinations** | ✅ | Full CRUD functionality for creating, scheduling, and managing timed exams from the question bank. |
 | **Question Bank** | ✅ | Upgraded to support multiple question types. |
 | **Rubrics** | ✅ | Full CRUD functionality for creating and managing reusable grading rubrics. |
+| **Retention (At-Risk)** | ✅ | Implemented Early Warning System to identify and nudge struggling students. |
 | **Example Course Content** | ✅ | Implemented a comprehensive 8-week example course ('Intro to CS') with detailed, professionally styled content for all lessons and assignments. |
 | **My Profile** | ✅ | Implemented profile editing, password management, and AI avatar regeneration. |
 
@@ -86,13 +92,31 @@ This document tracks the implementation status of features as defined in the Use
 |---|---|---|
 | **Dashboard** | ✅ | Redesigned to show urgent items, deadlines, recent activity, and courses. |
 | **Explore Courses** | ✅ | Implemented a course catalog with search, filtering, and simulated enrollment. |
+| **Career Hub** | ✅ | Job & Gig opportunity listings with application tracking for students. |
 | **My Courses** | ✅ | Page displays all enrolled courses. |
 | **Course Viewer** | ✅ | Supports taking multi-type quizzes, file upload submissions, and discussion boards. Now displays detailed, professionally styled content for lessons, resources, and assignments. |
 | **My Program** | ✅ | Displays student's academic roadmap, course status, grades, and overall progress. |
 | **Calendar** | ✅ | Unified calendar page implemented. |
 | **My Messages** | ✅ | Full messaging functionality with conversation composition, multiple participants, and pre-filling from course pages. |
 | **My Grades** | ✅ | Implemented a page for students to view their grades by course. |
+| **Quiz Attempt Review** | ✅ | Implemented detailed submission review with correct/incorrect feedback in a modal and after quiz completion. |
 | **My Transcript** | ✅ | Implemented a formal, printable academic transcript with GPA calculation. |
 | **My Certificates** | ✅ | Implemented a gallery page for students to view and download their earned certificates. |
 | **My Achievements**| ✅ | Implemented a gallery page for students to view earned and locked achievements. |
 | **My Profile** | ✅ | Implemented profile editing, password management, and AI avatar regeneration. |
+
+---
+
+## Enterprise & Government Grade Enhancements (Planned)
+
+| Feature | Status | Notes |
+|---|---|---|
+| **Job Market & Gig Economy Hub** | ✅ | Connect students with gig work/jobs after certification. |
+| **Hybrid / Blended Learning** | ✅ | Offline session scheduling, QR code attendance tracking. |
+| **Content Governance** | ✅ | Approval workflows (Draft -> Pending Review -> Published). |
+| **Course Surveys & Feedback** | ✅ | Non-graded assessment tools for quality assurance. |
+| **Training Needs & Budgeting** | ✅ | Admin tools for skill gap analysis and budget allocation. |
+| **Gamification Leaderboards** | ✅ | Social competition based on XP/Grades. |
+| **Geospatial Analytics** | ⏳ | Heatmaps for login/activity by location. |
+| **SCORM Player Support** | ⏳ | Support for importing standard course packages. |
+| **Content Version Control** | ⏳ | History logs and rollback capabilities for course content. |

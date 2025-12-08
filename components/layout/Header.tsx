@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon, IconName } from '../icons';
-// Fix: Import the Notification type. The NotificationType enum members are now available from the updated types.ts.
 import { Notification, NotificationType } from '../../types';
 
 const NOTIFICATION_ICONS: Record<NotificationType, IconName> = {
@@ -81,6 +81,35 @@ const NotificationsPanel: React.FC<{ isOpen: boolean; onClose: () => void }> = (
 export const Header: React.FC<{ onToggleSidebar: () => void }> = ({ onToggleSidebar }) => {
     const { user, logout, unreadCount } = useAuth();
     const [isNotificationsOpen, setNotificationsOpen] = useState(false);
+    
+    // Theme State
+    const [isDark, setIsDark] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
+        }
+        return false;
+    });
+
+    useEffect(() => {
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme) {
+            setIsDark(storedTheme === 'dark');
+        } else {
+            setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        const newIsDark = !isDark;
+        setIsDark(newIsDark);
+        if (newIsDark) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('theme', 'light');
+        }
+    };
 
     return (
         <header className="bg-white dark:bg-gray-800 shadow-sm dark:shadow-none dark:border-b dark:border-l dark:border-r dark:border-gray-700 rounded-b-xl sticky top-0 z-30">
@@ -98,37 +127,49 @@ export const Header: React.FC<{ onToggleSidebar: () => void }> = ({ onToggleSide
                             <span className="ml-2">Lizoku LMS</span>
                         </div>
                     </div>
-                    {user && (
-                        <div className="flex items-center space-x-2 sm:space-x-4">
-                            <div className="relative">
-                                <button
-                                    onClick={() => setNotificationsOpen(prev => !prev)}
-                                    className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
-                                >
-                                    <Icon name="Bell" className="h-6 w-6" />
-                                    {unreadCount > 0 && (
-                                        <span className="absolute top-0 right-0 block h-2.5 w-2.5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800"></span>
-                                    )}
-                                </button>
-                                <NotificationsPanel isOpen={isNotificationsOpen} onClose={() => setNotificationsOpen(false)} />
-                            </div>
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                        
+                        {/* Theme Toggle */}
+                        <button
+                            onClick={toggleTheme}
+                            className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+                            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        >
+                            <Icon name={isDark ? "Sun" : "Moon"} className="h-6 w-6" />
+                        </button>
 
-                            <div className="flex items-center">
-                                <img
-                                    src={user.avatarUrl}
-                                    alt="User Avatar"
-                                    className="w-10 h-10 rounded-full border-2 border-primary"
-                                />
-                                <div className="ml-3 text-right hidden sm:block">
-                                    <p className="font-bold text-gray-800 dark:text-gray-100">{user.name}</p>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{user.role}</p>
+                        {user && (
+                            <>
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setNotificationsOpen(prev => !prev)}
+                                        className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+                                    >
+                                        <Icon name="Bell" className="h-6 w-6" />
+                                        {unreadCount > 0 && (
+                                            <span className="absolute top-0 right-0 block h-2.5 w-2.5 transform -translate-y-1/2 translate-x-1/2 rounded-full bg-red-500 ring-2 ring-white dark:ring-gray-800"></span>
+                                        )}
+                                    </button>
+                                    <NotificationsPanel isOpen={isNotificationsOpen} onClose={() => setNotificationsOpen(false)} />
                                 </div>
-                            </div>
-                            <button onClick={logout} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark">
-                                <Icon name="LogOut" className="h-6 w-6" />
-                            </button>
-                        </div>
-                    )}
+
+                                <div className="flex items-center pl-2 sm:pl-0">
+                                    <img
+                                        src={user.avatarUrl}
+                                        alt="User Avatar"
+                                        className="w-10 h-10 rounded-full border-2 border-primary"
+                                    />
+                                    <div className="ml-3 text-right hidden sm:block">
+                                        <p className="font-bold text-gray-800 dark:text-gray-100">{user.name}</p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">{user.role}</p>
+                                    </div>
+                                </div>
+                                <button onClick={logout} className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark">
+                                    <Icon name="LogOut" className="h-6 w-6" />
+                                </button>
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
         </header>

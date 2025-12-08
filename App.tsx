@@ -1,5 +1,3 @@
-
-
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -22,6 +20,7 @@ import CertificateRequestsPage from './pages/admin/CertificateRequestsPage';
 import QuickSetupPage from './pages/admin/QuickSetupPage';
 import ActivityLogsPage from './pages/admin/ActivityLogsPage';
 import SessionManagementPage from './pages/admin/SessionManagementPage';
+import BudgetingPage from './pages/admin/BudgetingPage';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import InstructorMyCoursesPage from './pages/instructor/InstructorMyCoursesPage';
 import CourseBuilderPage from './pages/instructor/CourseBuilderPage';
@@ -47,6 +46,8 @@ import { UserRole } from './types';
 import { IdleTimeoutModal } from './components/common/IdleTimeoutModal';
 import MediaLibraryPage from './pages/instructor/MediaLibraryPage';
 import GradingHubPage from './pages/instructor/GradingHubPage';
+import RetentionPage from './pages/instructor/RetentionPage';
+import OpportunitiesPage from './pages/student/OpportunitiesPage';
 
 const ProtectedRoute: React.FC<{ allowedRoles: UserRole[] }> = ({ allowedRoles }) => {
     const { isAuthenticated, user, loading } = useAuth();
@@ -101,6 +102,7 @@ const AppRoutes: React.FC = () => {
                     <Route path="/admin/programs" element={<ProgramsPage />} />
                     <Route path="/admin/semesters" element={<SemestersPage />} />
                     <Route path="/admin/courses" element={<CoursesPage />} />
+                    <Route path="/admin/courses/:courseId/preview" element={<CourseViewerPage />} />
                     <Route path="/admin/examinations" element={<AdminExaminationsPage />} />
                     <Route path="/admin/announcements" element={<AnnouncementsPage />} />
                     <Route path="/admin/communications" element={<CommunicationsPage />} />
@@ -109,6 +111,7 @@ const AppRoutes: React.FC = () => {
                     <Route path="/admin/security" element={<SecurityManagementPage />} />
                     <Route path="/admin/certificate-settings" element={<CertificateSettingsPage />} />
                     <Route path="/admin/certificate-requests" element={<CertificateRequestsPage />} />
+                    <Route path="/admin/budgeting" element={<BudgetingPage />} />
                     <Route path="/admin/quick-setup" element={<QuickSetupPage />} />
                     <Route path="/admin/activity-logs" element={<ActivityLogsPage />} />
                     <Route path="/admin/sessions" element={<SessionManagementPage />} />
@@ -125,6 +128,7 @@ const AppRoutes: React.FC = () => {
                     <Route path="/instructor/examinations" element={<ExaminationsPage />} />
                     <Route path="/instructor/question-bank" element={<QuestionBankPage />} />
                     <Route path="/instructor/rubrics" element={<RubricsPage />} />
+                    <Route path="/instructor/retention" element={<RetentionPage />} />
                     <Route path="/instructor/profile" element={<InstructorMyProfilePage />} />
                     {/* Add other instructor routes as placeholders */}
                 </Route>
@@ -133,6 +137,7 @@ const AppRoutes: React.FC = () => {
                 <Route element={<ProtectedRoute allowedRoles={[UserRole.Student]} />}>
                     <Route path="/dashboard" element={<StudentDashboard />} />
                     <Route path="/explore" element={<ExploreCoursesPage />} />
+                    <Route path="/career-hub" element={<OpportunitiesPage />} />
                     <Route path="/my-courses" element={<MyCoursesPage />} />
                     <Route path="/courses/:courseId" element={<CourseViewerPage />} />
                     <Route path="/grades" element={<MyGradesPage />} />
@@ -165,21 +170,16 @@ const AppRoutes: React.FC = () => {
 
 const App: React.FC = () => {
     useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        const applyTheme = () => {
-            if (mediaQuery.matches) {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-        };
-
-        applyTheme(); // Apply theme on initial load
-
-        mediaQuery.addEventListener('change', applyTheme);
-
-        return () => mediaQuery.removeEventListener('change', applyTheme);
+        // Theme initialization logic
+        const storedTheme = localStorage.getItem('theme');
+        if (storedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else if (storedTheme === 'light') {
+            document.documentElement.classList.remove('dark');
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Fallback to system preference if no local storage setting
+            document.documentElement.classList.add('dark');
+        }
     }, []);
 
     return (

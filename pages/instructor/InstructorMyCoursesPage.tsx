@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { PageHeader } from '../../components/ui/PageHeader';
@@ -17,6 +18,7 @@ const InstructorMyCoursesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [formData, setFormData] = useState(emptyCourse);
+    const [submittingId, setSubmittingId] = useState<string | null>(null);
     
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -73,6 +75,41 @@ const InstructorMyCoursesPage: React.FC = () => {
         }
     };
 
+    const handleSubmitForReview = async (courseId: string) => {
+        if (!window.confirm("Are you sure you want to submit this course for review? You won't be able to make changes while it's pending.")) {
+            return;
+        }
+        
+        setSubmittingId(courseId);
+        try {
+            // We use updateCourse to change status
+            const updated = await api.updateCourse(courseId, { status: CourseStatus.PendingReview });
+            if (updated) {
+                setCourses(prev => prev.map(c => c.id === courseId ? updated : c));
+                // Optional: alert removed for smoother UX as the UI updates immediately
+            }
+        } catch (error) {
+            console.error("Failed to submit course", error);
+            alert("Failed to submit course.");
+        } finally {
+            setSubmittingId(null);
+        }
+    };
+
+    const getStatusBadge = (status: CourseStatus) => {
+        switch (status) {
+            case CourseStatus.Published:
+                return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+            case CourseStatus.PendingReview:
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+            case CourseStatus.Rejected:
+                return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+            case CourseStatus.Draft:
+            default:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        }
+    };
+
     if (loading) return <div>Loading your courses...</div>;
 
     return (
@@ -88,16 +125,41 @@ const InstructorMyCoursesPage: React.FC = () => {
                         <div className="p-4 flex-grow flex flex-col">
                             <div className="flex justify-between items-start">
                                 <h4 className="font-bold text-gray-800 dark:text-gray-200 text-lg flex-1 pr-2">{course.title}</h4>
-                                <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${
-                                    course.status === CourseStatus.Published ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                }`}>
-                                    {course.status}
+                                <span className={`px-2 py-1 text-xs font-semibold rounded-full capitalize ${getStatusBadge(course.status)}`}>
+                                    {course.status.replace('_', ' ')}
                                 </span>
                             </div>
                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 flex-grow">{course.description}</p>
-                            <Link to={`/instructor/courses/${course.id}`} className="mt-4 block w-full text-center bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300">
-                                Manage Course
-                            </Link>
+                            
+                            <div className="mt-4 space-y-2">
+                                <Link 
+                                    to={`/instructor/courses/${course.id}`} 
+                                    className={`block w-full text-center font-bold py-2 px-4 rounded-md transition duration-300 ${
+                                        course.status === CourseStatus.PendingReview 
+                                            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600' 
+                                            : 'bg-primary text-gray-800 hover:bg-primary-dark'
+                                    }`}
+                                >
+                                    {course.status === CourseStatus.PendingReview ? 'View Content (Read Only)' : 'Manage Content'}
+                                </Link>
+                                {(course.status === CourseStatus.Draft || course.status === CourseStatus.Rejected) && (
+                                    <button 
+                                        onClick={() => handleSubmitForReview(course.id)}
+                                        disabled={submittingId === course.id}
+                                        className="block w-full text-center bg-white dark:bg-gray-700 text-secondary dark:text-blue-400 border border-secondary dark:border-blue-400 font-bold py-2 px-4 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+                                    >
+                                        {submittingId === course.id ? (
+                                            <>
+                                                <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Submitting...
+                                            </>
+                                        ) : 'Submit for Review'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}

@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Modal } from '../../components/ui/Modal';
 import * as api from '../../services/api';
 import { Course, CourseStatus } from '../../types';
 import { Icon } from '../../components/icons';
+import { Link } from 'react-router-dom';
 
 const emptyCourse: Partial<Course> = {
     title: '',
@@ -98,6 +100,46 @@ const CoursesPage: React.FC = () => {
         }
     };
 
+    const handleApprove = async (courseId: string) => {
+        if (window.confirm('Approve this course and publish it?')) {
+            try {
+                const updated = await api.updateCourse(courseId, { status: CourseStatus.Published });
+                if (updated) {
+                    setCourses(courses.map(c => c.id === courseId ? updated : c));
+                }
+            } catch (error) {
+                console.error("Failed to approve course", error);
+            }
+        }
+    };
+
+    const handleReject = async (courseId: string) => {
+        if (window.confirm('Reject this course? It will be returned to the instructor.')) {
+            try {
+                const updated = await api.updateCourse(courseId, { status: CourseStatus.Rejected });
+                if (updated) {
+                    setCourses(courses.map(c => c.id === courseId ? updated : c));
+                }
+            } catch (error) {
+                console.error("Failed to reject course", error);
+            }
+        }
+    };
+
+    const getStatusBadge = (status: CourseStatus) => {
+        switch (status) {
+            case CourseStatus.Published:
+                return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
+            case CourseStatus.PendingReview:
+                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300';
+            case CourseStatus.Rejected:
+                return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
+            case CourseStatus.Draft:
+            default:
+                return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        }
+    };
+
 
     if (loading) return <div>Loading courses...</div>;
 
@@ -131,15 +173,23 @@ const CoursesPage: React.FC = () => {
                                     <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{course.instructorName}</td>
                                     <td className="px-4 py-3 whitespace-nowrap text-gray-500 dark:text-gray-400">{course.departmentName}</td>
                                      <td className="px-4 py-3 whitespace-nowrap">
-                                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${
-                                            course.status === CourseStatus.Published ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                                        }`}>
-                                            {course.status}
+                                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize ${getStatusBadge(course.status)}`}>
+                                            {course.status.replace('_', ' ')}
                                         </span>
                                     </td>
-                                    <td className="px-4 py-3 whitespace-nowrap space-x-4">
-                                        <button onClick={() => handleOpenModal(course)} className="text-secondary dark:text-blue-400 hover:text-secondary-dark font-medium">Edit</button>
-                                        <button onClick={() => handleDelete(course.id)} className="text-red-600 hover:text-red-800 font-medium">Delete</button>
+                                    <td className="px-4 py-3 whitespace-nowrap flex items-center space-x-2">
+                                        <Link to={`/admin/courses/${course.id}/preview`} className="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 font-medium text-sm flex items-center bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                            <Icon name="Eye" className="w-4 h-4 mr-1" />
+                                            Preview
+                                        </Link>
+                                        {course.status === CourseStatus.PendingReview && (
+                                            <>
+                                                <button onClick={() => handleApprove(course.id)} className="text-green-600 hover:text-green-800 font-bold px-2">Approve</button>
+                                                <button onClick={() => handleReject(course.id)} className="text-red-600 hover:text-red-800 font-bold px-2">Reject</button>
+                                            </>
+                                        )}
+                                        <button onClick={() => handleOpenModal(course)} className="text-secondary dark:text-blue-400 hover:text-secondary-dark font-medium px-2">Edit</button>
+                                        <button onClick={() => handleDelete(course.id)} className="text-red-600 hover:text-red-800 font-medium px-2">Delete</button>
                                     </td>
                                 </tr>
                             ))}

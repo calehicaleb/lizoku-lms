@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Icon, IconName } from '../../components/icons';
@@ -239,6 +240,10 @@ const GradableItemCard: React.FC<{item: GradableItemSummary, isSelected: boolean
         [ContentType.Examination]: 'ListChecks',
         [ContentType.Lesson]: 'FileText',
         [ContentType.Resource]: 'Link',
+        [ContentType.InteractiveVideo]: 'FileVideo',
+        [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.Survey]: 'Star',
+        [ContentType.Leaderboard]: 'Trophy',
     };
     return (
         <button onClick={onSelect} className={`w-full p-4 border rounded-lg text-left transition-all ${isSelected ? 'bg-secondary-light dark:bg-secondary/20 ring-2 ring-secondary' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>

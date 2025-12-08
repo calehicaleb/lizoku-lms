@@ -5,24 +5,32 @@ import { PageHeader } from '../../components/ui/PageHeader';
 import * as api from '../../services/api';
 import { StatCardData, User, Announcement } from '../../types';
 import { Icon } from '../../components/icons';
+import { BarChart, DonutChart, LineChart } from '../../components/common/Charts';
 
 const AdminDashboard: React.FC = () => {
     const [stats, setStats] = useState<StatCardData[]>([]);
     const [recentUsers, setRecentUsers] = useState<User[]>([]);
     const [latestAnnouncement, setLatestAnnouncement] = useState<Announcement | null>(null);
+    const [analytics, setAnalytics] = useState<{
+        userGrowth: any[];
+        roleDistribution: any[];
+        activityByDay: any[];
+    } | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [statsData, usersData, announcementData] = await Promise.all([
+                const [statsData, usersData, announcementData, analyticsData] = await Promise.all([
                     api.getAdminStats(),
                     api.getRecentUsers(5),
-                    api.getLatestAnnouncement()
+                    api.getLatestAnnouncement(),
+                    api.getDashboardAnalytics()
                 ]);
                 setStats(statsData);
                 setRecentUsers(usersData);
                 setLatestAnnouncement(announcementData);
+                setAnalytics(analyticsData);
             } catch (error) {
                 console.error("Failed to fetch admin dashboard data", error);
             } finally {
@@ -41,6 +49,38 @@ const AdminDashboard: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {stats.map(stat => <StatCard key={stat.title} data={stat} />)}
             </div>
+
+            {/* Platform Analytics Section */}
+            {analytics && (
+                <div className="mb-8">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Platform Analytics</h3>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Line Chart: User Growth */}
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+                            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">User Growth (Last 6 Months)</h4>
+                            <div className="h-48">
+                                <LineChart data={analytics.userGrowth} height={200} />
+                            </div>
+                        </div>
+
+                        {/* Donut Chart: Role Distribution */}
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+                            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">User Roles Distribution</h4>
+                            <div className="h-48">
+                                <DonutChart data={analytics.roleDistribution} height={180} />
+                            </div>
+                        </div>
+
+                        {/* Bar Chart: Weekly Activity */}
+                        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+                            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">Weekly User Activity</h4>
+                            <div className="h-48">
+                                <BarChart data={analytics.activityByDay} height={200} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">

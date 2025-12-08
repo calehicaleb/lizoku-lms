@@ -1,13 +1,19 @@
+
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { Modal } from '../../components/ui/Modal';
 import * as api from '../../services/api';
-import { CourseSummary } from '../../types';
+import { CourseSummary, ContentType, Submission, Question, Rubric } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../../components/icons';
+import { QuizReview } from '../../components/common/QuizReview';
 
 interface GradeInfo {
+    id: string;
     contentItemTitle: string;
     score: number | null;
+    type: ContentType;
+    submissionId?: string;
 }
 
 const MyGradesPage: React.FC = () => {
@@ -18,11 +24,15 @@ const MyGradesPage: React.FC = () => {
     const [loadingCourses, setLoadingCourses] = useState(true);
     const [loadingGrades, setLoadingGrades] = useState(false);
 
+    // Review Modal State
+    const [isReviewOpen, setIsReviewOpen] = useState(false);
+    const [reviewData, setReviewData] = useState<{ submission: Submission, questions: Question[] | null } | null>(null);
+    const [loadingReview, setLoadingReview] = useState(false);
+
     useEffect(() => {
         if (!user) return;
         const fetchCourses = async () => {
             try {
-                // FIX: Pass the student's ID to the API call.
                 const data = await api.getStudentCourses(user.id);
                 setCourses(data);
                 if (data.length > 0) {
@@ -55,6 +65,29 @@ const MyGradesPage: React.FC = () => {
         fetchGrades();
     }, [selectedCourseId, user]);
     
+    const handleReviewClick = async (grade: GradeInfo) => {
+        if (!grade.submissionId) return;
+        if (grade.type !== ContentType.Quiz) {
+            alert("Detailed review is currently only available for Quizzes.");
+            return;
+        }
+
+        setLoadingReview(true);
+        setIsReviewOpen(true);
+        setReviewData(null);
+
+        try {
+            const data = await api.getSubmissionDetails(grade.submissionId);
+            setReviewData(data);
+        } catch (error) {
+            console.error("Failed to load review", error);
+            setIsReviewOpen(false);
+            alert("Could not load submission details.");
+        } finally {
+            setLoadingReview(false);
+        }
+    };
+
     const getGradeColor = (score: number | null) => {
         if (score === null) return 'text-gray-500 dark:text-gray-400';
         if (score >= 90) return 'text-green-600 dark:text-green-400';
@@ -89,15 +122,30 @@ const MyGradesPage: React.FC = () => {
                             <thead className="bg-gray-50 dark:bg-gray-700/50">
                                 <tr>
                                     <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Assignment / Quiz</th>
+                                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Type</th>
                                     <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Score</th>
+                                    <th className="px-4 py-3 text-center font-medium text-gray-500 dark:text-gray-400">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {grades.map((grade, index) => (
-                                    <tr key={index}>
+                                {grades.map((grade) => (
+                                    <tr key={grade.id}>
                                         <td className="px-4 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-gray-200">{grade.contentItemTitle}</td>
+                                        <td className="px-4 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400 capitalize">{grade.type}</td>
                                         <td className={`px-4 py-4 whitespace-nowrap text-right font-bold ${getGradeColor(grade.score)}`}>
                                             {grade.score !== null ? `${grade.score}%` : 'Not Graded'}
+                                        </td>
+                                        <td className="px-4 py-4 whitespace-nowrap text-center">
+                                            {grade.submissionId && grade.type === ContentType.Quiz ? (
+                                                <button 
+                                                    onClick={() => handleReviewClick(grade)}
+                                                    className="text-secondary dark:text-blue-400 hover:underline font-medium"
+                                                >
+                                                    Review Attempt
+                                                </button>
+                                            ) : (
+                                                <span className="text-gray-400 dark:text-gray-600">-</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
@@ -121,6 +169,22 @@ const MyGradesPage: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <Modal isOpen={isReviewOpen} onClose={() => setIsReviewOpen(false)} title="Submission Review" size="4xl">
+                {loadingReview ? (
+                    <div className="p-8 text-center">Loading review...</div>
+                ) : reviewData && reviewData.submission.type === 'quiz' && reviewData.questions ? (
+                    <QuizReview 
+                        submission={reviewData.submission as any} 
+                        questions={reviewData.questions} 
+                    />
+                ) : (
+                    <div className="p-8 text-center text-red-500">Failed to load review data.</div>
+                )}
+                <div className="mt-6 flex justify-end">
+                    <button onClick={() => setIsReviewOpen(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 font-medium">Close</button>
+                </div>
+            </Modal>
         </div>
     );
 };

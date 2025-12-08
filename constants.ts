@@ -16,6 +16,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { path: '/admin/certificate-settings', name: 'Certificate Settings', icon: 'BadgeCheck', section: 'Certificates' },
   { path: '/admin/certificate-requests', name: 'Certificate Requests', icon: 'Banknote', section: 'Certificates' },
   
+  { path: '/admin/budgeting', name: 'Budgeting', icon: 'Banknote', section: 'System' },
   { path: '/admin/quick-setup', name: 'Quick Setup', icon: 'Wrench', section: 'System' },
   { path: '/admin/announcements', name: 'Site Announcements', icon: 'ScrollText', section: 'System' },
   { path: '/admin/question-bank', name: 'Question Bank', icon: 'FileText', section: 'System' },
@@ -32,6 +33,7 @@ export const INSTRUCTOR_NAV_ITEMS: NavItem[] = [
   { path: '/instructor/grading-hub', name: 'Grading Hub', icon: 'PenSquare', section: 'Course Management' },
   { path: '/instructor/media-library', name: 'Media Library', icon: 'FileImage', section: 'Course Management' },
   { path: '/instructor/gradebook', name: 'Gradebook', icon: 'ListChecks', section: 'Course Management' },
+  { path: '/instructor/retention', name: 'Retention', icon: 'AlertTriangle', section: 'Course Management' },
   { path: '/instructor/examinations', name: 'Examinations', icon: 'ScrollText', section: 'Course Management' },
   { path: '/instructor/question-bank', name: 'Question Bank', icon: 'FileText', section: 'Course Management' },
   { path: '/instructor/rubrics', name: 'Rubrics', icon: 'ClipboardCheck', section: 'Course Management' },
@@ -43,6 +45,7 @@ export const INSTRUCTOR_NAV_ITEMS: NavItem[] = [
 export const STUDENT_NAV_ITEMS: NavItem[] = [
   { path: '/dashboard', name: 'Dashboard', icon: 'LayoutDashboard', section: 'Main' },
   { path: '/explore', name: 'Explore Courses', icon: 'Search', section: 'Main' },
+  { path: '/career-hub', name: 'Career Hub', icon: 'Briefcase', section: 'Main' },
 
   { path: '/my-courses', name: 'My Courses', icon: 'BookOpen', section: 'Academics' },
   { path: '/program', name: 'My Program', icon: 'GraduationCap', section: 'Academics' },

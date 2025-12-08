@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
     LayoutDashboard, 
@@ -52,6 +53,29 @@ import {
     Minimize2,
     PanelRightClose,
     PanelLeftOpen,
+    Bold,
+    Italic,
+    Underline,
+    List,
+    ListOrdered,
+    AlignLeft,
+    AlignCenter,
+    AlignRight,
+    Type,
+    Undo,
+    Redo,
+    Image,
+    Code,
+    Sun,
+    Moon,
+    HelpCircle,
+    Briefcase,
+    MapPin,
+    Building2,
+    DollarSign,
+    QrCode,
+    CalendarCheck,
+    Star,
 } from 'lucide-react';
 
 const iconMap = {
@@ -64,6 +88,9 @@ const iconMap = {
     Minimize: Minimize2,
     PanelRightClose,
     PanelLeftOpen,
+    Bold, Italic, Underline, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Type, Undo, Redo, Image, Code,
+    Sun, Moon, HelpCircle, Briefcase, MapPin, Building2, DollarSign,
+    QrCode, CalendarCheck, Star
 };
 
 export type IconName = keyof typeof iconMap;

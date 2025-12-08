@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import * as api from '../../services/api';
 import { Question, QuestionType, Grade, ContentItem, QuizSubmission, Rubric } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../icons';
 import { RubricViewer } from './RubricViewer';
+import { QuizReview } from './QuizReview';
 
 interface QuizTakerProps {
     courseId: string;
@@ -40,6 +42,10 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
     const [finalGrade, setFinalGrade] = useState<Grade | null>(null);
     const [timeLeft, setTimeLeft] = useState<number | null>(timeLimit ? timeLimit * 60 : null);
     
+    // New state for Review Mode
+    const [isReviewing, setIsReviewing] = useState(false);
+    const [latestSubmission, setLatestSubmission] = useState<QuizSubmission | null>(null);
+    
     const timerRef = useRef<number | null>(null);
     
     const currentAttemptNumber = useMemo(() => previousAttempts.length + 1, [previousAttempts]);
@@ -63,6 +69,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                 const types = [...new Set(fetchedQuestions.map(q => q.type.replace('-', ' ')))];
                 setQuestionTypes(types);
                 
+                // Keep original order if not randomized or if we need them for review later (though review should match display)
                 if (randomizeQuestions) {
                     setQuestions(shuffleArray(fetchedQuestions));
                 } else {
@@ -123,12 +130,28 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
         try {
             const resultGrade = await api.submitQuiz(user.id, courseId, contentItemId, answers);
             setFinalGrade(resultGrade);
+            
+            // Construct a local submission object for immediate review
+            const submission: QuizSubmission = {
+                id: resultGrade.submissionId || 'temp-sub',
+                type: 'quiz',
+                studentId: user.id,
+                courseId: courseId,
+                contentItemId: contentItemId,
+                submittedAt: new Date().toISOString(),
+                answers: answers,
+                attemptNumber: currentAttemptNumber
+            };
+            setLatestSubmission(submission);
+            
         } catch (error) {
             console.error("Failed to submit quiz", error);
             alert("An error occurred while submitting your quiz. Please try again.");
             setIsSubmitted(false); // Allow retry on failure
         }
     };
+    
+    // --- Render Functions ---
     
     const renderQuestion = (question: Question) => {
         if (question.type === QuestionType.MultipleChoice) {
@@ -242,6 +265,26 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
         );
     }
     
+    // Review Mode View
+    if (isReviewing && latestSubmission) {
+        return (
+            <div className="space-y-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Review: {quizTitle}</h1>
+                    <button onClick={() => { setIsReviewing(false); setIsSubmitted(true); }} className="text-sm text-secondary dark:text-blue-400 hover:underline">
+                        &larr; Back to Results
+                    </button>
+                </div>
+                <QuizReview submission={latestSubmission} questions={questions} />
+                <div className="mt-8 flex justify-center">
+                    <button onClick={onComplete} className="bg-secondary text-white font-bold py-2 px-6 rounded-md hover:bg-secondary-dark transition duration-300">
+                        Finish Review
+                    </button>
+                </div>
+            </div>
+        );
+    }
+    
     if (isSubmitted) {
         return (
             <div className="text-center p-8">
@@ -258,9 +301,15 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                         <p className="text-gray-500 dark:text-gray-400">Your score will be available once your instructor has reviewed your submission.</p>
                     </>
                 )}
-                <button onClick={onComplete} className="mt-6 bg-secondary text-white font-bold py-2 px-6 rounded-md hover:bg-secondary-dark transition duration-300">
-                    Back to Course
-                </button>
+                
+                <div className="mt-8 space-x-4">
+                    <button onClick={() => setIsReviewing(true)} className="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-300 dark:border-gray-600 font-bold py-2 px-6 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-300">
+                        Review Answers
+                    </button>
+                    <button onClick={onComplete} className="bg-secondary text-white font-bold py-2 px-6 rounded-md hover:bg-secondary-dark transition duration-300">
+                        Back to Course
+                    </button>
+                </div>
             </div>
         );
     }
@@ -299,7 +348,7 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                         </div>
                     </div>
                     
-                    <div className="text-center">
+                    <div className="text-center space-x-4">
                         <button 
                             onClick={() => setQuizStarted(true)}
                             disabled={!canAttempt}
@@ -307,6 +356,20 @@ export const QuizTaker: React.FC<QuizTakerProps> = ({ courseId, quizItem, onComp
                         >
                             {canAttempt ? `Start Attempt ${currentAttemptNumber}` : 'No Attempts Remaining'}
                         </button>
+                        
+                        {!canAttempt && previousAttempts.length > 0 && (
+                             <button 
+                                onClick={() => {
+                                    // Use the latest submission for review
+                                    const latest = previousAttempts.sort((a,b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())[0];
+                                    setLatestSubmission(latest);
+                                    setIsReviewing(true);
+                                }}
+                                className="bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-3 px-8 rounded-md border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-300"
+                            >
+                                Review Previous Attempt
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

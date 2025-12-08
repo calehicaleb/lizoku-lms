@@ -1,13 +1,18 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import * as api from '../../services/api';
-import { Course, ContentItem, ContentType, ContentItemDetails, Rubric } from '../../types';
+import { Course, ContentItem, ContentType, ContentItemDetails, Rubric, LeaderboardEntry, UserRole, CourseStatus } from '../../types';
 import { Icon, IconName } from '../../components/icons';
 import { DiscussionBoard } from '../../components/common/DiscussionBoard';
 import { QuizTaker } from '../../components/common/QuizTaker';
 import { useAuth } from '../../contexts/AuthContext';
 import { AssignmentUploader } from '../../components/common/AssignmentUploader';
 import { RubricViewer } from '../../components/common/RubricViewer';
+import { VideoQuizPlayer } from '../../components/common/VideoQuizPlayer';
+import { OfflineSessionViewer } from '../../components/common/OfflineSessionViewer';
+import { SurveyTaker } from '../../components/common/SurveyTaker';
+import { CourseLeaderboard } from '../../components/common/CourseLeaderboard';
 
 const CourseViewerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
@@ -20,7 +25,14 @@ const CourseViewerPage: React.FC = () => {
     const [itemLoading, setItemLoading] = useState(false);
     const [itemRubric, setItemRubric] = useState<Rubric | null>(null);
     const [itemRubricLoading, setItemRubricLoading] = useState(false);
+    const [actionLoading, setActionLoading] = useState(false);
+    
+    // Leaderboard state
+    const [isLeaderboardActive, setIsLeaderboardActive] = useState(false);
+    const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
+    const [leaderboardLoading, setLeaderboardLoading] = useState(false);
 
+    const isAdmin = user?.role === UserRole.Admin;
 
     useEffect(() => {
         if (!courseId) return;
@@ -43,11 +55,11 @@ const CourseViewerPage: React.FC = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
 
-        if (selectedItem) {
+        if (selectedItem && !isLeaderboardActive) {
             setItemContent(null);
             setItemRubric(null); // Reset rubric on item change
 
-            const shouldFetchContent = ![ContentType.Quiz, ContentType.Examination].includes(selectedItem.type) && !(selectedItem.type === ContentType.Assignment && selectedItem.requiresFileUpload);
+            const shouldFetchContent = ![ContentType.Quiz, ContentType.Examination, ContentType.InteractiveVideo, ContentType.OfflineSession, ContentType.Survey].includes(selectedItem.type) && !(selectedItem.type === ContentType.Assignment && selectedItem.requiresFileUpload);
 
             if (shouldFetchContent) {
                 setItemLoading(true);
@@ -72,7 +84,54 @@ const CourseViewerPage: React.FC = () => {
             setItemContent(null);
             setItemRubric(null);
         }
-    }, [selectedItem]);
+    }, [selectedItem, isLeaderboardActive]);
+    
+    const handleLeaderboardClick = () => {
+        setIsLeaderboardActive(true);
+        setSelectedItem(null);
+        if (courseId && user) {
+            setLeaderboardLoading(true);
+            api.getCourseLeaderboard(courseId, user.id)
+                .then(setLeaderboardData)
+                .catch(err => console.error("Failed to load leaderboard", err))
+                .finally(() => setLeaderboardLoading(false));
+        }
+    };
+    
+    const handleItemClick = (item: ContentItem) => {
+        setIsLeaderboardActive(false);
+        setSelectedItem(item);
+    };
+
+    const handleAdminApprove = async () => {
+        if (!courseId) return;
+        if (!window.confirm("Approve this course? It will become visible to students.")) return;
+        setActionLoading(true);
+        try {
+            await api.updateCourse(courseId, { status: CourseStatus.Published });
+            alert("Course approved successfully.");
+            navigate('/admin/courses');
+        } catch (error) {
+            alert("Failed to approve course.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleAdminReject = async () => {
+        if (!courseId) return;
+        if (!window.confirm("Reject this course? It will be sent back to the instructor.")) return;
+        setActionLoading(true);
+        try {
+            await api.updateCourse(courseId, { status: CourseStatus.Rejected });
+            alert("Course rejected.");
+            navigate('/admin/courses');
+        } catch (error) {
+            alert("Failed to reject course.");
+        } finally {
+            setActionLoading(false);
+        }
+    };
 
 
     const allItems = useMemo(() => {
@@ -97,6 +156,10 @@ const CourseViewerPage: React.FC = () => {
         [ContentType.Discussion]: 'MessageSquare',
         [ContentType.Resource]: 'Link',
         [ContentType.Examination]: 'ListChecks',
+        [ContentType.InteractiveVideo]: 'FileVideo',
+        [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.Survey]: 'Star',
+        [ContentType.Leaderboard]: 'Trophy',
     };
 
     const handleQuizComplete = () => {
@@ -116,6 +179,10 @@ const CourseViewerPage: React.FC = () => {
     };
 
     const renderContent = () => {
+        if (isLeaderboardActive) {
+            return leaderboardLoading ? <div className="text-center p-8">Loading Leaderboard...</div> : <CourseLeaderboard entries={leaderboardData} />;
+        }
+        
         if (!selectedItem) {
              return (
                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-500 dark:text-gray-400">
@@ -135,6 +202,32 @@ const CourseViewerPage: React.FC = () => {
                         courseId={courseId!}
                         quizItem={selectedItem}
                         onComplete={handleQuizComplete} 
+                    />;
+        }
+
+        if (selectedItem.type === ContentType.InteractiveVideo) {
+            return (
+                <div className="flex flex-col h-full">
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">{selectedItem.title}</h1>
+                    <div className="flex-1 bg-black rounded-lg overflow-hidden" style={{ minHeight: '500px' }}>
+                        <VideoQuizPlayer 
+                            videoUrl={selectedItem.videoUrl || ''} 
+                            interactions={selectedItem.interactions || []}
+                            onComplete={() => console.log("Video completed")} 
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        if (selectedItem.type === ContentType.OfflineSession) {
+            return <OfflineSessionViewer session={selectedItem} />;
+        }
+
+        if (selectedItem.type === ContentType.Survey) {
+            return <SurveyTaker 
+                        survey={selectedItem} 
+                        onComplete={() => { if (nextItem) handleItemClick(nextItem); }} 
                     />;
         }
 
@@ -217,23 +310,54 @@ const CourseViewerPage: React.FC = () => {
     if (!course) return <div className="flex h-screen items-center justify-center">Course not found.</div>;
 
     return (
-        <div>
-            <Link to="/my-courses" className="text-sm text-secondary dark:text-blue-400 hover:underline mb-4 inline-block">&larr; Back to My Courses</Link>
+        <div className="flex flex-col h-[calc(100vh-6rem)]">
+            <div className="mb-4">
+                {isAdmin ? (
+                    <Link to="/admin/courses" className="text-sm text-secondary dark:text-blue-400 hover:underline inline-block">&larr; Back to Course Management</Link>
+                ) : (
+                    <Link to="/my-courses" className="text-sm text-secondary dark:text-blue-400 hover:underline inline-block">&larr; Back to My Courses</Link>
+                )}
+            </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-0">
                 {/* Sidebar */}
-                <aside className="lg:col-span-1 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm self-start sticky top-24 h-[calc(100vh-8rem)] overflow-y-auto">
+                <aside className="lg:col-span-1 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex flex-col overflow-y-auto">
+                    {isAdmin && (
+                        <div className="mb-4 px-3 py-2 bg-yellow-100 text-yellow-800 rounded-md text-center text-xs font-bold uppercase tracking-wider">
+                            Admin Preview Mode
+                        </div>
+                    )}
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 truncate">{course.title}</h2>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
-                        <div className="bg-primary h-2 rounded-full" style={{ width: `75%` }}></div>
-                    </div>
-                    <button 
-                        onClick={handleMessageInstructor}
-                        className="w-full mb-4 bg-secondary text-white font-bold py-2 px-4 rounded-md hover:bg-secondary-dark transition duration-300 flex items-center justify-center text-sm"
-                    >
-                        <Icon name="MessageSquare" className="h-4 w-4 mr-2" />
-                        Message Instructor
-                    </button>
+                    {!isAdmin && (
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
+                            <div className="bg-primary h-2 rounded-full" style={{ width: `75%` }}></div>
+                        </div>
+                    )}
+                    
+                    {!isAdmin && (
+                        <>
+                            <button 
+                                onClick={handleMessageInstructor}
+                                className="w-full mb-4 bg-secondary text-white font-bold py-2 px-4 rounded-md hover:bg-secondary-dark transition duration-300 flex items-center justify-center text-sm"
+                            >
+                                <Icon name="MessageSquare" className="h-4 w-4 mr-2" />
+                                Message Instructor
+                            </button>
+                            
+                            <button 
+                                onClick={handleLeaderboardClick}
+                                className={`w-full flex items-center text-left p-3 rounded-md text-sm transition-colors mb-4 border ${
+                                    isLeaderboardActive 
+                                        ? 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 font-bold' 
+                                        : 'bg-gray-50 dark:bg-gray-700/30 text-gray-700 dark:text-gray-300 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700'
+                                }`}
+                            >
+                                <Icon name="Trophy" className="h-5 w-5 mr-3 flex-shrink-0 text-yellow-500" />
+                                <span>Class Leaderboard</span>
+                            </button>
+                        </>
+                    )}
+
                     <nav className="space-y-4">
                         {course.modules?.map(module => (
                             <div key={module.id}>
@@ -242,7 +366,7 @@ const CourseViewerPage: React.FC = () => {
                                     {module.items.map(item => (
                                         <li key={item.id}>
                                             <button 
-                                                onClick={() => setSelectedItem(item)}
+                                                onClick={() => handleItemClick(item)}
                                                 className={`w-full flex items-center text-left p-2 rounded-md text-sm transition-colors ${
                                                     selectedItem?.id === item.id ? 'bg-secondary-light dark:bg-secondary/20 text-secondary dark:text-blue-300 font-bold' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                                 }`}
@@ -259,15 +383,15 @@ const CourseViewerPage: React.FC = () => {
                 </aside>
 
                 {/* Main Content */}
-                <main className="lg:col-span-3 h-[calc(100vh-8rem)] flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
+                <main className="lg:col-span-3 flex flex-col bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden relative">
                     <div className="flex-1 p-6 overflow-y-auto">
                         {renderContent()}
                     </div>
                     
-                    {selectedItem && (
+                    {selectedItem && !isLeaderboardActive && (
                         <div className="p-6 border-t dark:border-gray-700 flex justify-between items-center flex-shrink-0">
                             <button
-                                onClick={() => prevItem && setSelectedItem(prevItem)}
+                                onClick={() => prevItem && handleItemClick(prevItem)}
                                 disabled={!prevItem}
                                 className="flex items-center gap-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -275,7 +399,7 @@ const CourseViewerPage: React.FC = () => {
                                 Previous
                             </button>
                             <button
-                                onClick={() => nextItem && setSelectedItem(nextItem)}
+                                onClick={() => nextItem && handleItemClick(nextItem)}
                                 disabled={!nextItem}
                                 className="flex items-center gap-2 bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -286,6 +410,36 @@ const CourseViewerPage: React.FC = () => {
                     )}
                 </main>
             </div>
+            
+            {isAdmin && course.status === CourseStatus.PendingReview && (
+                <div className="sticky bottom-4 left-0 right-0 mx-auto max-w-4xl bg-white dark:bg-gray-800 shadow-2xl border-t-4 border-yellow-400 rounded-lg p-4 flex items-center justify-between z-50 animate-in slide-in-from-bottom-10">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-yellow-100 dark:bg-yellow-900/50 rounded-full">
+                            <Icon name="AlertTriangle" className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-gray-900 dark:text-gray-100">Reviewing Course Submission</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Review content and take action.</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={handleAdminReject} 
+                            disabled={actionLoading}
+                            className="px-6 py-2 bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300 dark:hover:bg-red-900/50 rounded-md font-bold transition-colors disabled:opacity-50"
+                        >
+                            Reject
+                        </button>
+                        <button 
+                            onClick={handleAdminApprove} 
+                            disabled={actionLoading}
+                            className="px-6 py-2 bg-green-600 text-white hover:bg-green-700 rounded-md font-bold shadow-md transition-colors disabled:opacity-50 flex items-center"
+                        >
+                            {actionLoading ? 'Processing...' : 'Approve & Publish'}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

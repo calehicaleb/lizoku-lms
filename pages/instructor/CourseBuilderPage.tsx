@@ -1,13 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import * as api from '../../services/api';
 // Fix: Import ContentItemDetails type.
-import { Course, Module, ContentItem, ContentType, Question, Rubric, ContentItemDetails } from '../../types';
+import { Course, Module, ContentItem, ContentType, Question, Rubric, ContentItemDetails, CourseStatus } from '../../types';
 import { Icon, IconName } from '../../components/icons';
 import { Modal } from '../../components/ui/Modal';
 import { generateCourseOutline, generateSingleModule, generateContentItems } from '../../services/geminiService';
 import { useAuth } from '../../contexts/AuthContext';
 import { DiscussionBoard } from '../../components/common/DiscussionBoard';
+import { RichTextEditor } from '../../components/common/RichTextEditor';
+import { VideoQuizEditor } from '../../components/common/VideoQuizEditor';
+import { OfflineSessionEditor } from '../../components/common/OfflineSessionEditor';
+import { SurveyEditor } from '../../components/common/SurveyEditor';
+import { SurveyResults } from '../../components/common/SurveyResults';
 
 interface AddModuleModalProps {
     isOpen: boolean;
@@ -36,6 +42,10 @@ const AddModuleModal: React.FC<AddModuleModalProps> = ({ isOpen, onClose, course
         [ContentType.Discussion]: 'MessageSquare',
         [ContentType.Resource]: 'Link',
         [ContentType.Examination]: 'ListChecks',
+        [ContentType.InteractiveVideo]: 'FileVideo',
+        [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.Survey]: 'Star',
+        [ContentType.Leaderboard]: 'Trophy',
     };
 
     const resetForm = () => {
@@ -279,6 +289,10 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
         [ContentType.Discussion]: 'MessageSquare',
         [ContentType.Resource]: 'Link',
         [ContentType.Examination]: 'ListChecks',
+        [ContentType.InteractiveVideo]: 'FileVideo',
+        [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.Survey]: 'Star',
+        [ContentType.Leaderboard]: 'Trophy',
     };
 
     const resetForm = () => {
@@ -438,6 +452,12 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
     );
 };
 
+// Drag types for internal logic
+interface DraggedItemState {
+    id: string;
+    type: 'module' | 'item';
+    moduleId?: string; // If it's an item, which module it belongs to
+}
 
 const CourseBuilderPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
@@ -458,6 +478,10 @@ const CourseBuilderPage: React.FC = () => {
     // Add Module Modal State
     const [isAddModuleModalOpen, setIsAddModuleModalOpen] = useState(false);
 
+    // Edit Module State
+    const [editingModule, setEditingModule] = useState<Module | null>(null);
+    const [editModuleTitle, setEditModuleTitle] = useState('');
+
     // Add Content Item Modal State
     const [isAddContentItemModalOpen, setAddContentItemModalOpen] = useState(false);
     const [currentModuleForAddItem, setCurrentModuleForAddItem] = useState<Module | null>(null);
@@ -466,6 +490,21 @@ const CourseBuilderPage: React.FC = () => {
     const [viewingDiscussion, setViewingDiscussion] = useState<ContentItem | null>(null);
     const [discussionPrompt, setDiscussionPrompt] = useState<ContentItemDetails | null>(null);
     const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
+
+    // Edit Content (Rich Text) Modal State
+    const [editingContentItem, setEditingContentItem] = useState<ContentItem | null>(null);
+    const [editorContent, setEditorContent] = useState('');
+    const [isSavingContent, setIsSavingContent] = useState(false);
+
+    // Interactive Video Editor State
+    const [editingVideoItem, setEditingVideoItem] = useState<ContentItem | null>(null);
+
+    // Offline Session Editor State
+    const [editingOfflineSession, setEditingOfflineSession] = useState<ContentItem | null>(null);
+
+    // Survey Editor State
+    const [editingSurveyItem, setEditingSurveyItem] = useState<ContentItem | null>(null);
+    const [viewingSurveyResults, setViewingSurveyResults] = useState<ContentItem | null>(null);
 
     // Quiz/Assignment Assembly State
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
@@ -479,6 +518,13 @@ const CourseBuilderPage: React.FC = () => {
         randomizeQuestions?: boolean;
         rubricId?: string;
     }>({ selectedQuestionIds: new Set() });
+
+    // Drag and Drop State
+    const [draggedItem, setDraggedItem] = useState<DraggedItemState | null>(null);
+    const [dragOverTargetId, setDragOverTargetId] = useState<string | null>(null);
+
+    // Read Only State
+    const isReadOnly = useMemo(() => course?.status === CourseStatus.PendingReview, [course]);
 
     const questionsById = useMemo(() => 
         instructorQuestions.reduce((acc, q) => {
@@ -528,6 +574,21 @@ const CourseBuilderPage: React.FC = () => {
         }
     }, [viewingDiscussion]);
     
+    // Load content when editing modal opens
+    useEffect(() => {
+        if (editingContentItem) {
+            setEditorContent('');
+            api.getContentItemDetails(editingContentItem.id)
+                .then(details => {
+                    setEditorContent(details?.content || '');
+                })
+                .catch(err => {
+                    console.error("Failed to load item content", err);
+                    setEditorContent('<p>Error loading content.</p>');
+                });
+        }
+    }, [editingContentItem]);
+
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -535,7 +596,116 @@ const CourseBuilderPage: React.FC = () => {
         [ContentType.Discussion]: 'MessageSquare',
         [ContentType.Resource]: 'Link',
         [ContentType.Examination]: 'ListChecks',
+        [ContentType.InteractiveVideo]: 'FileVideo',
+        [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.Survey]: 'Star',
+        [ContentType.Leaderboard]: 'Trophy',
     };
+
+    // --- Drag and Drop Handlers ---
+
+    const handleDragStart = (e: React.DragEvent, id: string, type: 'module' | 'item', moduleId?: string) => {
+        if (isReadOnly) {
+            e.preventDefault();
+            return;
+        }
+        e.stopPropagation(); // Prevent bubbling so dragging an item doesn't drag the module
+        setDraggedItem({ id, type, moduleId });
+        // Set drag effect
+        e.dataTransfer.effectAllowed = 'move';
+        // Add a class for visual feedback (optional, handled by react state for opacity)
+    };
+
+    const handleDragOver = (e: React.DragEvent, targetId: string) => {
+        if (isReadOnly) return;
+        e.preventDefault(); // Necessary to allow dropping
+        e.stopPropagation();
+        
+        if (!draggedItem) return;
+        
+        // Prevent dropping a module into an item, etc.
+        // We only allow dropping modules onto other modules, and items onto items or modules
+        setDragOverTargetId(targetId);
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Only clear if we are leaving the valid zone, simplified here to prevent flickering:
+        // We handle reset on drop or end.
+    };
+
+    const handleDrop = async (e: React.DragEvent, targetId: string, targetType: 'module' | 'item', targetModuleId?: string) => {
+        if (isReadOnly) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setDragOverTargetId(null);
+
+        if (!draggedItem || !course) return;
+
+        // Logic for reordering/moving
+        let newModules = [...(course.modules || [])];
+
+        if (draggedItem.type === 'module' && targetType === 'module') {
+            // Reorder Modules
+            const oldIndex = newModules.findIndex(m => m.id === draggedItem.id);
+            const newIndex = newModules.findIndex(m => m.id === targetId);
+            
+            if (oldIndex !== -1 && newIndex !== -1) {
+                const [removed] = newModules.splice(oldIndex, 1);
+                newModules.splice(newIndex, 0, removed);
+            }
+        } else if (draggedItem.type === 'item') {
+            // Find source module
+            const sourceModuleIndex = newModules.findIndex(m => m.id === draggedItem.moduleId);
+            if (sourceModuleIndex === -1) return;
+            
+            // Find target module
+            // If dropped on a module header, targetModuleId is the targetId
+            // If dropped on an item, targetModuleId is passed in
+            const destModuleId = targetType === 'module' ? targetId : targetModuleId;
+            const destModuleIndex = newModules.findIndex(m => m.id === destModuleId);
+            
+            if (destModuleIndex === -1) return;
+
+            // Remove item from source
+            const itemToMove = newModules[sourceModuleIndex].items.find(i => i.id === draggedItem.id);
+            if (!itemToMove) return;
+            
+            newModules[sourceModuleIndex].items = newModules[sourceModuleIndex].items.filter(i => i.id !== draggedItem.id);
+
+            // Add to destination
+            if (targetType === 'module') {
+                // Append to end of module
+                newModules[destModuleIndex].items.push(itemToMove);
+            } else {
+                // Insert before/after target item
+                const targetItemIndex = newModules[destModuleIndex].items.findIndex(i => i.id === targetId);
+                // For simplicity, inserting before. Usually we calculate position relative to rect center.
+                // Standard UI behavior: insert at index
+                if (targetItemIndex !== -1) {
+                    newModules[destModuleIndex].items.splice(targetItemIndex, 0, itemToMove);
+                } else {
+                    newModules[destModuleIndex].items.push(itemToMove);
+                }
+            }
+        }
+
+        // Optimistic Update
+        setCourse({ ...course, modules: newModules });
+        setDraggedItem(null);
+
+        // API Call
+        try {
+            await api.updateCourseModules(course.id, newModules);
+        } catch (error) {
+            console.error("Failed to save reordered modules", error);
+            alert("Failed to save the new order. Please refresh.");
+        }
+    };
+
+    // --- End Drag and Drop Handlers ---
 
     const handleGenerateOutline = async () => {
         if (!course) return;
@@ -636,6 +806,7 @@ const CourseBuilderPage: React.FC = () => {
     };
 
     const handleOpenSettingsModal = (item: ContentItem) => {
+        if (isReadOnly) return;
         setCurrentItem(item);
         setItemFormData({
             selectedQuestionIds: new Set(item.questionIds || []),
@@ -703,6 +874,7 @@ const CourseBuilderPage: React.FC = () => {
     };
     
     const handleOpenContentItemModal = (module: Module) => {
+        if (isReadOnly) return;
         setCurrentModuleForAddItem(module);
         setAddContentItemModalOpen(true);
     };
@@ -734,6 +906,135 @@ const CourseBuilderPage: React.FC = () => {
         } catch (error) {
             console.error("Failed to add new content items", error);
             alert("Could not add the new items. Please try again.");
+        }
+    };
+
+    const handleSaveContent = async () => {
+        if (!editingContentItem) return;
+        setIsSavingContent(true);
+        try {
+            await api.updateContentItemDetails(editingContentItem.id, editorContent);
+            setEditingContentItem(null); // Close modal
+        } catch (error) {
+            console.error("Failed to save content", error);
+            alert("Failed to save content. Please try again.");
+        } finally {
+            setIsSavingContent(false);
+        }
+    };
+
+    const handleSaveVideoItem = async (updatedItem: Omit<ContentItem, 'id'>) => {
+        if (!course || !editingVideoItem) return;
+
+        const updatedModules = course.modules?.map(module => ({
+            ...module,
+            items: module.items.map(item => 
+                item.id === editingVideoItem.id 
+                ? { ...item, ...updatedItem } 
+                : item
+            ),
+        }));
+
+        if (!updatedModules) return;
+
+        try {
+            const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
+            setCourse(updatedCourse);
+            setEditingVideoItem(null);
+        } catch (error) {
+            console.error("Failed to save video item", error);
+            alert("Could not save changes. Please try again.");
+        }
+    };
+
+    const handleSaveOfflineSession = async (updatedItem: Omit<ContentItem, 'id'>) => {
+        if (!course || !editingOfflineSession) return;
+
+        const updatedModules = course.modules?.map(module => ({
+            ...module,
+            items: module.items.map(item => 
+                item.id === editingOfflineSession.id 
+                ? { ...item, ...updatedItem } 
+                : item
+            ),
+        }));
+
+        if (!updatedModules) return;
+
+        try {
+            const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
+            setCourse(updatedCourse);
+            setEditingOfflineSession(null);
+        } catch (error) {
+            console.error("Failed to save offline session", error);
+            alert("Could not save changes. Please try again.");
+        }
+    };
+
+    const handleSaveSurveyItem = async (updatedItem: Omit<ContentItem, 'id'>) => {
+        if (!course || !editingSurveyItem) return;
+
+        const updatedModules = course.modules?.map(module => ({
+            ...module,
+            items: module.items.map(item => 
+                item.id === editingSurveyItem.id 
+                ? { ...item, ...updatedItem } 
+                : item
+            ),
+        }));
+
+        if (!updatedModules) return;
+
+        try {
+            const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
+            setCourse(updatedCourse);
+            setEditingSurveyItem(null);
+        } catch (error) {
+            console.error("Failed to save survey", error);
+            alert("Could not save changes. Please try again.");
+        }
+    };
+
+    const handleOpenEditModule = (module: Module) => {
+        if (isReadOnly) return;
+        setEditingModule(module);
+        setEditModuleTitle(module.title);
+    };
+
+    const handleUpdateModule = async () => {
+        if (!course || !editingModule || !editModuleTitle.trim()) return;
+
+        const updatedModules = course.modules?.map(m =>
+            m.id === editingModule.id ? { ...m, title: editModuleTitle } : m
+        );
+
+        if (!updatedModules) return;
+
+        try {
+            const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
+            setCourse(updatedCourse);
+            setEditingModule(null);
+        } catch (error) {
+            console.error("Failed to update module", error);
+            alert("Failed to update module. Please try again.");
+        }
+    };
+
+    const handleDeleteModule = async () => {
+        if (!course || !editingModule) return;
+        if (!window.confirm("Are you sure you want to delete this module and all its content?")) return;
+
+        const updatedModules = course.modules?.filter(m => m.id !== editingModule.id);
+
+        if (!updatedModules) return;
+
+        try {
+            const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
+            setCourse(updatedCourse);
+            setEditingModule(null);
+        } catch (error) {
+            console.error("Failed to delete module", error);
+            alert("Failed to delete module. Please try again.");
         }
     };
 
@@ -772,23 +1073,35 @@ const CourseBuilderPage: React.FC = () => {
         <div>
              <div className="mb-6">
                 <Link to="/instructor/courses" className="text-sm text-secondary dark:text-blue-400 hover:underline mb-2 inline-block">&larr; Back to My Courses</Link>
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{course.title}</h1>
-                <p className="mt-1 text-gray-500 dark:text-gray-400">{course.description}</p>
+                <div className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{course.title}</h1>
+                        <p className="mt-1 text-gray-500 dark:text-gray-400">{course.description}</p>
+                    </div>
+                    {isReadOnly && (
+                        <div className="px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 rounded-md flex items-center">
+                            <Icon name="Lock" className="h-5 w-5 mr-2" />
+                            <span className="font-bold text-sm">Read Only: Pending Administrator Review. Editing is disabled until this course is approved.</span>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row justify-end items-center gap-4 my-6">
-                <button 
-                    onClick={() => { setGeneratedOutline(null); setGeneratorOpen(true); }}
-                    className="w-full sm:w-auto bg-primary text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:bg-primary-dark transition duration-300 flex items-center justify-center">
-                    <Icon name="Sparkles" className="h-5 w-5 mr-2" />
-                    Generate Full Outline with AI
-                </button>
-                <button 
-                    onClick={() => setIsAddModuleModalOpen(true)}
-                    className="w-full sm:w-auto bg-white dark:bg-gray-800 text-secondary dark:text-blue-400 font-bold py-3 px-5 rounded-lg shadow-sm border-2 border-dashed border-gray-300 dark:border-gray-600 hover:bg-secondary-light dark:hover:bg-secondary/20 transition duration-300">
-                    + Add New Module
-                </button>
-            </div>
+            {!isReadOnly && (
+                <div className="flex flex-col sm:flex-row justify-end items-center gap-4 my-6">
+                    <button 
+                        onClick={() => { setGeneratedOutline(null); setGeneratorOpen(true); }}
+                        className="w-full sm:w-auto bg-primary text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:bg-primary-dark transition duration-300 flex items-center justify-center">
+                        <Icon name="Sparkles" className="h-5 w-5 mr-2" />
+                        Generate Full Outline with AI
+                    </button>
+                    <button 
+                        onClick={() => setIsAddModuleModalOpen(true)}
+                        className="w-full sm:w-auto bg-white dark:bg-gray-800 text-secondary dark:text-blue-400 font-bold py-3 px-5 rounded-lg shadow-sm border-2 border-dashed border-gray-300 dark:border-gray-600 hover:bg-secondary-light dark:hover:bg-secondary/20 transition duration-300">
+                        + Add New Module
+                    </button>
+                </div>
+            )}
             
             <div className="space-y-6">
                  {course.modules?.length === 0 ? (
@@ -798,40 +1111,98 @@ const CourseBuilderPage: React.FC = () => {
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Add a new module manually or use AI to generate a starting point.</p>
                     </div>
                 ) : course.modules?.map(module => (
-                    <div key={module.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border dark:border-gray-700">
+                    <div 
+                        key={module.id} 
+                        draggable={!isReadOnly}
+                        onDragStart={(e) => handleDragStart(e, module.id, 'module')}
+                        onDragOver={(e) => handleDragOver(e, module.id)}
+                        onDrop={(e) => handleDrop(e, module.id, 'module')}
+                        className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border transition-all duration-200 ${
+                            draggedItem?.id === module.id ? 'opacity-50 border-dashed border-gray-400' : 
+                            dragOverTargetId === module.id ? 'border-primary border-2 dark:border-primary' : 'dark:border-gray-700'
+                        } ${isReadOnly ? '' : 'cursor-grab active:cursor-grabbing'}`}
+                    >
                         <div className="flex justify-between items-center mb-4">
                              <div className="flex items-center">
-                                <Icon name="GripVertical" className="h-5 w-5 text-gray-400 cursor-grab mr-2" />
+                                {!isReadOnly && <Icon name="GripVertical" className="h-5 w-5 text-gray-400 mr-2" />}
                                 <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100">{module.title}</h3>
                             </div>
-                            <button className="text-sm font-medium text-secondary dark:text-blue-400 hover:underline">Edit Module</button>
+                            {!isReadOnly && (
+                                <button onClick={() => handleOpenEditModule(module)} className="text-sm font-medium text-secondary dark:text-blue-400 hover:underline">Edit Module</button>
+                            )}
                         </div>
                         
-                        <div className="space-y-2 pl-7">
+                        <div className="space-y-2 pl-7 min-h-[50px]" onDragOver={(e) => {
+                            if (draggedItem?.type === 'item' && draggedItem.moduleId !== module.id) {
+                                // Allow dropping items into empty module space
+                                handleDragOver(e, module.id);
+                            }
+                        }} onDrop={(e) => {
+                             if (draggedItem?.type === 'item') {
+                                handleDrop(e, module.id, 'module');
+                             }
+                        }}>
                             {module.items.map(item => (
-                                <div key={item.id} className="flex items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md border dark:border-gray-700 hover:border-primary dark:hover:border-primary">
-                                    <Icon name="GripVertical" className="h-5 w-5 text-gray-400 cursor-grab" />
+                                <div 
+                                    key={item.id} 
+                                    draggable={!isReadOnly}
+                                    onDragStart={(e) => handleDragStart(e, item.id, 'item', module.id)}
+                                    onDragOver={(e) => handleDragOver(e, item.id)}
+                                    onDrop={(e) => handleDrop(e, item.id, 'item', module.id)}
+                                    className={`flex items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md border transition-all duration-200 ${
+                                        draggedItem?.id === item.id ? 'opacity-50' : 
+                                        dragOverTargetId === item.id ? 'border-primary border-dashed border-2' : 'dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                    } ${isReadOnly ? '' : 'cursor-grab active:cursor-grabbing'}`}
+                                >
+                                    {!isReadOnly && <Icon name="GripVertical" className="h-5 w-5 text-gray-400" />}
                                     <Icon name={contentIconMap[item.type] || 'FileText'} className="h-5 w-5 text-gray-500 dark:text-gray-400 mx-3" />
                                     <span className="flex-grow text-gray-700 dark:text-gray-300">{item.title}</span>
                                     <span className="text-xs text-gray-400 dark:text-gray-500 capitalize mr-4">{item.type} {item.type === 'quiz' && `(${item.questionIds?.length || 0} Qs)`}</span>
-                                    {item.type === ContentType.Discussion ? (
-                                        <button onClick={() => setViewingDiscussion(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                            View Discussion
-                                        </button>
-                                    ) : (item.type === 'quiz' || item.type === 'assignment') ? (
-                                        <button onClick={() => handleOpenSettingsModal(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                            Manage Settings
-                                        </button>
+                                    
+                                    {!isReadOnly ? (
+                                        <>
+                                            {item.type === ContentType.Discussion ? (
+                                                <button onClick={() => setViewingDiscussion(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
+                                                    View Discussion
+                                                </button>
+                                            ) : (item.type === 'quiz' || item.type === 'assignment') ? (
+                                                <button onClick={() => handleOpenSettingsModal(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
+                                                    Manage Settings
+                                                </button>
+                                            ) : (item.type === ContentType.Lesson || item.type === ContentType.Resource) ? (
+                                                <button onClick={() => setEditingContentItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
+                                                    Edit Content
+                                                </button>
+                                            ) : (item.type === ContentType.InteractiveVideo) ? (
+                                                <button onClick={() => setEditingVideoItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
+                                                    Edit Video
+                                                </button>
+                                            ) : (item.type === ContentType.OfflineSession) ? (
+                                                <button onClick={() => setEditingOfflineSession(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
+                                                    Edit Session
+                                                </button>
+                                            ) : (item.type === ContentType.Survey) ? (
+                                                <div className="flex gap-2">
+                                                    <button onClick={() => setEditingSurveyItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
+                                                        Edit Survey
+                                                    </button>
+                                                    <span className="text-gray-300">|</span>
+                                                    <button onClick={() => setViewingSurveyResults(item)} className="text-xs font-medium text-green-600 dark:text-green-400 hover:underline">
+                                                        View Results
+                                                    </button>
+                                                </div>
+                                            ) : null}
+                                        </>
                                     ) : (
-                                        <button onClick={() => alert('Edit for this item type not implemented.')} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                            Edit
-                                        </button>
+                                        <span className="text-xs text-gray-400 italic">View Only</span>
                                     )}
                                 </div>
                             ))}
-                              <button onClick={() => handleOpenContentItemModal(module)} className="w-full text-left text-sm text-gray-500 dark:text-gray-400 hover:text-secondary dark:hover:text-blue-400 p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md mt-2">
-                                + Add Content Item
-                            </button>
+                              {!isReadOnly && (
+                                <button onClick={() => handleOpenContentItemModal(module)} className="w-full text-left text-sm text-gray-500 dark:text-gray-400 hover:text-secondary dark:hover:text-blue-400 p-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-md mt-2">
+                                    + Add Content Item
+                                </button>
+                              )}
                         </div>
                     </div>
                 ))}
@@ -929,7 +1300,104 @@ const CourseBuilderPage: React.FC = () => {
                     </div>
                 </Modal>
             )}
+
+            {/* Edit Content Modal with Rich Text Editor */}
+            {editingContentItem && (
+                <Modal isOpen={!!editingContentItem} onClose={() => setEditingContentItem(null)} title={`Edit Content: ${editingContentItem.title}`} size="5xl">
+                    <div className="flex flex-col h-[70vh]">
+                        <div className="flex-grow mb-4">
+                            <RichTextEditor 
+                                initialContent={editorContent} 
+                                onChange={setEditorContent} 
+                                placeholder="Start writing your lesson content here..." 
+                            />
+                        </div>
+                        <div className="flex justify-end gap-2 pt-4 border-t dark:border-gray-700">
+                            <button onClick={() => setEditingContentItem(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">
+                                Cancel
+                            </button>
+                            <button onClick={handleSaveContent} disabled={isSavingContent} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary rounded-md hover:bg-primary-dark disabled:bg-gray-300">
+                                {isSavingContent ? 'Saving...' : 'Save Content'}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {/* Video Quiz Editor Modal */}
+            {editingVideoItem && (
+                <Modal isOpen={!!editingVideoItem} onClose={() => setEditingVideoItem(null)} title={`Edit Interactive Video: ${editingVideoItem.title}`} size="5xl">
+                    <div className="h-[70vh]">
+                        <VideoQuizEditor 
+                            initialItem={editingVideoItem}
+                            onSave={handleSaveVideoItem}
+                            onCancel={() => setEditingVideoItem(null)}
+                        />
+                    </div>
+                </Modal>
+            )}
+
+            {/* Offline Session Editor Modal */}
+            {editingOfflineSession && (
+                <Modal isOpen={!!editingOfflineSession} onClose={() => setEditingOfflineSession(null)} title={`Edit Offline Session: ${editingOfflineSession.title}`} size="3xl">
+                    <div className="h-auto">
+                        <OfflineSessionEditor 
+                            initialItem={editingOfflineSession}
+                            onSave={handleSaveOfflineSession}
+                            onCancel={() => setEditingOfflineSession(null)}
+                        />
+                    </div>
+                </Modal>
+            )}
+
+            {/* Survey Editor Modal */}
+            {editingSurveyItem && (
+                <Modal isOpen={!!editingSurveyItem} onClose={() => setEditingSurveyItem(null)} title={`Edit Survey: ${editingSurveyItem.title}`} size="4xl">
+                    <div className="h-[70vh]">
+                        <SurveyEditor 
+                            initialItem={editingSurveyItem}
+                            onSave={handleSaveSurveyItem}
+                            onCancel={() => setEditingSurveyItem(null)}
+                        />
+                    </div>
+                </Modal>
+            )}
+
+            {/* Survey Results Modal */}
+            {viewingSurveyResults && (
+                <Modal isOpen={!!viewingSurveyResults} onClose={() => setViewingSurveyResults(null)} title="Survey Results" size="5xl">
+                    <div className="h-[70vh] overflow-y-auto">
+                        <SurveyResults surveyId={viewingSurveyResults.id} />
+                    </div>
+                </Modal>
+            )}
             
+            {/* Edit Module Modal */}
+            {editingModule && (
+                <Modal isOpen={!!editingModule} onClose={() => setEditingModule(null)} title="Edit Module">
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Module Title</label>
+                            <input
+                                type="text"
+                                value={editModuleTitle}
+                                onChange={(e) => setEditModuleTitle(e.target.value)}
+                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                            />
+                        </div>
+                        <div className="flex justify-between items-center pt-4">
+                            <button onClick={handleDeleteModule} className="text-red-600 hover:text-red-800 font-medium text-sm flex items-center">
+                                <Icon name="X" className="h-4 w-4 mr-1" /> Delete Module
+                            </button>
+                            <div className="flex space-x-2">
+                                <button onClick={() => setEditingModule(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
+                                <button onClick={handleUpdateModule} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary rounded-md hover:bg-primary-dark">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
             {/* Settings Modal for Quiz/Assignment */}
             {currentItem && (
                 <Modal isOpen={isSettingsModalOpen} onClose={() => setSettingsModalOpen(false)} title={`Settings for "${currentItem.title}"`} size="4xl">

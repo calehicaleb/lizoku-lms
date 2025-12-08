@@ -1,10 +1,6 @@
 
-
-// Fix: Import IconName for use within this file and re-export it for other modules, resolving errors where IconName was not found.
 import type { IconName } from './components/icons';
 export type { IconName };
-
-// Fix: Removed self-import of User which caused a naming conflict.
 
 export enum UserRole {
   Admin = 'admin',
@@ -27,11 +23,10 @@ export interface User {
   avatarUrl: string;
   status: UserStatus;
   createdAt: string;
-  programId?: string; // Added to link students to a program
+  programId?: string;
 }
 
 export interface StatCardData {
-  // Fix: Changed icon type from React.ElementType to IconName to match the string-based icon keys used in the application.
   icon: IconName;
   title: string;
   value: string;
@@ -51,7 +46,7 @@ export interface CourseSummary {
 export interface Department {
     id: string;
     name: string;
-    head: string; // User ID
+    head: string;
     programCount: number;
 }
 
@@ -62,7 +57,7 @@ export interface Program {
     departmentName: string;
     courseCount: number;
     duration: string;
-    courseIds: string[]; // Added to link programs to courses
+    courseIds: string[];
 }
 
 export enum SemesterStatus {
@@ -82,6 +77,8 @@ export interface Semester {
 export enum CourseStatus {
     Published = 'published',
     Draft = 'draft',
+    PendingReview = 'pending_review',
+    Rejected = 'rejected',
 }
 
 export enum ContentType {
@@ -91,129 +88,10 @@ export enum ContentType {
     Discussion = 'discussion',
     Resource = 'resource',
     Examination = 'examination',
-}
-
-export interface ContentItem {
-    id: string;
-    title: string;
-    type: ContentType;
-    questionIds?: string[]; // IDs from the Question Bank
-    timeLimit?: number; // in minutes
-    attemptsLimit?: number; // max number of attempts
-    randomizeQuestions?: boolean;
-    rubricId?: string; // ID of the associated rubric
-    instructions?: string; // Instructions for quiz/assignment
-    requiresFileUpload?: boolean; // For assignments
-    examinationId?: string;
-    dueDate?: string; // ISO String, e.g. for assignments/quizzes
-    maxPoints?: number; // for gradable discussions
-}
-
-export interface Module {
-    id: string;
-    title: string;
-    items: ContentItem[];
-}
-
-export interface Course {
-    id: string;
-    title: string;
-    description: string;
-    // Fix: Corrected ID types from number to string to match mock data and application usage.
-    instructorId: string;
-    instructorName: string;
-    // Fix: Corrected ID types from number to string to match mock data and application usage.
-    departmentId: string;
-    departmentName: string;
-    status: CourseStatus;
-    modules?: Module[]; // Added for Course Builder
-    // Fix: Add properties needed for dashboard view
-    progress?: number;
-    students?: number;
-}
-
-export interface Announcement {
-    id: string;
-    title: string;
-    content: string;
-    author: string; // User's name
-    createdAt: string; // Date string
-}
-
-export interface Enrollment {
-    id: string;
-    studentId: string;
-    courseId: string;
-}
-
-export interface Grade {
-    id: string;
-    studentId: string;
-    courseId: string;
-    contentItemId: string;
-    score: number | null; // Can be a number or null if not graded
-    status: 'graded' | 'pending review';
-    submissionId?: string;
-    feedback?: string; // General text feedback
-    rubricFeedback?: Record<string, { points: number; comment?: string }>; // criterionId -> { points, comment }
-}
-
-export interface QuizSubmission {
-    id: string;
-    type: 'quiz';
-    studentId: string;
-    courseId: string;
-    contentItemId: string; // The quiz ID
-    submittedAt: string;
-    answers: Record<string, string | number | boolean | number[]>; // questionId -> answer
-    attemptNumber: number;
-}
-
-export interface AssignmentSubmission {
-    id: string;
-    type: 'assignment';
-    studentId: string;
-    courseId: string;
-    contentItemId: string; // The assignment ID
-    submittedAt: string;
-    file: {
-        name: string;
-        size: number; // in bytes
-        url: string; // mock URL
-    };
-}
-
-export type Submission = QuizSubmission | AssignmentSubmission;
-
-
-export enum CalendarEventType {
-    Assignment = 'assignment',
-    Quiz = 'quiz',
-    Holiday = 'holiday',
-    Maintenance = 'maintenance',
-}
-
-export interface CalendarEvent {
-    id: string;
-    title: string;
-    date: string; // YYYY-MM-DD
-    type: CalendarEventType;
-    courseName?: string; // Optional, for course-specific events
-}
-
-export interface DiscussionPost {
-    id: string;
-    discussionId: string; // Links to a ContentItem of type 'discussion'
-    parentId?: string; // ID of the post this is a reply to. If undefined, it's a thread starter.
-    authorId: string;
-    authorName: string;
-    authorAvatarUrl: string;
-    authorRole: UserRole;
-    content: string;
-    createdAt: string; // ISO String
-    isRead: boolean; // For unread indicators
-    children?: DiscussionPost[]; // For client-side rendering
-    replyCount?: number; // Total replies in this sub-thread
+    InteractiveVideo = 'interactive-video',
+    OfflineSession = 'offline-session',
+    Survey = 'survey',
+    Leaderboard = 'leaderboard',
 }
 
 export enum QuestionType {
@@ -234,7 +112,7 @@ export enum QuestionDifficulty {
 interface BaseQuestion {
     id: string;
     instructorId: string;
-    stem: string; // The question text itself
+    stem: string;
     type: QuestionType;
     difficulty: QuestionDifficulty;
     topics: string[];
@@ -258,8 +136,6 @@ export interface TrueFalseQuestion extends BaseQuestion {
 
 export interface ShortAnswerQuestion extends BaseQuestion {
     type: QuestionType.ShortAnswer;
-    // Represents one or more acceptable answers for auto-grading.
-    // For subjective manual grading, this could be an empty array.
     acceptableAnswers: string[]; 
 }
 
@@ -271,13 +147,162 @@ export interface MultipleSelectQuestion extends BaseQuestion {
 
 export interface FillBlankQuestion extends BaseQuestion {
     type: QuestionType.FillBlank;
-    // Case-insensitive acceptable answers for the blank.
     acceptableAnswers: string[];
 }
 
-
-// A discriminated union of all possible question types
 export type Question = MultipleChoiceQuestion | TrueFalseQuestion | ShortAnswerQuestion | MultipleSelectQuestion | FillBlankQuestion;
+
+export interface VideoInteraction {
+    id: string;
+    timestamp: number; // in seconds
+    question: Question;
+}
+
+// Survey Types
+export enum SurveyQuestionType {
+    Rating = 'rating', // 1-5 Stars
+    OpenEnded = 'open-ended', // Text Area
+    YesNo = 'yes-no',
+}
+
+export interface SurveyQuestion {
+    id: string;
+    text: string;
+    type: SurveyQuestionType;
+    required: boolean;
+}
+
+export interface ContentItem {
+    id: string;
+    title: string;
+    type: ContentType;
+    questionIds?: string[];
+    timeLimit?: number;
+    attemptsLimit?: number;
+    randomizeQuestions?: boolean;
+    rubricId?: string;
+    instructions?: string;
+    requiresFileUpload?: boolean;
+    examinationId?: string;
+    dueDate?: string;
+    maxPoints?: number;
+    videoUrl?: string;
+    interactions?: VideoInteraction[];
+    // Offline Session Props
+    offlineDetails?: {
+        location: string;
+        startDateTime: string; // ISO String
+        durationMinutes: number;
+        notes?: string;
+    };
+    // Survey Props
+    surveyQuestions?: SurveyQuestion[];
+}
+
+export interface Module {
+    id: string;
+    title: string;
+    items: ContentItem[];
+}
+
+export interface Course {
+    id: string;
+    title: string;
+    description: string;
+    instructorId: string;
+    instructorName: string;
+    departmentId: string;
+    departmentName: string;
+    status: CourseStatus;
+    modules?: Module[];
+    progress?: number;
+    students?: number;
+    price?: number; // Added price for financial tracking
+}
+
+export interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    author: string;
+    createdAt: string;
+}
+
+export interface Enrollment {
+    id: string;
+    studentId: string;
+    courseId: string;
+    contentItemId: string;
+}
+
+export interface Grade {
+    id: string;
+    studentId: string;
+    courseId: string;
+    contentItemId: string;
+    score: number | null;
+    status: 'graded' | 'pending review';
+    submissionId?: string;
+    feedback?: string;
+    rubricFeedback?: Record<string, { points: number; comment?: string }>;
+}
+
+export interface QuizSubmission {
+    id: string;
+    type: 'quiz';
+    studentId: string;
+    courseId: string;
+    contentItemId: string;
+    submittedAt: string;
+    answers: Record<string, string | number | boolean | number[]>;
+    attemptNumber: number;
+}
+
+export interface AssignmentSubmission {
+    id: string;
+    type: 'assignment';
+    studentId: string;
+    courseId: string;
+    contentItemId: string;
+    submittedAt: string;
+    file: {
+        name: string;
+        size: number;
+        url: string;
+    };
+}
+
+export type Submission = QuizSubmission | AssignmentSubmission;
+
+export enum CalendarEventType {
+    Assignment = 'assignment',
+    Quiz = 'quiz',
+    Holiday = 'holiday',
+    Maintenance = 'maintenance',
+}
+
+export interface CalendarEvent {
+    id: string;
+    title: string;
+    date: string;
+    type: CalendarEventType;
+    courseName?: string;
+}
+
+export interface DiscussionPost {
+    id: string;
+    discussionId: string;
+    parentId?: string;
+    authorId: string;
+    authorName: string;
+    authorAvatarUrl: string;
+    authorRole: UserRole;
+    content: string;
+    createdAt: string;
+    isRead: boolean;
+    children?: DiscussionPost[];
+    replyCount?: number;
+}
 
 // --- Rubrics ---
 export interface RubricLevel {
@@ -290,7 +315,7 @@ export interface RubricCriterion {
     id: string;
     description: string;
     longDescription?: string;
-    points: number; // Max points for this criterion
+    points: number;
     levelDescriptions?: { [levelId: string]: string };
 }
 
@@ -312,7 +337,7 @@ export interface ProgramCourse extends Course {
 
 export interface StudentProgramDetails {
     program: Program;
-    progress: number; // Overall percentage
+    progress: number;
     courses: ProgramCourse[];
 }
 
@@ -320,8 +345,8 @@ export interface Communication {
     id: string;
     subject: string;
     content: string;
-    recipientsSummary: string; // e.g., "All Students", "Instructors (3)", "John Doe, Jane Smith"
-    sentAt: string; // ISO String
+    recipientsSummary: string;
+    sentAt: string;
     authorName: string;
 }
 
@@ -337,22 +362,22 @@ export interface SecuritySettings {
 
 // --- My Transcript Page ---
 export interface TranscriptCourse {
-    courseCode: string; // e.g., CS101
+    courseCode: string;
     courseTitle: string;
-    credits: number; // e.g., 3
-    grade: string; // e.g., A, B+, etc.
-    gradePoints: number; // e.g., 4.0, 3.3
+    credits: number;
+    grade: string;
+    gradePoints: number;
 }
 
 export interface TranscriptSemester {
-    semesterName: string; // e.g., "Summer 2024"
+    semesterName: string;
     courses: TranscriptCourse[];
     semesterGpa: number;
 }
 
 export interface StudentTranscript {
     studentName: string;
-    studentId: string; // Can be the user ID
+    studentId: string;
     programName: string;
     semesters: TranscriptSemester[];
     cumulativeGpa: number;
@@ -362,23 +387,23 @@ export interface StudentTranscript {
 export interface Message {
     id: string;
     threadId: string;
-    authorId: string; // User ID
+    authorId: string;
     authorName: string;
     authorAvatarUrl: string;
     content: string;
-    createdAt: string; // ISO String
+    createdAt: string;
 }
 
 export interface MessageThread {
     id: string;
-    participants: Pick<User, 'id' | 'name' | 'avatarUrl'>[]; // Simplified user object with avatar
+    participants: Pick<User, 'id' | 'name' | 'avatarUrl'>[];
     subject: string;
     lastMessage: {
         content: string;
-        createdAt: string; // ISO String
+        createdAt: string;
     };
     isRead: boolean;
-    messages?: Message[]; // Will be populated when a thread is selected
+    messages?: Message[];
 }
 
 // --- Examinations ---
@@ -395,8 +420,8 @@ export interface Examination {
     instructions: string;
     courseId: string;
     courseTitle: string;
-    scheduledStart: string; // ISO String
-    scheduledEnd: string; // ISO String
+    scheduledStart: string;
+    scheduledEnd: string;
     durationMinutes: number;
     questionIds: string[];
     shuffleQuestions: boolean;
@@ -408,8 +433,8 @@ export interface Certificate {
   id: string;
   courseName: string;
   studentName: string;
-  issueDate: string; // ISO String or formatted date string
-  certificateId: string; // A unique ID for the certificate
+  issueDate: string;
+  certificateId: string;
 }
 
 // --- My Achievements Page ---
@@ -444,7 +469,7 @@ export interface CertificateRequest {
   studentName: string;
   courseId: string;
   courseName: string;
-  requestDate: string; // ISO String
+  requestDate: string;
   status: CertificateRequestStatus;
 }
 
@@ -472,8 +497,8 @@ export interface ActivityLog {
   userName: string;
   userAvatarUrl: string;
   action: ActivityActionType;
-  description: string; // e.g., "Updated user 'John Doe'."
-  timestamp: string; // ISO String
+  description: string;
+  timestamp: string;
 }
 
 // --- Session Management ---
@@ -483,13 +508,12 @@ export interface UserSession {
   userName: string;
   userAvatarUrl: string;
   userRole: UserRole;
-  loginTime: string; // ISO String
-  lastActiveTime: string; // ISO String
+  loginTime: string;
+  lastActiveTime: string;
   ipAddress: string;
 }
 
 // --- Notifications ---
-// Fix: Completed the NotificationType enum with all required values.
 export enum NotificationType {
   NewGrade = 'new_grade',
   NewMessage = 'new_message',
@@ -497,7 +521,6 @@ export enum NotificationType {
   AssignmentDueSoon = 'assignment_due_soon',
 }
 
-// Fix: Added Notification interface.
 export interface Notification {
   id: string;
   userId: string;
@@ -509,7 +532,7 @@ export interface Notification {
   createdAt: string;
 }
 
-// Fix: Added types for Student Dashboard.
+// --- Student Dashboard ---
 export interface OverdueItem {
     id: string;
     title: string;
@@ -536,7 +559,7 @@ export interface RecentActivity {
     icon: IconName;
 }
 
-// Fix: Added type for content viewers.
+// --- Content Viewers ---
 export interface ContentItemDetails {
     id: string;
     content: string;
@@ -556,11 +579,10 @@ export interface MediaItem {
     name: string;
     type: MediaType;
     url: string;
-    size: number; // in bytes
-    uploadedAt: string; // ISO String
+    size: number;
+    uploadedAt: string;
     isPublic: boolean;
 }
-
 
 // --- Grading Hub ---
 export interface GradableItemSummary {
@@ -583,4 +605,120 @@ export interface StudentSubmissionDetails {
     student: Pick<User, 'id' | 'name' | 'avatarUrl'>;
     submission: Submission | null;
     grade: Grade | null;
+}
+
+// --- Retention / At-Risk ---
+export interface AtRiskStudent {
+    studentId: string;
+    name: string;
+    email: string;
+    avatarUrl: string;
+    riskLevel: 'High' | 'Moderate';
+    riskFactors: string[];
+    lastLogin: string;
+    currentGradeAverage: number;
+    missedAssignmentsCount: number;
+}
+
+// --- Career Hub ---
+export enum JobType {
+    FullTime = 'full-time',
+    PartTime = 'part-time',
+    Contract = 'contract',
+    Gig = 'gig',
+    Internship = 'internship'
+}
+
+export interface JobOpportunity {
+    id: string;
+    title: string;
+    company: string;
+    location: string;
+    type: JobType;
+    description: string;
+    requirements: string[];
+    salaryRange?: string;
+    postedDate: string;
+    applicationLink?: string; // External link
+    skills: string[];
+}
+
+export enum ApplicationStatus {
+    Applied = 'applied',
+    Interviewing = 'interviewing',
+    Offered = 'offered',
+    Rejected = 'rejected'
+}
+
+export interface JobApplication {
+    id: string;
+    jobId: string;
+    studentId: string;
+    appliedDate: string;
+    status: ApplicationStatus;
+}
+
+// --- Survey Results ---
+export interface SurveySubmission {
+    id: string;
+    surveyId: string;
+    studentId: string;
+    answers: Record<string, any>; // questionId -> answer (number | string)
+    submittedAt: string;
+}
+
+export interface SurveyQuestionResult {
+    questionId: string;
+    questionText: string;
+    type: SurveyQuestionType;
+    responseCount: number;
+    averageRating?: number; // For Rating type
+    ratingDistribution?: Record<number, number>; // 1-5 counts
+    yesNoDistribution?: { yes: number, no: number };
+    textResponses?: string[]; // For OpenEnded
+}
+
+export interface SurveySummary {
+    surveyId: string;
+    title: string;
+    totalRespondents: number;
+    results: SurveyQuestionResult[];
+}
+
+// --- Leaderboard ---
+export interface LeaderboardEntry {
+    studentId: string;
+    name: string;
+    avatarUrl: string;
+    points: number;
+    rank: number;
+    trend: 'up' | 'down' | 'same';
+}
+
+// --- Financial / Budgeting ---
+export interface DepartmentBudget {
+    departmentId: string;
+    departmentName: string;
+    allocatedAmount: number; // The expense budget
+    spentAmount: number;
+    generatedRevenue: number; // New: Tuition fees earned
+    netIncome: number; // New: Revenue - Spent
+    trainingNeedsCount: number;
+}
+
+export interface BudgetRequest {
+    id: string;
+    requesterName: string;
+    departmentName: string;
+    title: string; 
+    justification: string;
+    amount: number;
+    status: 'pending' | 'approved' | 'rejected';
+    date: string;
+}
+
+export interface FinancialTrend {
+    month: string;
+    revenue: number;
+    expenses: number;
 }
