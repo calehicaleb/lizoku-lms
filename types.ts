@@ -24,6 +24,7 @@ export interface User {
   status: UserStatus;
   createdAt: string;
   programId?: string;
+  county?: string; // Added for Geospatial Analytics
 }
 
 export interface StatCardData {
@@ -392,6 +393,7 @@ export interface Message {
     authorAvatarUrl: string;
     content: string;
     createdAt: string;
+    isRead: boolean;
 }
 
 export interface MessageThread {
@@ -499,6 +501,7 @@ export interface ActivityLog {
   action: ActivityActionType;
   description: string;
   timestamp: string;
+  location?: string; // Added for Geospatial
 }
 
 // --- Session Management ---
@@ -721,4 +724,12 @@ export interface FinancialTrend {
     month: string;
     revenue: number;
     expenses: number;
+}
+
+// --- Geospatial Analytics ---
+export interface RegionalStat {
+    county: string;
+    userCount: number;
+    activeLearners: number;
+    completionRate: number;
 }

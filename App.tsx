@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -21,6 +22,7 @@ import QuickSetupPage from './pages/admin/QuickSetupPage';
 import ActivityLogsPage from './pages/admin/ActivityLogsPage';
 import SessionManagementPage from './pages/admin/SessionManagementPage';
 import BudgetingPage from './pages/admin/BudgetingPage';
+import GeospatialPage from './pages/admin/GeospatialPage';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import InstructorMyCoursesPage from './pages/instructor/InstructorMyCoursesPage';
 import CourseBuilderPage from './pages/instructor/CourseBuilderPage';
@@ -112,6 +114,7 @@ const AppRoutes: React.FC = () => {
                     <Route path="/admin/certificate-settings" element={<CertificateSettingsPage />} />
                     <Route path="/admin/certificate-requests" element={<CertificateRequestsPage />} />
                     <Route path="/admin/budgeting" element={<BudgetingPage />} />
+                    <Route path="/admin/geospatial" element={<GeospatialPage />} />
                     <Route path="/admin/quick-setup" element={<QuickSetupPage />} />
                     <Route path="/admin/activity-logs" element={<ActivityLogsPage />} />
                     <Route path="/admin/sessions" element={<SessionManagementPage />} />

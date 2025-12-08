@@ -1,29 +1,29 @@
 
 import {
-    User, UserRole, UserStatus, StatCardData, CourseSummary, Department, Program, Semester, SemesterStatus, Course, CourseStatus, Module, ContentType, ContentItem, Announcement, Enrollment, Grade, CalendarEvent, CalendarEventType, DiscussionPost, Question, QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, ShortAnswerQuestion, QuizSubmission, MultipleSelectQuestion, FillBlankQuestion, Rubric, StudentProgramDetails, ProgramCourse, Communication, SecuritySettings, StudentTranscript, Message, MessageThread, Examination, ExaminationStatus, Certificate, Achievement, CertificateSettings, CertificateRequest, CertificateRequestStatus, InstitutionSettings, ActivityLog, ActivityActionType, UserSession, Notification, NotificationType, OverdueItem, UpcomingDeadline, RecentActivity, IconName, ContentItemDetails, AssignmentSubmission, Submission, QuestionDifficulty, MediaItem, MediaType, CourseGradingSummary, GradableItemSummary, StudentSubmissionDetails, RubricCriterion, RubricLevel, AtRiskStudent, JobOpportunity, JobType, JobApplication, ApplicationStatus, SurveySubmission, SurveySummary, SurveyQuestionType, LeaderboardEntry, DepartmentBudget, BudgetRequest, FinancialTrend
+    User, UserRole, UserStatus, StatCardData, CourseSummary, Department, Program, Semester, SemesterStatus, Course, CourseStatus, Module, ContentType, ContentItem, Announcement, Enrollment, Grade, CalendarEvent, CalendarEventType, DiscussionPost, Question, QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, ShortAnswerQuestion, QuizSubmission, MultipleSelectQuestion, FillBlankQuestion, Rubric, StudentProgramDetails, ProgramCourse, Communication, SecuritySettings, StudentTranscript, Message, MessageThread, Examination, ExaminationStatus, Certificate, Achievement, CertificateSettings, CertificateRequest, CertificateRequestStatus, InstitutionSettings, ActivityLog, ActivityActionType, UserSession, Notification, NotificationType, OverdueItem, UpcomingDeadline, RecentActivity, IconName, ContentItemDetails, AssignmentSubmission, Submission, QuestionDifficulty, MediaItem, MediaType, CourseGradingSummary, GradableItemSummary, StudentSubmissionDetails, RubricCriterion, RubricLevel, AtRiskStudent, JobOpportunity, JobType, JobApplication, ApplicationStatus, SurveySubmission, SurveySummary, SurveyQuestionType, LeaderboardEntry, DepartmentBudget, BudgetRequest, FinancialTrend, RegionalStat
 } from '../types';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// --- 1. USERS (15 Users) ---
+// --- 1. USERS (15 Users) with Counties ---
 const USERS: User[] = [
-    { id: '1', name: 'Admin User', email: 'admin@lizoku.com', role: UserRole.Admin, avatarUrl: 'https://i.pravatar.cc/150?u=admin', status: UserStatus.Active, createdAt: '2023-01-01' },
-    { id: '2', name: 'Instructor Sam', email: 'sam@lizoku.com', role: UserRole.Instructor, avatarUrl: 'https://i.pravatar.cc/150?u=sam', status: UserStatus.Active, createdAt: '2023-01-02' },
-    { id: 'instr2', name: 'Prof. Jane Smith', email: 'jane@lizoku.com', role: UserRole.Instructor, avatarUrl: 'https://i.pravatar.cc/150?u=jane', status: UserStatus.Active, createdAt: '2023-02-15' },
-    { id: 'instr3', name: 'Dr. Albert Newton', email: 'albert@lizoku.com', role: UserRole.Instructor, avatarUrl: 'https://i.pravatar.cc/150?u=albert', status: UserStatus.Active, createdAt: '2023-03-10' },
+    { id: '1', name: 'Admin User', email: 'admin@lizoku.com', role: UserRole.Admin, avatarUrl: 'https://i.pravatar.cc/150?u=admin', status: UserStatus.Active, createdAt: '2023-01-01', county: 'Nairobi' },
+    { id: '2', name: 'Instructor Sam', email: 'sam@lizoku.com', role: UserRole.Instructor, avatarUrl: 'https://i.pravatar.cc/150?u=sam', status: UserStatus.Active, createdAt: '2023-01-02', county: 'Mombasa' },
+    { id: 'instr2', name: 'Prof. Jane Smith', email: 'jane@lizoku.com', role: UserRole.Instructor, avatarUrl: 'https://i.pravatar.cc/150?u=jane', status: UserStatus.Active, createdAt: '2023-02-15', county: 'Kisumu' },
+    { id: 'instr3', name: 'Dr. Albert Newton', email: 'albert@lizoku.com', role: UserRole.Instructor, avatarUrl: 'https://i.pravatar.cc/150?u=albert', status: UserStatus.Active, createdAt: '2023-03-10', county: 'Nakuru' },
     
     // Students
-    { id: '3', name: 'Alice Topstudent', email: 'alice@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=alice', status: UserStatus.Active, createdAt: '2023-01-03', programId: 'p1' },
-    { id: '4', name: 'John Average', email: 'john@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=john', status: UserStatus.Active, createdAt: '2023-01-05', programId: 'p1' },
-    { id: '5', name: 'Sarah Struggling', email: 'sarah@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=sarah', status: UserStatus.Active, createdAt: '2023-01-06', programId: 'p1' },
-    { id: '6', name: 'Mike Missing', email: 'mike@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=mike', status: UserStatus.Active, createdAt: '2023-01-07', programId: 'p1' },
-    { id: 's5', name: 'Emily Chen', email: 'emily@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=emily', status: UserStatus.Active, createdAt: '2023-01-08', programId: 'p2' },
-    { id: 's6', name: 'David Kim', email: 'david@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=david', status: UserStatus.Active, createdAt: '2023-01-09', programId: 'p2' },
-    { id: 's7', name: 'Chris Evans', email: 'chris@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=chris', status: UserStatus.Active, createdAt: '2023-01-10', programId: 'p1' },
-    { id: 's8', name: 'Jessica Jones', email: 'jessica@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=jessica', status: UserStatus.Active, createdAt: '2023-01-11', programId: 'p3' },
-    { id: 's9', name: 'Kevin Hart', email: 'kevin@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=kevin', status: UserStatus.Active, createdAt: '2023-01-12', programId: 'p1' },
-    { id: 's10', name: 'Laura Croft', email: 'laura@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=laura', status: UserStatus.Active, createdAt: '2023-01-13', programId: 'p2' },
-    { id: 's11', name: 'Brian O\'Connor', email: 'brian@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=brian', status: UserStatus.Active, createdAt: '2023-01-14', programId: 'p3' },
+    { id: '3', name: 'Alice Topstudent', email: 'alice@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=alice', status: UserStatus.Active, createdAt: '2023-01-03', programId: 'p1', county: 'Nairobi' },
+    { id: '4', name: 'John Average', email: 'john@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=john', status: UserStatus.Active, createdAt: '2023-01-05', programId: 'p1', county: 'Kiambu' },
+    { id: '5', name: 'Sarah Struggling', email: 'sarah@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=sarah', status: UserStatus.Active, createdAt: '2023-01-06', programId: 'p1', county: 'Machakos' },
+    { id: '6', name: 'Mike Missing', email: 'mike@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=mike', status: UserStatus.Active, createdAt: '2023-01-07', programId: 'p1', county: 'Kajiado' },
+    { id: 's5', name: 'Emily Chen', email: 'emily@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=emily', status: UserStatus.Active, createdAt: '2023-01-08', programId: 'p2', county: 'Uasin Gishu' },
+    { id: 's6', name: 'David Kim', email: 'david@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=david', status: UserStatus.Active, createdAt: '2023-01-09', programId: 'p2', county: 'Nairobi' },
+    { id: 's7', name: 'Chris Evans', email: 'chris@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=chris', status: UserStatus.Active, createdAt: '2023-01-10', programId: 'p1', county: 'Mombasa' },
+    { id: 's8', name: 'Jessica Jones', email: 'jessica@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=jessica', status: UserStatus.Active, createdAt: '2023-01-11', programId: 'p3', county: 'Kilifi' },
+    { id: 's9', name: 'Kevin Hart', email: 'kevin@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=kevin', status: UserStatus.Active, createdAt: '2023-01-12', programId: 'p1', county: 'Garissa' },
+    { id: 's10', name: 'Laura Croft', email: 'laura@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=laura', status: UserStatus.Active, createdAt: '2023-01-13', programId: 'p2', county: 'Turkana' },
+    { id: 's11', name: 'Brian O\'Connor', email: 'brian@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=brian', status: UserStatus.Active, createdAt: '2023-01-14', programId: 'p3', county: 'Nyeri' },
 ];
 
 const STUDENT_IDS = USERS.filter(u => u.role === UserRole.Student).map(u => u.id);
@@ -230,12 +230,38 @@ let BUDGET_REQUESTS: BudgetRequest[] = [
 
 // --- 9. ACTIVITY LOGS ---
 const ACTIVITY_LOGS: ActivityLog[] = [
-    { id: 'log1', userId: '2', userName: 'Instructor Sam', userAvatarUrl: 'https://i.pravatar.cc/150?u=sam', action: ActivityActionType.Create, description: 'Created course "Intro to CS"', timestamp: new Date(Date.now() - 1000000).toISOString() },
-    { id: 'log2', userId: '3', userName: 'Student Alice', userAvatarUrl: 'https://i.pravatar.cc/150?u=alice', action: ActivityActionType.Enroll, description: 'Enrolled in "Intro to CS"', timestamp: new Date(Date.now() - 2000000).toISOString() },
-    { id: 'log3', userId: '1', userName: 'Admin User', userAvatarUrl: 'https://i.pravatar.cc/150?u=admin', action: ActivityActionType.Login, description: 'Logged in', timestamp: new Date(Date.now() - 500000).toISOString() },
-    { id: 'log4', userId: 'instr2', userName: 'Prof. Jane Smith', userAvatarUrl: 'https://i.pravatar.cc/150?u=jane', action: ActivityActionType.Update, description: 'Updated grade for Student Alice', timestamp: new Date(Date.now() - 3000000).toISOString() },
-    { id: 'log5', userId: '4', userName: 'John Lagging', userAvatarUrl: 'https://i.pravatar.cc/150?u=john', action: ActivityActionType.View, description: 'Viewed "Week 1: Intro"', timestamp: new Date(Date.now() - 100000).toISOString() },
+    { id: 'log1', userId: '2', userName: 'Instructor Sam', userAvatarUrl: 'https://i.pravatar.cc/150?u=sam', action: ActivityActionType.Create, description: 'Created course "Intro to CS"', timestamp: new Date(Date.now() - 1000000).toISOString(), location: 'Mombasa' },
+    { id: 'log2', userId: '3', userName: 'Student Alice', userAvatarUrl: 'https://i.pravatar.cc/150?u=alice', action: ActivityActionType.Enroll, description: 'Enrolled in "Intro to CS"', timestamp: new Date(Date.now() - 2000000).toISOString(), location: 'Nairobi' },
+    { id: 'log3', userId: '1', userName: 'Admin User', userAvatarUrl: 'https://i.pravatar.cc/150?u=admin', action: ActivityActionType.Login, description: 'Logged in', timestamp: new Date(Date.now() - 500000).toISOString(), location: 'Nairobi' },
+    { id: 'log4', userId: 'instr2', userName: 'Prof. Jane Smith', userAvatarUrl: 'https://i.pravatar.cc/150?u=jane', action: ActivityActionType.Update, description: 'Updated grade for Student Alice', timestamp: new Date(Date.now() - 3000000).toISOString(), location: 'Kisumu' },
+    { id: 'log5', userId: '4', userName: 'John Lagging', userAvatarUrl: 'https://i.pravatar.cc/150?u=john', action: ActivityActionType.View, description: 'Viewed "Week 1: Intro"', timestamp: new Date(Date.now() - 100000).toISOString(), location: 'Kiambu' },
 ];
+
+// --- 10. REGIONAL STATISTICS (Mock Data) ---
+const COUNTIES = [
+    'Mombasa', 'Kwale', 'Kilifi', 'Tana River', 'Lamu', 'Taita Taveta', 'Garissa', 'Wajir', 'Mandera', 'Marsabit',
+    'Isiolo', 'Meru', 'Tharaka-Nithi', 'Embu', 'Kitui', 'Machakos', 'Makueni', 'Nyandarua', 'Nyeri', 'Kirinyaga',
+    'Murang\'a', 'Kiambu', 'Turkana', 'West Pokot', 'Samburu', 'Trans Nzoia', 'Uasin Gishu', 'Elgeyo-Marakwet', 'Nandi', 'Baringo',
+    'Laikipia', 'Nakuru', 'Narok', 'Kajiado', 'Kericho', 'Bomet', 'Kakamega', 'Vihiga', 'Bungoma', 'Busia',
+    'Siaya', 'Kisumu', 'Homa Bay', 'Migori', 'Kisii', 'Nyamira', 'Nairobi'
+];
+
+const generateRegionalStats = (): RegionalStat[] => {
+    return COUNTIES.map(county => {
+        // Simple logic to create diverse mock data based on county "popularity" (simulated by name length)
+        const base = (county === 'Nairobi' || county === 'Mombasa' || county === 'Kisumu') ? 1000 : 50;
+        const userCount = Math.floor(Math.random() * 500) + base;
+        const activeLearners = Math.floor(userCount * (0.3 + Math.random() * 0.5)); // 30-80% active
+        const completionRate = Math.floor(40 + Math.random() * 50); // 40-90% completion
+
+        return {
+            county,
+            userCount,
+            activeLearners,
+            completionRate
+        };
+    });
+};
 
 // --- API IMPLEMENTATION ---
 
@@ -255,6 +281,7 @@ export const signupUser = async (userData: Partial<User>): Promise<User> => {
         status: userData.status || UserStatus.Pending,
         avatarUrl: `https://i.pravatar.cc/150?u=${userData.email}`,
         createdAt: new Date().toISOString().split('T')[0],
+        county: 'Nairobi', // Default for now
         ...userData
     } as User;
     USERS.push(newUser);
@@ -409,8 +436,39 @@ export const getCommunications = async (): Promise<Communication[]> => { await d
 export const sendCommunication = async (data: any): Promise<Communication> => { await delay(300); return { id: `comm-${Date.now()}`, sentAt: new Date().toISOString(), ...data }; };
 export const getMessageThreads = async (userId: string): Promise<MessageThread[]> => { await delay(400); return []; };
 export const getMessageThreadDetails = async (threadId: string): Promise<MessageThread | null> => { await delay(300); return null; };
-export const createNewThread = async (participants: User[], subject: string, content: string, author: User): Promise<MessageThread> => { await delay(300); return { id: `th-${Date.now()}`, participants, subject, lastMessage: { content, createdAt: new Date().toISOString() }, isRead: true, messages: [{ id: `m-${Date.now()}`, threadId: `th-${Date.now()}`, authorId: author.id, authorName: author.name, authorAvatarUrl: author.avatarUrl, content, createdAt: new Date().toISOString() }] }; };
-export const sendMessage = async (threadId: string, content: string, author: User): Promise<Message> => { await delay(300); return { id: `m-${Date.now()}`, threadId, authorId: author.id, authorName: author.name, authorAvatarUrl: author.avatarUrl, content, createdAt: new Date().toISOString() }; };
+export const createNewThread = async (participants: User[], subject: string, content: string, author: User): Promise<MessageThread> => { 
+    await delay(300); 
+    return { 
+        id: `th-${Date.now()}`, 
+        participants, 
+        subject, 
+        lastMessage: { content, createdAt: new Date().toISOString() }, 
+        isRead: true, 
+        messages: [{ 
+            id: `m-${Date.now()}`, 
+            threadId: `th-${Date.now()}`, 
+            authorId: author.id, 
+            authorName: author.name, 
+            authorAvatarUrl: author.avatarUrl, 
+            content, 
+            createdAt: new Date().toISOString(),
+            isRead: true
+        }] 
+    }; 
+};
+export const sendMessage = async (threadId: string, content: string, author: User): Promise<Message> => { 
+    await delay(300); 
+    return { 
+        id: `m-${Date.now()}`, 
+        threadId, 
+        authorId: author.id, 
+        authorName: author.name, 
+        authorAvatarUrl: author.avatarUrl, 
+        content, 
+        createdAt: new Date().toISOString(),
+        isRead: true
+    }; 
+};
 export const getPostsForDiscussion = async (discussionId: string): Promise<DiscussionPost[]> => { await delay(400); return []; };
 export const createDiscussionPost = async (discussionId: string, content: string, author: User, parentId?: string): Promise<DiscussionPost> => { await delay(300); return { id: `dp-${Date.now()}`, discussionId, parentId, authorId: author.id, authorName: author.name, authorAvatarUrl: author.avatarUrl, authorRole: author.role, content, createdAt: new Date().toISOString(), isRead: true }; };
 export const markDiscussionPostAsRead = async (postId: string): Promise<void> => { await delay(100); };
@@ -516,4 +574,10 @@ export const rejectBudgetRequest = async (requestId: string): Promise<void> => {
     if (reqIndex !== -1) {
         BUDGET_REQUESTS[reqIndex].status = 'rejected';
     }
+};
+
+// --- Geospatial ---
+export const getRegionalStats = async (): Promise<RegionalStat[]> => {
+    await delay(500);
+    return generateRegionalStats();
 };

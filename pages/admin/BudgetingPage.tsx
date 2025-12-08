@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { StatCard } from '../../components/common/StatCard';
-import { LineChart, BarChart } from '../../components/common/Charts';
+import { MultiLineChart, GroupedBarChart } from '../../components/common/Charts';
 import * as api from '../../services/api';
 import { DepartmentBudget, BudgetRequest, FinancialTrend } from '../../types';
 import { Icon } from '../../components/icons';
@@ -63,9 +63,19 @@ const BudgetingPage: React.FC = () => {
 
     if (loading) return <div>Loading financial data...</div>;
 
-    const trendChartData = trends.map(t => ({
-        label: t.month,
-        value: t.revenue, // We visualize Revenue primarily, could add multi-line later
+    // Chart Data Preparation
+    const trendChartData = {
+        labels: trends.map(t => t.month),
+        datasets: [
+            { label: 'Revenue', data: trends.map(t => t.revenue), color: '#10B981' }, // Green
+            { label: 'Expenses', data: trends.map(t => t.expenses), color: '#EF4444' }, // Red
+        ]
+    };
+
+    const budgetUtilizationData = budgets.map(b => ({
+        label: b.departmentName.replace('School of ', '').replace('Faculty of ', ''),
+        value1: b.allocatedAmount,
+        value2: b.spentAmount,
     }));
 
     return (
@@ -75,10 +85,10 @@ const BudgetingPage: React.FC = () => {
             {/* Dashboard Tabs */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden mb-6">
                 <div className="border-b dark:border-gray-700 px-6 pt-4">
-                    <nav className="-mb-px flex space-x-8">
+                    <nav className="-mb-px flex space-x-8 overflow-x-auto">
                         <button
                             onClick={() => setActiveTab('overview')}
-                            className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                            className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                                 activeTab === 'overview'
                                     ? 'border-primary text-secondary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -88,7 +98,7 @@ const BudgetingPage: React.FC = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('analysis')}
-                            className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                            className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                                 activeTab === 'analysis'
                                     ? 'border-primary text-secondary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -98,7 +108,7 @@ const BudgetingPage: React.FC = () => {
                         </button>
                         <button
                             onClick={() => setActiveTab('requests')}
-                            className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                            className={`pb-4 px-1 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                                 activeTab === 'requests'
                                     ? 'border-primary text-secondary dark:text-primary'
                                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -118,7 +128,7 @@ const BudgetingPage: React.FC = () => {
                     {activeTab === 'overview' && (
                         <div className="space-y-8">
                             {/* KPI Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                                 <StatCard 
                                     data={{ icon: 'DollarSign', title: 'Total Revenue', value: `KSh ${totalRevenue.toLocaleString()}`, color: 'success' }} 
                                 />
@@ -133,11 +143,21 @@ const BudgetingPage: React.FC = () => {
                                 />
                             </div>
 
-                            {/* Financial Trends Chart */}
-                            <div className="bg-gray-50 dark:bg-gray-700/30 p-6 rounded-lg border dark:border-gray-700">
-                                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Revenue Trend (Last 6 Months)</h3>
-                                <div className="h-64 w-full">
-                                    <LineChart data={trendChartData} height={250} />
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                {/* Financial Trends Chart */}
+                                <div className="bg-gray-50 dark:bg-gray-700/30 p-6 rounded-lg border dark:border-gray-700">
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Financial Trends (6 Months)</h3>
+                                    <div className="h-64 w-full">
+                                        <MultiLineChart data={trendChartData} height={250} />
+                                    </div>
+                                </div>
+
+                                {/* Budget Utilization Chart */}
+                                <div className="bg-gray-50 dark:bg-gray-700/30 p-6 rounded-lg border dark:border-gray-700">
+                                    <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Budget Utilization by Dept</h3>
+                                    <div className="h-64 w-full">
+                                        <GroupedBarChart data={budgetUtilizationData} label1="Allocated" label2="Spent" height={250} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -150,7 +170,7 @@ const BudgetingPage: React.FC = () => {
                                     <tr>
                                         <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Department</th>
                                         <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Revenue Generated</th>
-                                        <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Budget Spent</th>
+                                        <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400 w-1/4">Budget Utilization</th>
                                         <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Net Profit/Loss</th>
                                         <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Allocated Budget</th>
                                         <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Actions</th>
@@ -159,11 +179,28 @@ const BudgetingPage: React.FC = () => {
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                                     {budgets.map(budget => {
                                         const isProfitable = budget.netIncome >= 0;
+                                        const usagePercent = Math.min(100, Math.round((budget.spentAmount / budget.allocatedAmount) * 100));
+                                        
+                                        // Color logic for progress bar
+                                        let barColor = 'bg-green-500';
+                                        if (usagePercent > 90) barColor = 'bg-red-500';
+                                        else if (usagePercent > 75) barColor = 'bg-yellow-500';
+
                                         return (
                                             <tr key={budget.departmentId}>
                                                 <td className="px-4 py-4 font-medium text-gray-900 dark:text-gray-100">{budget.departmentName}</td>
                                                 <td className="px-4 py-4 text-right text-green-600 font-medium">KSh {budget.generatedRevenue.toLocaleString()}</td>
-                                                <td className="px-4 py-4 text-right text-gray-600 dark:text-gray-400">KSh {budget.spentAmount.toLocaleString()}</td>
+                                                <td className="px-4 py-4 align-middle">
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex justify-between text-xs">
+                                                            <span>Spent: KSh {budget.spentAmount.toLocaleString()}</span>
+                                                            <span className="font-bold">{usagePercent}%</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                            <div className={`h-2 rounded-full ${barColor}`} style={{ width: `${usagePercent}%` }}></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
                                                 <td className={`px-4 py-4 text-right font-bold ${isProfitable ? 'text-blue-600' : 'text-red-600'}`}>
                                                     KSh {budget.netIncome.toLocaleString()}
                                                 </td>

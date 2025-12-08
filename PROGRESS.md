@@ -117,6 +117,6 @@ This document tracks the implementation status of features as defined in the Use
 | **Course Surveys & Feedback** | ✅ | Non-graded assessment tools for quality assurance. |
 | **Training Needs & Budgeting** | ✅ | Admin tools for skill gap analysis and budget allocation. |
 | **Gamification Leaderboards** | ✅ | Social competition based on XP/Grades. |
-| **Geospatial Analytics** | ⏳ | Heatmaps for login/activity by location. |
+| **Geospatial Analytics** | ✅ | Grid Heatmap and regional analytics dashboard. |
 | **SCORM Player Support** | ⏳ | Support for importing standard course packages. |
 | **Content Version Control** | ⏳ | History logs and rollback capabilities for course content. |

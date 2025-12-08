@@ -1,3 +1,4 @@
+
 import { NavItem } from './components/layout/Sidebar';
 
 export const ADMIN_NAV_ITEMS: NavItem[] = [
@@ -16,7 +17,8 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { path: '/admin/certificate-settings', name: 'Certificate Settings', icon: 'BadgeCheck', section: 'Certificates' },
   { path: '/admin/certificate-requests', name: 'Certificate Requests', icon: 'Banknote', section: 'Certificates' },
   
-  { path: '/admin/budgeting', name: 'Budgeting', icon: 'Banknote', section: 'System' },
+  { path: '/admin/budgeting', name: 'Financial Strategy', icon: 'Banknote', section: 'System' },
+  { path: '/admin/geospatial', name: 'Regional Analytics', icon: 'MapPin', section: 'System' },
   { path: '/admin/quick-setup', name: 'Quick Setup', icon: 'Wrench', section: 'System' },
   { path: '/admin/announcements', name: 'Site Announcements', icon: 'ScrollText', section: 'System' },
   { path: '/admin/question-bank', name: 'Question Bank', icon: 'FileText', section: 'System' },
