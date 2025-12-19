@@ -80,6 +80,8 @@ import {
     TrendingUp,
     PieChart,
     Video,
+    Zap,
+    BarChart
 } from 'lucide-react';
 
 const iconMap = {
@@ -95,7 +97,7 @@ const iconMap = {
     Bold, Italic, Underline, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Type, Undo, Redo, Image, Code,
     Sun, Moon, HelpCircle, Briefcase, MapPin, Building2, DollarSign,
     QrCode, CalendarCheck, Star, Package, Eye, TrendingUp, PieChart,
-    Video
+    Video, Zap, BarChart
 };
 
 export type IconName = keyof typeof iconMap;

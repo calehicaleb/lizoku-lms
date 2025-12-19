@@ -88,7 +88,22 @@ const RUBRICS: Rubric[] = [
 
 const DISPUTES: GradeDispute[] = [];
 
+const INSTITUTIONS = [
+    { name: 'University of Nairobi', slug: 'uon', logo: 'https://upload.wikimedia.org/wikipedia/en/5/5e/University_of_Nairobi_logo.png' },
+    { name: 'Strathmore University', slug: 'strathmore', logo: 'https://upload.wikimedia.org/wikipedia/en/thumb/0/07/Strathmore_University_Logo.png/220px-Strathmore_University_Logo.png' },
+    { name: 'Kenyatta University', slug: 'ku', logo: 'https://upload.wikimedia.org/wikipedia/en/5/52/Kenyatta_University_Logo.png' },
+    { name: 'Jomo Kenyatta University (JKUAT)', slug: 'jkuat', logo: 'https://upload.wikimedia.org/wikipedia/en/8/87/JKUAT_logo.png' },
+    { name: 'United States International University', slug: 'usiu', logo: 'https://upload.wikimedia.org/wikipedia/en/c/c9/USIU-Africa_Logo.png' },
+    { name: 'Lizoku Demonstration Portal', slug: 'demo', logo: '' },
+];
+
 // --- API IMPLEMENTATIONS ---
+
+export const findInstitutions = async (query: string) => {
+    await delay(150);
+    if (!query) return [];
+    return INSTITUTIONS.filter(i => i.name.toLowerCase().includes(query.toLowerCase()));
+};
 
 export const getCalendarEvents = async (userId?: string, role?: UserRole): Promise<CalendarEvent[]> => {
     await delay(300);

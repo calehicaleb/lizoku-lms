@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+// Fix: Added Link to the imports from react-router-dom.
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Icon, IconName } from '../components/icons';
 import { Modal } from '../components/ui/Modal';
@@ -30,6 +30,10 @@ const LoginPage: React.FC = () => {
 
     const { login } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Get institutional context from landing page state
+    const institutionSlug = location.state?.institution;
 
     useEffect(() => {
         if (isSignupModalOpen) {
@@ -143,166 +147,173 @@ const LoginPage: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-light-cream dark:bg-gray-900 flex flex-col lg:flex-row">
-            <div className="flex-1 bg-secondary-light dark:bg-gray-900/50 flex-col justify-center p-8 lg:p-12 hidden lg:flex">
-                <h1 className="text-4xl font-bold text-secondary dark:text-blue-300 mb-4">Lizoku Learning Management System</h1>
-                <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">A modern, cloud-native, AI-enhanced educational platform for Kenya.</p>
-                <ul className="space-y-4 text-gray-800 dark:text-gray-200">
-                    <li className="flex items-center"><Icon name="CheckCircle" className="h-6 w-6 text-primary mr-3" /> AI-powered content generation</li>
-                    <li className="flex items-center"><Icon name="BookOpen" className="h-6 w-6 text-primary mr-3" /> Comprehensive course management</li>
-                    <li className="flex items-center"><Icon name="ListChecks" className="h-6 w-6 text-primary mr-3" /> Advanced assessment tools</li>
-                    <li className="flex items-center"><Icon name="BarChart2" className="h-6 w-6 text-primary mr-3" /> Detailed reporting and analytics</li>
-                </ul>
-            </div>
+        <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col">
+            {/* Minimal Login Header */}
+            <header className="p-8 flex items-center justify-between">
+                <Link to="/" className="flex items-center gap-2 group">
+                    <div className="bg-primary p-1 rounded-md group-hover:rotate-12 transition-transform">
+                        <Icon name="GraduationCap" className="h-6 w-6 text-gray-900" />
+                    </div>
+                    <span className="text-xl font-black tracking-tighter">LIZOKU</span>
+                </Link>
+                {institutionSlug && (
+                    <div className="hidden sm:flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-4 py-1.5 rounded-full border border-gray-200 dark:border-gray-700">
+                        <Icon name="Building2" className="h-4 w-4 text-gray-400" />
+                        <span className="text-xs font-bold uppercase text-gray-500">{institutionSlug} Portal</span>
+                    </div>
+                )}
+            </header>
 
-            <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-                <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border dark:border-gray-700">
-                    <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Welcome Back</h2>
+            <div className="flex-1 flex items-center justify-center p-6">
+                <div className="w-full max-w-md bg-white dark:bg-gray-800 p-10 rounded-[2.5rem] shadow-2xl shadow-gray-200 dark:shadow-none border border-gray-100 dark:border-gray-700">
+                    <div className="text-center mb-10">
+                        <h2 className="text-3xl font-black text-gray-900 dark:text-gray-100">Portal Login</h2>
+                        {institutionSlug ? (
+                             <p className="text-gray-500 mt-2 font-medium">Welcome back to <span className="text-primary-dark font-black capitalize">{institutionSlug}</span>.</p>
+                        ) : (
+                            <p className="text-gray-500 mt-2 font-medium">Please sign in to access your dashboard.</p>
+                        )}
+                    </div>
                     
-                    <div className="mb-8">
-                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-center mb-4">Quick Portal Access</p>
-                        <div className="grid grid-cols-3 gap-3">
-                            <QuickLoginButton 
-                                role={UserRole.Admin} 
-                                icon="Shield" 
-                                color="bg-red-100 text-red-700 hover:bg-red-200" 
-                                onClick={() => handleQuickLogin(UserRole.Admin)} 
-                            />
-                            <QuickLoginButton 
-                                role={UserRole.Instructor} 
-                                icon="Presentation" 
-                                color="bg-blue-100 text-blue-700 hover:bg-blue-200" 
-                                onClick={() => handleQuickLogin(UserRole.Instructor)} 
-                            />
-                            <QuickLoginButton 
-                                role={UserRole.Student} 
-                                icon="GraduationCap" 
-                                color="bg-green-100 text-green-700 hover:bg-green-200" 
-                                onClick={() => handleQuickLogin(UserRole.Student)} 
-                            />
-                        </div>
-                    </div>
-
-                    <div className="relative flex py-5 items-center">
-                        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-                        <span className="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase tracking-wider">Or Sign In Manually</span>
-                        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-                    </div>
-
-                    <form onSubmit={handleLogin}>
-                        {error && <p className="bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-md mb-4 text-sm">{error}</p>}
-                        <div className="mb-4">
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                    <form onSubmit={handleLogin} className="space-y-6">
+                        {error && <p className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-bold border border-red-100 animate-in fade-in slide-in-from-top-2">{error}</p>}
+                        
+                        <div>
+                            <label htmlFor="email" className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
                             <input
                                 type="email"
                                 id="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-gray-200"
-                                placeholder="Enter your email"
+                                className="w-full px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border border-transparent focus:border-primary focus:bg-white transition-all rounded-2xl outline-none font-bold"
+                                placeholder="name@school.edu"
+                                required
                             />
                         </div>
-                        <div className="mb-6">
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                        
+                        <div>
+                            <div className="flex justify-between items-center mb-2 ml-1">
+                                <label htmlFor="password" className="block text-xs font-black text-gray-400 uppercase tracking-widest">Password</label>
+                                <button type="button" onClick={() => setHintModalOpen(true)} className="text-xs font-bold text-primary-dark hover:underline">Forgot?</button>
+                            </div>
                             <input
                                 type="password"
                                 id="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-gray-200"
-                                placeholder="Enter your password"
+                                className="w-full px-6 py-4 bg-gray-50 dark:bg-gray-700/50 border border-transparent focus:border-primary focus:bg-white transition-all rounded-2xl outline-none font-bold"
+                                placeholder="••••••••"
+                                required
                             />
                         </div>
-                        <button type="submit" disabled={isLoggingIn} className="w-full bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed">
-                            {isLoggingIn ? 'Signing In...' : 'Sign In'}
+
+                        <button type="submit" disabled={isLoggingIn} className="w-full bg-primary text-gray-900 font-black py-4 px-4 rounded-2xl hover:bg-primary-dark transition-all shadow-xl shadow-primary/20 active:scale-[0.98] disabled:bg-gray-200 disabled:shadow-none disabled:active:scale-100 uppercase tracking-widest text-sm">
+                            {isLoggingIn ? 'Verifying...' : 'Sign In'}
                         </button>
                     </form>
-                    <div className="text-center mt-4">
-                        <button onClick={() => setHintModalOpen(true)} className="text-sm text-secondary dark:text-blue-400 hover:underline">Forgot your password?</button>
+
+                    <div className="relative flex py-8 items-center">
+                        <div className="flex-grow border-t border-gray-100 dark:border-gray-700"></div>
+                        <span className="flex-shrink mx-4 text-gray-400 text-[10px] font-black uppercase tracking-widest">Demo Access</span>
+                        <div className="flex-grow border-t border-gray-100 dark:border-gray-700"></div>
                     </div>
-                    <div className="text-center mt-6">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">Don't have an account? <button onClick={() => setSignupModalOpen(true)} className="font-bold text-secondary dark:text-blue-400 hover:underline">Sign up</button></p>
+
+                    <div className="grid grid-cols-3 gap-3 mb-10">
+                        <button onClick={() => handleQuickLogin(UserRole.Admin)} className="flex flex-col items-center gap-2 p-3 rounded-2xl border border-gray-100 hover:border-primary hover:bg-primary/5 transition-all group">
+                            <Icon name="Shield" className="h-5 w-5 text-gray-400 group-hover:text-primary-dark" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-gray-900">Admin</span>
+                        </button>
+                        <button onClick={() => handleQuickLogin(UserRole.Instructor)} className="flex flex-col items-center gap-2 p-3 rounded-2xl border border-gray-100 hover:border-primary hover:bg-primary/5 transition-all group">
+                            <Icon name="Presentation" className="h-5 w-5 text-gray-400 group-hover:text-primary-dark" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-gray-900">Prof</span>
+                        </button>
+                        <button onClick={() => handleQuickLogin(UserRole.Student)} className="flex flex-col items-center gap-2 p-3 rounded-2xl border border-gray-100 hover:border-primary hover:bg-primary/5 transition-all group">
+                            <Icon name="GraduationCap" className="h-5 w-5 text-gray-400 group-hover:text-primary-dark" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-gray-900">Student</span>
+                        </button>
                     </div>
+
+                    <p className="text-center text-sm font-bold text-gray-400">
+                        New here? <button onClick={() => setSignupModalOpen(true)} className="text-primary-dark hover:underline">Create institutional account</button>
+                    </p>
                 </div>
             </div>
 
-            <Modal isOpen={isHintModalOpen} onClose={() => setHintModalOpen(false)} title="Forgot Password">
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter your email and we'll send you an AI-generated password hint.</p>
-                <div className="mb-4">
-                    <label htmlFor="hint-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                    <input type="email" id="hint-email" value={hintEmail} onChange={(e) => setHintEmail(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" placeholder="Enter your email" />
-                </div>
-                {isHintLoading && <p>Generating hint...</p>}
-                {generatedHint && <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/50 rounded-md text-blue-800 dark:text-blue-300">{generatedHint}</div>}
-                <div className="mt-6 flex justify-end space-x-2">
-                    <button onClick={() => setHintModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
-                    <button onClick={handleRequestHint} disabled={isHintLoading} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark">Send Hint</button>
+            {/* Hint Modal */}
+            <Modal isOpen={isHintModalOpen} onClose={() => setHintModalOpen(false)} title="Security Hint">
+                <div className="space-y-4">
+                    <p className="text-sm text-gray-500 font-medium leading-relaxed">Enter your institutional email. Our AI will analyze your profile and provide a secure mnemonic hint.</p>
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Institutional Email</label>
+                        <input type="email" value={hintEmail} onChange={(e) => setHintEmail(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl focus:ring-2 ring-primary outline-none font-bold" placeholder="name@school.edu" />
+                    </div>
+                    {isHintLoading && <p className="text-center py-4 animate-pulse text-primary-dark font-black uppercase text-xs tracking-widest">Generating secure hint...</p>}
+                    {generatedHint && (
+                        <div className="p-5 bg-primary/10 rounded-2xl border border-primary/20 animate-in zoom-in-95">
+                            <p className="text-xs font-black text-primary-dark uppercase tracking-widest mb-1">AI-Generated Hint:</p>
+                            <p className="text-gray-800 dark:text-gray-200 font-bold italic leading-relaxed">"{generatedHint}"</p>
+                        </div>
+                    )}
+                    <div className="flex justify-end pt-4">
+                        <button onClick={handleRequestHint} disabled={isHintLoading} className="bg-primary text-gray-900 font-black px-8 py-3 rounded-xl uppercase text-xs tracking-widest hover:bg-primary-dark transition-all disabled:opacity-50">Generate</button>
+                    </div>
                 </div>
             </Modal>
-            
-            <Modal isOpen={isSignupModalOpen} onClose={() => setSignupModalOpen(false)} title="Create Account">
-                {isFetchingSettings ? <p>Loading settings...</p> : (
-                    <>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Your new account will be in a "Pending Approval" state until activated by an Administrator.</p>
-                        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                             <div>
-                                <label htmlFor="signup-name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-                                <input type="text" id="signup-name" value={signupFullName} onChange={e => setSignupFullName(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
+
+            {/* Signup Modal */}
+            <Modal isOpen={isSignupModalOpen} onClose={() => setSignupModalOpen(false)} title="Account Request">
+                {isFetchingSettings ? <p className="text-center py-12">Loading security policy...</p> : (
+                    <div className="space-y-6">
+                        <p className="text-sm text-gray-500 font-medium">Requested accounts are placed in a 'Pending' state for registrar verification.</p>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name</label>
+                                <input type="text" value={signupFullName} onChange={e => setSignupFullName(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
                             </div>
                             <div>
-                                <label htmlFor="signup-email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                                <input type="email" id="signup-email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email</label>
+                                <input type="email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
                             </div>
-                            <div>
-                                <label htmlFor="signup-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                                <input type="password" id="signup-password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Password</label>
+                                    <input type="password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Confirm</label>
+                                    <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
+                                </div>
                             </div>
-                             <div>
-                                <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
-                                <input type="password" id="confirm-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" required />
-                            </div>
-                        </form>
-                        
+                        </div>
+
                         {securitySettings && signupPassword.length > 0 && (
-                            <div className="mt-4 space-y-2">
-                                <h4 className="text-sm font-medium">Password requirements:</h4>
-                                <ul className="text-xs list-disc list-inside space-y-1">
-                                    {securitySettings.passwordPolicy.minLength && <li className={passwordValidation.minLength ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>At least 8 characters</li>}
-                                    {securitySettings.passwordPolicy.requireUppercase && <li className={passwordValidation.requireUppercase ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>Contains an uppercase letter</li>}
-                                    {securitySettings.passwordPolicy.requireNumber && <li className={passwordValidation.requireNumber ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>Contains a number</li>}
-                                    <li className={passwordValidation.passwordsMatch ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>Passwords match</li>
+                            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl space-y-2 border border-gray-100 dark:border-gray-800">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Policy Validation</h4>
+                                <ul className="text-xs font-bold space-y-1">
+                                    <ValidationItem isValid={passwordValidation.minLength}>8+ Characters</ValidationItem>
+                                    <ValidationItem isValid={passwordValidation.requireUppercase}>Uppercase Letter</ValidationItem>
+                                    <ValidationItem isValid={passwordValidation.requireNumber}>Contains Number</ValidationItem>
+                                    <ValidationItem isValid={passwordValidation.passwordsMatch}>Passwords Match</ValidationItem>
                                 </ul>
                             </div>
                         )}
-                        
-                        <div className="pt-4 flex justify-end space-x-2">
-                            <button onClick={() => setSignupModalOpen(false)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
-                            <button onClick={handleSignup} disabled={isSigningUp || !passwordValidation.isValid} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary border border-transparent rounded-md hover:bg-primary-dark disabled:bg-gray-300 disabled:cursor-not-allowed">
-                                {isSigningUp ? 'Signing Up...' : 'Sign Up'}
-                            </button>
+
+                        <div className="flex justify-end gap-3 pt-6">
+                            <button onClick={() => setSignupModalOpen(false)} className="px-6 py-3 font-bold text-gray-400">Cancel</button>
+                            <button onClick={handleSignup} disabled={isSigningUp || !passwordValidation.isValid} className="bg-primary text-gray-900 font-black px-10 py-3 rounded-xl uppercase text-xs tracking-widest hover:bg-primary-dark transition-all disabled:opacity-30">Request Access</button>
                         </div>
-                    </>
+                    </div>
                 )}
             </Modal>
         </div>
     );
 };
 
-interface QuickLoginButtonProps {
-    role: UserRole;
-    icon: IconName;
-    color: string;
-    onClick: () => void;
-}
-
-const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ role, icon, color, onClick }) => (
-    <button 
-        onClick={onClick}
-        className={`flex flex-col items-center justify-center p-3 rounded-lg border dark:border-gray-600 transition-all ${color}`}
-    >
-        <Icon name={icon} className="h-6 w-6 mb-2" />
-        <span className="text-xs font-bold capitalize">{role}</span>
-    </button>
+const ValidationItem: React.FC<{isValid: boolean, children: React.ReactNode}> = ({ isValid, children }) => (
+    <li className={`flex items-center gap-2 ${isValid ? 'text-green-600' : 'text-gray-400 opacity-60'}`}>
+        <Icon name={isValid ? "CheckCircle" : "ChevronRight"} className="h-3 w-3" />
+        {children}
+    </li>
 );
 
 export default LoginPage;

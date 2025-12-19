@@ -1,8 +1,8 @@
-
 import React, { useEffect } from 'react';
 import { HashRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
+import LandingPage from './pages/LandingPage';
 import { MainLayout } from './components/layout/MainLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagementPage from './pages/admin/UserManagementPage';
@@ -89,6 +89,7 @@ const AppRoutes: React.FC = () => {
     return (
         <>
             <Routes>
+                <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={isAuthenticated ? <Navigate to={defaultPath} /> : <LoginPage />} />
                 
                 {/* Shared Routes */}
@@ -133,7 +134,6 @@ const AppRoutes: React.FC = () => {
                     <Route path="/instructor/rubrics" element={<RubricsPage />} />
                     <Route path="/instructor/retention" element={<RetentionPage />} />
                     <Route path="/instructor/profile" element={<InstructorMyProfilePage />} />
-                    {/* Add other instructor routes as placeholders */}
                 </Route>
 
                 {/* Student Routes */}
@@ -152,13 +152,12 @@ const AppRoutes: React.FC = () => {
                     <Route path="/my-certificates" element={<MyCertificatesPage />} />
                     <Route path="/achievements" element={<MyAchievementsPage />} />
                     <Route path="/profile" element={<MyProfilePage />} />
-                     {/* Add other student routes as placeholders */}
                 </Route>
 
                 {/* Standalone Exam Taker Route */}
                 <Route path="/exam/:examId" element={<ExamTakerPage />} />
 
-                <Route path="*" element={<Navigate to={defaultPath} replace />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             {isAuthenticated && (
                 <IdleTimeoutModal
