@@ -118,5 +118,5 @@ This document tracks the implementation status of features as defined in the Use
 | **Training Needs & Budgeting** | ✅ | Admin tools for skill gap analysis and budget allocation. |
 | **Gamification Leaderboards** | ✅ | Social competition based on XP/Grades. |
 | **Geospatial Analytics** | ✅ | Grid Heatmap and regional analytics dashboard. |
-| **SCORM Player Support** | ⏳ | Support for importing standard course packages. |
-| **Content Version Control** | ⏳ | History logs and rollback capabilities for course content. |
+| **SCORM Player Support** | ✅ | High-fidelity simulation of SCORM player with API call logging. |
+| **Content Version Control** | ✅ | History logs and rollback capabilities for course content. |

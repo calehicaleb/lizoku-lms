@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import * as api from '../../services/api';
@@ -13,6 +12,7 @@ import { VideoQuizPlayer } from '../../components/common/VideoQuizPlayer';
 import { OfflineSessionViewer } from '../../components/common/OfflineSessionViewer';
 import { SurveyTaker } from '../../components/common/SurveyTaker';
 import { CourseLeaderboard } from '../../components/common/CourseLeaderboard';
+import { ScormPlayer } from '../../components/common/ScormPlayer';
 
 const CourseViewerPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
@@ -59,7 +59,7 @@ const CourseViewerPage: React.FC = () => {
             setItemContent(null);
             setItemRubric(null); // Reset rubric on item change
 
-            const shouldFetchContent = ![ContentType.Quiz, ContentType.Examination, ContentType.InteractiveVideo, ContentType.OfflineSession, ContentType.Survey].includes(selectedItem.type) && !(selectedItem.type === ContentType.Assignment && selectedItem.requiresFileUpload);
+            const shouldFetchContent = ![ContentType.Quiz, ContentType.Examination, ContentType.InteractiveVideo, ContentType.OfflineSession, ContentType.Survey, ContentType.Scorm, ContentType.LiveSession].includes(selectedItem.type) && !(selectedItem.type === ContentType.Assignment && selectedItem.requiresFileUpload);
 
             if (shouldFetchContent) {
                 setItemLoading(true);
@@ -158,8 +158,10 @@ const CourseViewerPage: React.FC = () => {
         [ContentType.Examination]: 'ListChecks',
         [ContentType.InteractiveVideo]: 'FileVideo',
         [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.LiveSession]: 'Video' as any,
         [ContentType.Survey]: 'Star',
         [ContentType.Leaderboard]: 'Trophy',
+        [ContentType.Scorm]: 'Package',
     };
 
     const handleQuizComplete = () => {
@@ -189,6 +191,52 @@ const CourseViewerPage: React.FC = () => {
                     <Icon name="BookOpen" className="h-16 w-16 mb-4" />
                     <h2 className="text-xl font-medium">Welcome to {course?.title}</h2>
                     <p>Select an item from the sidebar to begin learning.</p>
+                </div>
+            );
+        }
+
+        if (selectedItem.type === ContentType.LiveSession) {
+            const live = selectedItem.liveDetails;
+            return (
+                <div className="flex flex-col items-center justify-center h-full p-8 bg-sky-50 dark:bg-sky-900/10 rounded-lg">
+                    <div className="bg-white dark:bg-gray-800 p-10 rounded-2xl shadow-xl max-w-2xl w-full border border-sky-100 dark:border-sky-900/50 text-center">
+                        <div className="mb-6">
+                            <div className="w-20 h-20 bg-sky-600 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
+                                <Icon name="Video" className="h-10 w-10 text-white" />
+                            </div>
+                            <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">{selectedItem.title}</h2>
+                            <p className="text-sky-600 dark:text-sky-400 font-bold uppercase tracking-widest text-sm mt-1">Live Virtual Class</p>
+                        </div>
+
+                        {live && (
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                                        <p className="text-xs font-bold text-gray-500 uppercase">Start Time</p>
+                                        <p className="text-lg font-bold text-gray-800 dark:text-white mt-1">
+                                            {new Date(live.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </p>
+                                    </div>
+                                    <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                                        <p className="text-xs font-bold text-gray-500 uppercase">Platform</p>
+                                        <p className="text-lg font-bold text-gray-800 dark:text-white mt-1">{live.platform}</p>
+                                    </div>
+                                </div>
+
+                                <div className="py-4">
+                                    <p className="text-gray-600 dark:text-gray-300 mb-6">Click the button below to join the live session on {live.platform}. Please ensure your microphone is muted upon entry.</p>
+                                    <a 
+                                        href={live.meetingUrl} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 bg-sky-600 text-white font-black py-4 px-10 rounded-full hover:bg-sky-700 transition-all hover:scale-105 shadow-lg shadow-sky-200 dark:shadow-none uppercase tracking-widest"
+                                    >
+                                        Join Session Now
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             );
         }
@@ -229,6 +277,10 @@ const CourseViewerPage: React.FC = () => {
                         survey={selectedItem} 
                         onComplete={() => { if (nextItem) handleItemClick(nextItem); }} 
                     />;
+        }
+
+        if (selectedItem.type === ContentType.Scorm) {
+            return <ScormPlayer item={selectedItem} />;
         }
 
         if (selectedItem.type === ContentType.Examination) {
@@ -330,7 +382,7 @@ const CourseViewerPage: React.FC = () => {
                     <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-2 truncate">{course.title}</h2>
                     {!isAdmin && (
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-4">
-                            <div className="bg-primary h-2 rounded-full" style={{ width: `75%` }}></div>
+                            <div className="bg-primary h-2 rounded-full" style={{ width: `${course.progress}%` }}></div>
                         </div>
                     )}
                     

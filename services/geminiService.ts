@@ -1,25 +1,60 @@
 import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
-import { Module, ContentType, ContentItem } from '../types';
+import { Module, ContentType, ContentItem, Rubric } from '../types';
 
-const API_KEY = process.env.API_KEY;
-
-if (!API_KEY) {
-  // This is a fallback for development, but the prompt states the key will be available.
-  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
-
-export const generatePasswordHint = async (userInfo: { name: string; email: string }): Promise<string> => {
+export const suggestGradingFeedback = async (
+  submissionText: string, 
+  rubric: Rubric, 
+  instructions: string
+): Promise<string> => {
   try {
-    const prompt = `Based on the user's name "${userInfo.name}" and email "${userInfo.email}", generate a subtle, creative, and secure password hint. The hint should not reveal the password but should jog the user's memory. For example, if the user's name is 'John Doe' and he likes dogs, a hint could be 'Your first furry friend's name?'. Be creative.`;
+    // Fix: Created new GoogleGenAI instance right before making the API call as per strict guidelines.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const rubricStr = rubric.criteria.map(c => `- ${c.description} (Max ${c.points}pts): ${c.longDescription || ''}`).join('\n');
     
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+    const prompt = `As an expert instructor, review the following student submission and suggest professional, constructive feedback.
+Context:
+Assignment Instructions: "${instructions}"
+Grading Rubric Criteria:
+${rubricStr}
+
+Student Submission Content:
+"""
+${submissionText}
+"""
+
+Instructions for you:
+1. Identify strengths and specific areas for improvement.
+2. Align comments with the rubric criteria provided.
+3. Keep the tone supportive but rigorous.
+4. Output should be a single, structured feedback paragraph. Do not assign scores, just feedback.`;
+
+    // Fix: Updated model to gemini-3-pro-preview for advanced text reasoning tasks.
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-pro-preview',
       contents: prompt,
     });
 
-    return response.text;
+    // Fix: Accessing .text property directly instead of calling it as a method.
+    return response.text || "AI Assistant was unable to process this submission.";
+  } catch (error) {
+    console.error("Error suggesting feedback:", error);
+    return "Feedback suggestion failed. Please review manually.";
+  }
+};
+
+export const generatePasswordHint = async (userInfo: { name: string; email: string }): Promise<string> => {
+  try {
+    // Fix: Initialized client locally.
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `Based on the user's name "${userInfo.name}" and email "${userInfo.email}", generate a subtle, creative, and secure password hint. The hint should not reveal the password but should jog the user's memory. For example, if the user's name is 'John Doe' and he likes dogs, a hint could be 'Your first furry friend's name?'. Be creative.`;
+    
+    // Fix: Updated model to gemini-3-flash-preview for efficient text generation.
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: prompt,
+    });
+
+    return response.text || "Hint unavailable.";
   } catch (error) {
     console.error("Error generating password hint:", error);
     return "Could not generate a hint at this time. Please try again later.";
@@ -28,24 +63,34 @@ export const generatePasswordHint = async (userInfo: { name: string; email: stri
 
 export const generateAIAvatar = async (name: string): Promise<string> => {
     try {
+        // Fix: Initialized client locally for image generation task.
+        const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
         const prompt = `Create a professional, abstract, geometric avatar logo representing a person named '${name}'. Use a vibrant color palette with gold, blue, and cream. The style should be minimalist and modern.`;
-        const response = await ai.models.generateImages({
-            model: 'imagen-4.0-generate-001',
-            prompt: prompt,
-            config: {
-              numberOfImages: 1,
-              aspectRatio: '1:1',
+        
+        // Fix: Default to gemini-2.5-flash-image for general image generation tasks.
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: {
+              parts: [{ text: prompt }]
             },
+            config: {
+              imageConfig: {
+                aspectRatio: "1:1"
+              }
+            }
         });
 
-        if (response.generatedImages && response.generatedImages.length > 0) {
-            const base64ImageBytes = response.generatedImages[0].image.imageBytes;
-            return `data:image/png;base64,${base64ImageBytes}`;
+        // Fix: Iterated through response parts to correctly extract the image part as per banana series guidelines.
+        if (response.candidates?.[0]?.content?.parts) {
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    return `data:image/png;base64,${part.inlineData.data}`;
+                }
+            }
         }
-        throw new Error("No image generated");
+        throw new Error("No image part generated in response");
     } catch (error) {
         console.error("Error generating AI avatar:", error);
-        // Fallback to a placeholder image
         return `https://i.pravatar.cc/150?u=${name}`;
     }
 };
@@ -57,18 +102,14 @@ export const generateCourseOutline = async (
   allowedContentTypes: ContentType[]
 ): Promise<Module[]> => {
   try {
-    if (allowedContentTypes.length === 0) {
-      throw new Error("At least one content type must be allowed.");
-    }
-
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const prompt = `As an expert instructional designer, create a detailed course outline for a course titled "${title}".
 The course is described as: "${description}".
 The outline should be structured into exactly ${numModules} logical modules. Each module must contain a list of content items.
-For each content item, suggest a title and a type. The only valid content item types you can use are: '${allowedContentTypes.join("', '")}'.
-Ensure the structure is logical and covers the topic comprehensively.`;
+For each content item, suggest a title and a type. The only valid content item types you can use are: '${allowedContentTypes.join("', '")}'.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -77,25 +118,14 @@ Ensure the structure is logical and covers the topic comprehensively.`;
           items: {
             type: Type.OBJECT,
             properties: {
-              title: {
-                type: Type.STRING,
-                description: "The title of the module."
-              },
+              title: { type: Type.STRING },
               items: {
                 type: Type.ARRAY,
                 items: {
                   type: Type.OBJECT,
                   properties: {
-                    title: {
-                      type: Type.STRING,
-                      description: "The title of the content item (e.g., a lesson or quiz)."
-                    },
-                    type: {
-                      type: Type.STRING,
-                      description: "The type of content item.",
-                      // FIX: The enum property expects an array of strings, not the enum object itself.
-                      enum: allowedContentTypes,
-                    }
+                    title: { type: Type.STRING },
+                    type: { type: Type.STRING, enum: allowedContentTypes }
                   },
                   required: ["title", "type"]
                 }
@@ -107,20 +137,10 @@ Ensure the structure is logical and covers the topic comprehensively.`;
       },
     });
 
-    const jsonStr = response.text.trim();
-    const parsedOutline: Module[] = JSON.parse(jsonStr);
-    
-    // Filter the result to ensure the model respected the content type constraint
-    const filteredAndParsedOutline = parsedOutline.map(module => ({
-      ...module,
-      items: module.items.filter(item => allowedContentTypes.includes(item.type))
-    }));
-
-    return filteredAndParsedOutline;
-
+    return JSON.parse(response.text?.trim() || "[]");
   } catch (error) {
     console.error("Error generating course outline:", error);
-    throw new Error("Failed to generate course outline. The model may have returned an invalid structure or the request failed.");
+    throw new Error("Failed to generate course outline.");
   }
 };
 
@@ -131,41 +151,24 @@ export const generateSingleModule = async (
   allowedContentTypes: ContentType[]
 ): Promise<Module> => {
   try {
-    if (allowedContentTypes.length === 0) {
-      throw new Error("At least one content type must be allowed.");
-    }
-
-    const prompt = `As an expert instructional designer for the course "${courseTitle}", create a single, detailed module outline about "${moduleTopic}".
-The module's content should be based on this description: "${moduleDescription}".
-The module must contain a list of logical content items.
-For each content item, suggest a title and a type. The only valid content item types you can use are: '${allowedContentTypes.join("', '")}'.`;
-
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `Create a single module for "${courseTitle}" about "${moduleTopic}". Description: "${moduleDescription}". Use types: ${allowedContentTypes.join(', ')}`;
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            title: {
-              type: Type.STRING,
-              description: "The title of the module, based on the topic provided."
-            },
+            title: { type: Type.STRING },
             items: {
               type: Type.ARRAY,
               items: {
                 type: Type.OBJECT,
                 properties: {
-                  title: {
-                    type: Type.STRING,
-                    description: "The title of the content item (e.g., a lesson or quiz)."
-                  },
-                  type: {
-                    type: Type.STRING,
-                    description: "The type of content item.",
-                    enum: allowedContentTypes,
-                  }
+                  title: { type: Type.STRING },
+                  type: { type: Type.STRING, enum: allowedContentTypes }
                 },
                 required: ["title", "type"]
               }
@@ -175,25 +178,10 @@ For each content item, suggest a title and a type. The only valid content item t
         },
       },
     });
-
-    const jsonStr = response.text.trim();
-    const parsedModule: Omit<Module, 'id'> = JSON.parse(jsonStr);
-    
-    const filteredModule = {
-      ...parsedModule,
-      items: parsedModule.items.filter(item => allowedContentTypes.includes(item.type))
-    };
-
-    const moduleWithId: Module = {
-        ...filteredModule,
-        id: `temp-id-${Date.now()}`
-    };
-
-    return moduleWithId;
-
+    return { ...JSON.parse(response.text?.trim() || "{}"), id: `temp-${Date.now()}` };
   } catch (error) {
-    console.error("Error generating single module:", error);
-    throw new Error("Failed to generate module outline. The model may have returned an invalid structure or the request failed.");
+    console.error(error);
+    throw error;
   }
 };
 
@@ -202,19 +190,12 @@ export const generateContentItems = async (
   moduleTitle: string,
   topic: string,
   allowedContentTypes: ContentType[]
-): Promise<Omit<ContentItem, 'id'>[]> => {
+): Promise<any[]> => {
   try {
-    if (allowedContentTypes.length === 0) {
-      throw new Error("At least one content type must be allowed.");
-    }
-
-    const prompt = `As an expert instructional designer for the course "${courseTitle}" and the module "${moduleTitle}", create a list of logical content items for the topic "${topic}".
-For each content item, suggest a title and a type.
-The only valid content item types you can use are: '${allowedContentTypes.join("', '")}'.
-Ensure the items are in a logical learning sequence.`;
-
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const prompt = `Create items for topic "${topic}" in course "${courseTitle}", module "${moduleTitle}". Valid types: ${allowedContentTypes.join(', ')}`;
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3-flash-preview',
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -223,32 +204,17 @@ Ensure the items are in a logical learning sequence.`;
           items: {
             type: Type.OBJECT,
             properties: {
-              title: {
-                type: Type.STRING,
-                description: "The title of the content item (e.g., a lesson or quiz)."
-              },
-              type: {
-                type: Type.STRING,
-                description: "The type of content item.",
-                enum: allowedContentTypes,
-              }
+              title: { type: Type.STRING },
+              type: { type: Type.STRING, enum: allowedContentTypes }
             },
             required: ["title", "type"]
           }
         },
       },
     });
-
-    const jsonStr = response.text.trim();
-    const parsedItems: Omit<ContentItem, 'id'>[] = JSON.parse(jsonStr);
-
-    // Filter to ensure the model respected the content type constraint
-    const filteredItems = parsedItems.filter(item => allowedContentTypes.includes(item.type));
-
-    return filteredItems;
-
+    return JSON.parse(response.text?.trim() || "[]");
   } catch (error) {
-    console.error("Error generating content items:", error);
-    throw new Error("Failed to generate content items. The model may have returned an invalid structure or the request failed.");
+    console.error(error);
+    throw error;
   }
 };

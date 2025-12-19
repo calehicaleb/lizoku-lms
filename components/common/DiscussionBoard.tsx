@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import * as api from '../../services/api';
 // Fix: Import ContentItemDetails type.
@@ -66,6 +67,7 @@ const PostItem: React.FC<PostItemProps> = ({ post, onReply, level, isCollapsed: 
 
         setIsSubmitting(true);
         try {
+            // Fix: Ensured the author (user) is passed to satisfy the API function signature.
             const newPost = await api.createDiscussionPost(post.discussionId, replyContent, user, post.id);
             onReply(newPost);
             setReplyContent('');
@@ -135,8 +137,9 @@ const PostItem: React.FC<PostItemProps> = ({ post, onReply, level, isCollapsed: 
                 )}
                 
                 <div className={`pl-5 border-l-2 border-gray-200 dark:border-gray-600 space-y-4 transition-all duration-300 ease-in-out overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0 mt-0' : 'max-h-[5000px] opacity-100 mt-4'}`}>
+                    {/* Fix: Passed the correct NestedPost type to satisfy level constraints and child mappings. */}
                     {post.children.map(reply => (
-                        <PostItem key={reply.id} post={reply} onReply={onReply} level={level + 1} />
+                        <PostItem key={reply.id} post={reply as NestedPost} onReply={onReply} level={level + 1} />
                     ))}
                 </div>
             </div>
@@ -172,9 +175,8 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
     }, [discussionId]);
 
     const handleNewReply = (newPost: DiscussionPost) => {
-        // Fix: Add new post to the flat list. `buildPostTree` will correctly place it in the hierarchy.
-        // Adding an empty children array helps with type consistency within the list.
-        setPosts(prev => [...prev, {...newPost, children: []}]);
+        // Fix: Ensured the new post is added to state correctly.
+        setPosts(prev => [...prev, newPost]);
     };
 
     const handleNewThread = async (e: React.FormEvent) => {
@@ -182,10 +184,9 @@ export const DiscussionBoard: React.FC<DiscussionBoardProps> = ({ discussionId, 
         if (!newThreadContent.trim() || !user) return;
         setIsSubmitting(true);
         try {
+            // Fix: Ensured the author (user) is passed to satisfy the API function signature.
             const newPost = await api.createDiscussionPost(discussionId, newThreadContent, user);
-            // Fix: Add new post to the flat list. `buildPostTree` will correctly place it in the hierarchy.
-            // Prepending the new post with an explicit `children` property avoids potential type inference issues.
-            setPosts(prev => [{ ...newPost, children: [] }, ...prev]);
+            setPosts(prev => [newPost, ...prev]);
         } catch (error) {
             alert('Failed to create new thread.');
         } finally {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import * as api from '../../services/api';
-import { Course, CourseStatus, Department } from '../../types';
+import { Course, CourseStatus, Department, DeliveryMode } from '../../types';
 import { Icon } from '../../components/icons';
 
 const ExploreCoursesPage: React.FC = () => {
@@ -11,6 +11,7 @@ const ExploreCoursesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [departmentFilter, setDepartmentFilter] = useState('all');
+    const [deliveryFilter, setDeliveryFilter] = useState<DeliveryMode | 'all'>('all');
     const [enrollmentMessage, setEnrollmentMessage] = useState('');
 
     useEffect(() => {
@@ -36,13 +37,26 @@ const ExploreCoursesPage: React.FC = () => {
             const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                                   course.description.toLowerCase().includes(searchTerm.toLowerCase());
             const matchesDept = departmentFilter === 'all' || course.departmentId === departmentFilter;
-            return matchesSearch && matchesDept;
+            const matchesDelivery = deliveryFilter === 'all' || course.deliveryMode === deliveryFilter;
+            return matchesSearch && matchesDept && matchesDelivery;
         });
-    }, [courses, searchTerm, departmentFilter]);
+    }, [courses, searchTerm, departmentFilter, deliveryFilter]);
     
     const handleEnroll = (courseTitle: string) => {
         setEnrollmentMessage(`Successfully enrolled in "${courseTitle}"!`);
         setTimeout(() => setEnrollmentMessage(''), 4000);
+    };
+
+    const getDeliveryBadge = (mode: DeliveryMode) => {
+        switch (mode) {
+            case DeliveryMode.Hybrid:
+                return 'bg-secondary text-white';
+            case DeliveryMode.OnSite:
+                return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+            case DeliveryMode.Online:
+            default:
+                return 'bg-green-100 text-green-800 border-green-200';
+        }
     };
 
     if (loading) return <div>Loading course catalog...</div>;
@@ -59,8 +73,8 @@ const ExploreCoursesPage: React.FC = () => {
             )}
 
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="md:col-span-2 relative">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <div className="md:col-span-6 relative">
                         <input
                             type="text"
                             placeholder="Search for courses..."
@@ -70,7 +84,7 @@ const ExploreCoursesPage: React.FC = () => {
                         />
                         <Icon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                     </div>
-                    <div>
+                    <div className="md:col-span-3">
                          <select
                             value={departmentFilter}
                             onChange={e => setDepartmentFilter(e.target.value)}
@@ -82,6 +96,18 @@ const ExploreCoursesPage: React.FC = () => {
                             ))}
                         </select>
                     </div>
+                    <div className="md:col-span-3">
+                         <select
+                            value={deliveryFilter}
+                            onChange={e => setDeliveryFilter(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                        >
+                            <option value="all">Any Delivery Mode</option>
+                            {Object.values(DeliveryMode).map(mode => (
+                                <option key={mode} value={mode} className="capitalize">{mode}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -89,8 +115,11 @@ const ExploreCoursesPage: React.FC = () => {
                 {filteredCourses.length > 0 ? (
                     filteredCourses.map(course => (
                         <div key={course.id} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow flex flex-col">
-                             <div className="h-40 bg-secondary-light dark:bg-secondary/20 flex items-center justify-center">
+                             <div className="h-40 bg-secondary-light dark:bg-secondary/20 flex items-center justify-center relative">
                                 <Icon name="BookOpen" className="h-20 w-20 text-secondary dark:text-blue-400" />
+                                <div className={`absolute top-2 right-2 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${getDeliveryBadge(course.deliveryMode)}`}>
+                                    {course.deliveryMode}
+                                </div>
                             </div>
                             <div className="p-4 flex-grow flex flex-col">
                                 <h4 className="font-bold text-gray-800 dark:text-gray-200 text-lg">{course.title}</h4>

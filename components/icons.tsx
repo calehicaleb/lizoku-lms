@@ -76,6 +76,12 @@ import {
     QrCode,
     CalendarCheck,
     Star,
+    Package,
+    Eye,
+    TrendingUp,
+    PieChart,
+    // Fix: Added Video icon from lucide-react to resolve assignment errors in components using 'Video' as an IconName.
+    Video,
 } from 'lucide-react';
 
 const iconMap = {
@@ -90,7 +96,9 @@ const iconMap = {
     PanelLeftOpen,
     Bold, Italic, Underline, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Type, Undo, Redo, Image, Code,
     Sun, Moon, HelpCircle, Briefcase, MapPin, Building2, DollarSign,
-    QrCode, CalendarCheck, Star
+    QrCode, CalendarCheck, Star, Package, Eye, TrendingUp, PieChart,
+    // Fix: Mapped Video to its corresponding Lucide icon.
+    Video
 };
 
 export type IconName = keyof typeof iconMap;

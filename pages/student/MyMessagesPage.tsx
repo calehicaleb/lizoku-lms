@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Icon } from '../../components/icons';
@@ -236,7 +235,8 @@ const ComposeView: React.FC<{ prefill?: { participantIds: string[], subject: str
 
         setIsSending(true);
         try {
-            const allParticipants = [...participants, { id: user.id, name: user.name, avatarUrl: user.avatarUrl }];
+            // Fix: Added the current user to the participants array using the full 'user' object to ensure type consistency.
+            const allParticipants = [...participants, user];
             const newThread = await api.createNewThread(allParticipants, subject, content, user);
             navigate(`/my-messages/${newThread.id}`);
         } catch (error) {

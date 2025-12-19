@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Modal } from '../../components/ui/Modal';
 import * as api from '../../services/api';
-import { CourseSummary, ContentType, Submission, Question, Rubric } from '../../types';
+import { CourseSummary, ContentType, Submission, Question } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../../components/icons';
 import { QuizReview } from '../../components/common/QuizReview';
@@ -14,6 +14,7 @@ interface GradeInfo {
     score: number | null;
     type: ContentType;
     submissionId?: string;
+    isDisputed?: boolean;
 }
 
 const MyGradesPage: React.FC = () => {
@@ -24,10 +25,15 @@ const MyGradesPage: React.FC = () => {
     const [loadingCourses, setLoadingCourses] = useState(true);
     const [loadingGrades, setLoadingGrades] = useState(false);
 
+    // Regrade Modal State
+    const [isDisputeOpen, setIsDisputeOpen] = useState(false);
+    const [disputeGradeId, setDisputeGradeId] = useState<string | null>(null);
+    const [disputeReason, setDisputeReason] = useState('');
+    const [isSubmittingDispute, setIsSubmittingDispute] = useState(false);
+
     // Review Modal State
     const [isReviewOpen, setIsReviewOpen] = useState(false);
     const [reviewData, setReviewData] = useState<{ submission: Submission, questions: Question[] | null } | null>(null);
-    const [loadingReview, setLoadingReview] = useState(false);
 
     useEffect(() => {
         if (!user) return;
@@ -35,154 +41,111 @@ const MyGradesPage: React.FC = () => {
             try {
                 const data = await api.getStudentCourses(user.id);
                 setCourses(data);
-                if (data.length > 0) {
-                    setSelectedCourseId(data[0].id);
-                }
-            } catch (error) {
-                console.error("Failed to fetch student courses", error);
-            } finally {
-                setLoadingCourses(false);
-            }
+                if (data.length > 0) setSelectedCourseId(data[0].id);
+            } catch (err) { console.error(err); } finally { setLoadingCourses(false); }
         };
         fetchCourses();
     }, [user]);
 
-    useEffect(() => {
+    const fetchGrades = async () => {
         if (!selectedCourseId || !user) return;
-        
-        const fetchGrades = async () => {
-            setLoadingGrades(true);
-            setGrades([]);
-            try {
-                const data = await api.getStudentGradesForCourse(user.id, selectedCourseId);
-                setGrades(data);
-            } catch (error) {
-                console.error("Failed to fetch grades", error);
-            } finally {
-                setLoadingGrades(false);
-            }
-        };
+        setLoadingGrades(true);
+        try {
+            const data = await api.getStudentGradesForCourse(user.id, selectedCourseId);
+            setGrades(data);
+        } catch (err) { console.error(err); } finally { setLoadingGrades(false); }
+    };
+
+    useEffect(() => {
         fetchGrades();
     }, [selectedCourseId, user]);
     
-    const handleReviewClick = async (grade: GradeInfo) => {
-        if (!grade.submissionId) return;
-        if (grade.type !== ContentType.Quiz) {
-            alert("Detailed review is currently only available for Quizzes.");
-            return;
-        }
-
-        setLoadingReview(true);
-        setIsReviewOpen(true);
-        setReviewData(null);
-
-        try {
-            const data = await api.getSubmissionDetails(grade.submissionId);
-            setReviewData(data);
-        } catch (error) {
-            console.error("Failed to load review", error);
-            setIsReviewOpen(false);
-            alert("Could not load submission details.");
-        } finally {
-            setLoadingReview(false);
-        }
+    const handleRequestRegrade = (gradeId: string) => {
+        setDisputeGradeId(gradeId);
+        setDisputeReason('');
+        setIsDisputeOpen(true);
     };
 
-    const getGradeColor = (score: number | null) => {
-        if (score === null) return 'text-gray-500 dark:text-gray-400';
-        if (score >= 90) return 'text-green-600 dark:text-green-400';
-        if (score >= 80) return 'text-blue-600 dark:text-blue-400';
-        if (score >= 70) return 'text-yellow-600 dark:text-yellow-400';
-        return 'text-red-600 dark:text-red-400';
+    const submitDispute = async () => {
+        if (!user || !disputeGradeId || !disputeReason.trim()) return;
+        setIsSubmittingDispute(true);
+        try {
+            await api.requestRegrade(disputeGradeId, user.id, disputeReason);
+            alert("Dispute submitted. Your instructor has been notified.");
+            setIsDisputeOpen(false);
+            fetchGrades();
+        } catch (err) {
+            alert("Failed to submit request.");
+        } finally {
+            setIsSubmittingDispute(false);
+        }
     };
 
     return (
         <div>
-            <PageHeader title="My Grades" subtitle="Check your academic performance for each course." />
+            <PageHeader title="Academic Performance" subtitle="Official grades and feedback for your course sessions." />
             
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
                 <div className="mb-6 flex items-center gap-4">
-                    <label htmlFor="course-select" className="font-medium text-gray-700 dark:text-gray-300">Select Course:</label>
+                    <label className="font-medium">Select Session:</label>
                     <select
-                        id="course-select"
                         value={selectedCourseId}
                         onChange={e => setSelectedCourseId(e.target.value)}
-                        className="w-full max-w-sm px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                        disabled={loadingCourses}
+                        className="max-w-sm px-3 py-2 border rounded-md dark:bg-gray-700"
                     >
-                        {loadingCourses ? <option>Loading...</option> : courses.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
+                        {courses.map(c => <option key={c.id} value={c.id}>{c.title} ({c.semesterName})</option>)}
                     </select>
                 </div>
                 
-                {loadingGrades && <div className="text-center py-8">Loading grades...</div>}
-                
-                {!loadingGrades && grades.length > 0 && (
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50">
-                                <tr>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Assignment / Quiz</th>
-                                    <th className="px-4 py-3 text-left font-medium text-gray-500 dark:text-gray-400">Type</th>
-                                    <th className="px-4 py-3 text-right font-medium text-gray-500 dark:text-gray-400">Score</th>
-                                    <th className="px-4 py-3 text-center font-medium text-gray-500 dark:text-gray-400">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {grades.map((grade) => (
-                                    <tr key={grade.id}>
-                                        <td className="px-4 py-4 whitespace-nowrap font-medium text-gray-900 dark:text-gray-200">{grade.contentItemTitle}</td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-gray-500 dark:text-gray-400 capitalize">{grade.type}</td>
-                                        <td className={`px-4 py-4 whitespace-nowrap text-right font-bold ${getGradeColor(grade.score)}`}>
-                                            {grade.score !== null ? `${grade.score}%` : 'Not Graded'}
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-center">
-                                            {grade.submissionId && grade.type === ContentType.Quiz ? (
-                                                <button 
-                                                    onClick={() => handleReviewClick(grade)}
-                                                    className="text-secondary dark:text-blue-400 hover:underline font-medium"
-                                                >
-                                                    Review Attempt
+                <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                        <thead className="bg-gray-50 dark:bg-gray-700/50">
+                            <tr>
+                                <th className="px-4 py-3 text-left">Assignment / Exam</th>
+                                <th className="px-4 py-3 text-right">Score</th>
+                                <th className="px-4 py-3 text-center">Status / Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y dark:divide-gray-700">
+                            {grades.map((grade) => (
+                                <tr key={grade.id}>
+                                    <td className="px-4 py-4 font-medium">{grade.contentItemTitle}</td>
+                                    <td className="px-4 py-4 text-right font-bold text-lg">{grade.score !== null ? `${grade.score}%` : '—'}</td>
+                                    <td className="px-4 py-4 text-center">
+                                        <div className="flex justify-center gap-4">
+                                            {grade.score !== null && !grade.isDisputed && (
+                                                <button onClick={() => handleRequestRegrade(grade.id)} className="text-xs text-orange-600 hover:underline flex items-center gap-1">
+                                                    <Icon name="AlertTriangle" className="h-3 w-3" /> Regrade Request
                                                 </button>
-                                            ) : (
-                                                <span className="text-gray-400 dark:text-gray-600">-</span>
                                             )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                 {!loadingGrades && courses.length > 0 && grades.length === 0 && (
-                     <div className="text-center py-16 px-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-2 border-dashed dark:border-gray-700">
-                        <Icon name="PenSquare" className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">No Grades Yet</h3>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">There are no graded items for this course, or your submissions haven't been graded yet.</p>
-                    </div>
-                )}
-                 {!loadingCourses && courses.length === 0 && (
-                     <div className="text-center py-16 px-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-2 border-dashed dark:border-gray-700">
-                        <Icon name="BookOpen" className="mx-auto h-12 w-12 text-gray-400" />
-                        <h3 className="mt-2 text-lg font-medium text-gray-900 dark:text-gray-200">No Courses Found</h3>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">You are not enrolled in any courses with gradable items.</p>
-                    </div>
-                )}
+                                            {grade.isDisputed && (
+                                                <span className="text-xs font-bold text-orange-500 uppercase tracking-widest px-2 py-1 bg-orange-50 rounded">Dispute Pending</span>
+                                            )}
+                                            {grade.submissionId && grade.type === ContentType.Quiz && (
+                                                <button className="text-secondary text-xs hover:underline">Review Attempt</button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <Modal isOpen={isReviewOpen} onClose={() => setIsReviewOpen(false)} title="Submission Review" size="4xl">
-                {loadingReview ? (
-                    <div className="p-8 text-center">Loading review...</div>
-                ) : reviewData && reviewData.submission.type === 'quiz' && reviewData.questions ? (
-                    <QuizReview 
-                        submission={reviewData.submission as any} 
-                        questions={reviewData.questions} 
+            <Modal isOpen={isDisputeOpen} onClose={() => setIsDisputeOpen(false)} title="Formal Regrade Request">
+                <div className="space-y-4">
+                    <p className="text-sm text-gray-600">Please provide a valid pedagogical reason for requesting a regrade. This will be sent directly to your instructor for review.</p>
+                    <textarea 
+                        value={disputeReason}
+                        onChange={e => setDisputeReason(e.target.value)}
+                        placeholder="Enter your justification..."
+                        className="w-full p-3 border rounded-md dark:bg-gray-700 h-32"
                     />
-                ) : (
-                    <div className="p-8 text-center text-red-500">Failed to load review data.</div>
-                )}
-                <div className="mt-6 flex justify-end">
-                    <button onClick={() => setIsReviewOpen(false)} className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 font-medium">Close</button>
+                    <div className="flex justify-end gap-3">
+                        <button onClick={() => setIsDisputeOpen(false)} className="px-4 py-2 text-sm">Cancel</button>
+                        <button onClick={submitDispute} disabled={isSubmittingDispute} className="px-4 py-2 bg-primary text-gray-900 font-bold rounded-md disabled:opacity-50">Submit Request</button>
+                    </div>
                 </div>
             </Modal>
         </div>

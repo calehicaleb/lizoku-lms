@@ -233,6 +233,7 @@ const GradingHubPage: React.FC = () => {
 
 // Sub-components for GradingHubPage
 const GradableItemCard: React.FC<{item: GradableItemSummary, isSelected: boolean, onSelect: () => void}> = ({ item, isSelected, onSelect }) => {
+    // Fix: Added missing LiveSession icon mapping to satisfy Record<ContentType, IconName>.
     const iconMap: Record<ContentType, IconName> = {
         [ContentType.Assignment]: 'PenSquare',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -242,8 +243,10 @@ const GradableItemCard: React.FC<{item: GradableItemSummary, isSelected: boolean
         [ContentType.Resource]: 'Link',
         [ContentType.InteractiveVideo]: 'FileVideo',
         [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.LiveSession]: 'Video',
         [ContentType.Survey]: 'Star',
         [ContentType.Leaderboard]: 'Trophy',
+        [ContentType.Scorm]: 'Package',
     };
     return (
         <button onClick={onSelect} className={`w-full p-4 border rounded-lg text-left transition-all ${isSelected ? 'bg-secondary-light dark:bg-secondary/20 ring-2 ring-secondary' : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>

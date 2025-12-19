@@ -16,6 +16,11 @@ interface ChartProps {
 // --- BAR CHART (Simple) ---
 export const BarChart: React.FC<ChartProps> = ({ data, height = 200 }) => {
     const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+    
+    if (!data || data.length === 0) {
+        return <div className="flex items-center justify-center text-gray-400 italic text-sm border border-dashed dark:border-gray-700 rounded" style={{ height: `${height}px` }}>No data available</div>;
+    }
+
     const maxValue = Math.max(...data.map(d => d.value)) || 1;
     
     return (
@@ -74,7 +79,12 @@ interface GroupedBarData {
 
 export const GroupedBarChart: React.FC<{ data: GroupedBarData[], height?: number, label1: string, label2: string }> = ({ data, height = 250, label1, label2 }) => {
     const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-    const maxValue = Math.max(...data.map(d => Math.max(d.value1, d.value2))) * 1.1 || 1;
+    
+    if (!data || data.length === 0) {
+        return <div className="flex items-center justify-center text-gray-400 italic text-sm border border-dashed dark:border-gray-700 rounded" style={{ height: `${height}px` }}>No analysis data</div>;
+    }
+
+    const maxValue = Math.max(...data.map(d => Math.max(d.value1, d.value2)), 0) * 1.1 || 1;
 
     return (
         <div className="w-full h-full flex flex-col font-sans" style={{ height: `${height}px` }}>
@@ -139,9 +149,13 @@ interface MultiLineData {
 export const MultiLineChart: React.FC<{ data: MultiLineData, height?: number }> = ({ data, height = 250 }) => {
     const [hoverIndex, setHoverIndex] = useState<number | null>(null);
     
+    if (!data || !data.labels || data.labels.length === 0 || !data.datasets || data.datasets.length === 0) {
+        return <div className="flex items-center justify-center text-gray-400 italic text-sm border border-dashed dark:border-gray-700 rounded" style={{ height: `${height}px` }}>No history found</div>;
+    }
+
     // Flatten data to find max value
     const allValues = data.datasets.flatMap(d => d.data);
-    const maxValue = Math.max(...allValues) * 1.1 || 1;
+    const maxValue = Math.max(...allValues, 0) * 1.1 || 1;
     const points = data.labels.length;
     
     // SVG Dimensions
@@ -168,20 +182,29 @@ export const MultiLineChart: React.FC<{ data: MultiLineData, height?: number }> 
 
                     {/* Lines */}
                     {data.datasets.map((dataset, dsIndex) => {
+                        if (!dataset.data || dataset.data.length === 0) return null;
+
                         const coords = dataset.data.map((val, i) => ({
-                            x: (i / (points - 1)) * width,
+                            x: points > 1 ? (i / (points - 1)) * width : width / 2,
                             y: chartHeight - (val / maxValue) * chartHeight
                         }));
                         
+                        if (coords.length === 0) return null;
+
                         // Create Smooth Bezier Curve
                         let d = `M ${coords[0].x},${coords[0].y}`;
-                        for (let i = 0; i < coords.length - 1; i++) {
-                            const x_mid = (coords[i].x + coords[i + 1].x) / 2;
-                            const y_mid = (coords[i].y + coords[i + 1].y) / 2;
-                            const cp_x1 = (x_mid + coords[i].x) / 2;
-                            const cp_x2 = (x_mid + coords[i + 1].x) / 2;
-                            d += ` Q ${cp_x1},${coords[i].y} ${x_mid},${y_mid}`;
-                            d += ` T ${coords[i + 1].x},${coords[i + 1].y}`;
+                        
+                        if (coords.length > 1) {
+                            for (let i = 0; i < coords.length - 1; i++) {
+                                const x_mid = (coords[i].x + coords[i + 1].x) / 2;
+                                const y_mid = (coords[i].y + coords[i + 1].y) / 2;
+                                const cp_x1 = (x_mid + coords[i].x) / 2;
+                                d += ` Q ${cp_x1},${coords[i].y} ${x_mid},${y_mid}`;
+                                d += ` T ${coords[i + 1].x},${coords[i + 1].y}`;
+                            }
+                        } else {
+                            // Single point line fallback
+                            d += ` L ${coords[0].x},${coords[0].y}`;
                         }
 
                         return (
@@ -206,7 +229,7 @@ export const MultiLineChart: React.FC<{ data: MultiLineData, height?: number }> 
                     })}
                     
                     {/* Hover Line */}
-                    {hoverIndex !== null && (
+                    {hoverIndex !== null && points > 1 && (
                         <line 
                             x1={(hoverIndex / (points - 1)) * width} 
                             y1="0" 
@@ -224,7 +247,7 @@ export const MultiLineChart: React.FC<{ data: MultiLineData, height?: number }> 
                     <div 
                         className="absolute bg-gray-900/90 text-white text-xs p-2 rounded shadow-lg pointer-events-none transform -translate-x-1/2 z-50"
                         style={{ 
-                            left: `${(hoverIndex / (points - 1)) * 100}%`, 
+                            left: `${points > 1 ? (hoverIndex / (points - 1)) * 100 : 50}%`, 
                             top: '0' 
                         }}
                     >
@@ -232,7 +255,7 @@ export const MultiLineChart: React.FC<{ data: MultiLineData, height?: number }> 
                         {data.datasets.map((ds, i) => (
                             <div key={i} className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full" style={{ backgroundColor: ds.color }}></div>
-                                <span>{ds.label}: {ds.data[hoverIndex].toLocaleString()}</span>
+                                <span>{ds.label}: {ds.data[hoverIndex]?.toLocaleString() ?? 0}</span>
                             </div>
                         ))}
                     </div>
@@ -251,6 +274,10 @@ export const MultiLineChart: React.FC<{ data: MultiLineData, height?: number }> 
 
 // --- DONUT CHART (Reused) ---
 export const DonutChart: React.FC<ChartProps> = ({ data, height = 200 }) => {
+    if (!data || data.length === 0) {
+        return <div className="flex items-center justify-center text-gray-400 italic text-sm border border-dashed dark:border-gray-700 rounded" style={{ height: `${height}px` }}>No stats available</div>;
+    }
+
     const total = data.reduce((acc, curr) => acc + curr.value, 0);
     const [hoverIndex, setHoverIndex] = useState<number | null>(null);
     
@@ -260,7 +287,7 @@ export const DonutChart: React.FC<ChartProps> = ({ data, height = 200 }) => {
     const thickness = 25;
 
     const paths = data.map((point, i) => {
-        const percentage = point.value / total;
+        const percentage = total > 0 ? point.value / total : 0;
         const angle = percentage * 360;
         const startAngle = cumulativeAngle;
         const endAngle = cumulativeAngle + angle;
@@ -317,8 +344,11 @@ export const DonutChart: React.FC<ChartProps> = ({ data, height = 200 }) => {
     );
 };
 
-// --- LINE CHART (Simple - Kept for compatibility if needed elsewhere) ---
+// --- LINE CHART (Simple - Kept for compatibility) ---
 export const LineChart: React.FC<ChartProps> = ({ data, height = 200 }) => {
+    if (!data || data.length === 0) {
+        return <div className="flex items-center justify-center text-gray-400 italic text-sm border border-dashed dark:border-gray-700 rounded" style={{ height: `${height}px` }}>No timeline data</div>;
+    }
     // Wrapper for MultiLine to support legacy props
     const multiLineData = {
         labels: data.map(d => d.label),

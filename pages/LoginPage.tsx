@@ -1,9 +1,8 @@
 
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Icon } from '../components/icons';
+import { Icon, IconName } from '../components/icons';
 import { Modal } from '../components/ui/Modal';
 import { generatePasswordHint } from '../services/geminiService';
 import * as api from '../services/api';
@@ -87,6 +86,27 @@ const LoginPage: React.FC = () => {
         }
     };
 
+    const handleQuickLogin = async (role: UserRole) => {
+        setIsLoggingIn(true);
+        setError('');
+        
+        let demoEmail = '';
+        switch(role) {
+            case UserRole.Admin: demoEmail = 'admin@lizoku.com'; break;
+            case UserRole.Instructor: demoEmail = 'sam@lizoku.com'; break;
+            case UserRole.Student: demoEmail = 'alice@lizoku.com'; break;
+        }
+
+        const user = await login(demoEmail, 'demo'); // Password ignored by mock api
+        if (user) {
+            const path = user.role === 'student' ? '/dashboard' : `/${user.role}`;
+            navigate(path);
+        } else {
+            setError('Failed to log in as ' + role);
+            setIsLoggingIn(false);
+        }
+    };
+
     const handleRequestHint = async () => {
         setHintLoading(true);
         setGeneratedHint('');
@@ -101,14 +121,12 @@ const LoginPage: React.FC = () => {
             const newUser = await api.signupUser({
                 name: signupFullName,
                 email: signupEmail,
-                // Defaulting new signups to Student role and Pending status
                 role: UserRole.Student,
                 status: UserStatus.Pending,
             });
             if (newUser) {
                 alert('Sign up successful! Please wait for admin approval.');
                 setSignupModalOpen(false);
-                // Reset form
                 setSignupFullName('');
                 setSignupEmail('');
                 setSignupPassword('');
@@ -138,8 +156,39 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-                <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg">
+                <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border dark:border-gray-700">
                     <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Welcome Back</h2>
+                    
+                    <div className="mb-8">
+                        <p className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-center mb-4">Quick Portal Access</p>
+                        <div className="grid grid-cols-3 gap-3">
+                            <QuickLoginButton 
+                                role={UserRole.Admin} 
+                                icon="Shield" 
+                                color="bg-red-100 text-red-700 hover:bg-red-200" 
+                                onClick={() => handleQuickLogin(UserRole.Admin)} 
+                            />
+                            <QuickLoginButton 
+                                role={UserRole.Instructor} 
+                                icon="Presentation" 
+                                color="bg-blue-100 text-blue-700 hover:bg-blue-200" 
+                                onClick={() => handleQuickLogin(UserRole.Instructor)} 
+                            />
+                            <QuickLoginButton 
+                                role={UserRole.Student} 
+                                icon="GraduationCap" 
+                                color="bg-green-100 text-green-700 hover:bg-green-200" 
+                                onClick={() => handleQuickLogin(UserRole.Student)} 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="relative flex py-5 items-center">
+                        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                        <span className="flex-shrink mx-4 text-gray-400 text-xs font-bold uppercase tracking-wider">Or Sign In Manually</span>
+                        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                    </div>
+
                     <form onSubmit={handleLogin}>
                         {error && <p className="bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-md mb-4 text-sm">{error}</p>}
                         <div className="mb-4">
@@ -151,7 +200,6 @@ const LoginPage: React.FC = () => {
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-gray-200"
                                 placeholder="Enter your email"
-                                required
                             />
                         </div>
                         <div className="mb-6">
@@ -163,7 +211,6 @@ const LoginPage: React.FC = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary dark:text-gray-200"
                                 placeholder="Enter your password"
-                                required
                             />
                         </div>
                         <button type="submit" disabled={isLoggingIn} className="w-full bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark transition duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed">
@@ -241,5 +288,21 @@ const LoginPage: React.FC = () => {
     );
 };
 
-// Fix: Add default export to make the component available for import in other files.
+interface QuickLoginButtonProps {
+    role: UserRole;
+    icon: IconName;
+    color: string;
+    onClick: () => void;
+}
+
+const QuickLoginButton: React.FC<QuickLoginButtonProps> = ({ role, icon, color, onClick }) => (
+    <button 
+        onClick={onClick}
+        className={`flex flex-col items-center justify-center p-3 rounded-lg border dark:border-gray-600 transition-all ${color}`}
+    >
+        <Icon name={icon} className="h-6 w-6 mb-2" />
+        <span className="text-xs font-bold capitalize">{role}</span>
+    </button>
+);
+
 export default LoginPage;

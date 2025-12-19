@@ -1,4 +1,3 @@
-
 import type { IconName } from './components/icons';
 export type { IconName };
 
@@ -15,6 +14,12 @@ export enum UserStatus {
   Banned = 'banned',
 }
 
+export enum DeliveryMode {
+    Online = 'online',
+    Hybrid = 'hybrid',
+    OnSite = 'on-site'
+}
+
 export interface User {
   id: string;
   name: string;
@@ -24,7 +29,7 @@ export interface User {
   status: UserStatus;
   createdAt: string;
   programId?: string;
-  county?: string; // Added for Geospatial Analytics
+  county?: string;
 }
 
 export interface StatCardData {
@@ -36,12 +41,15 @@ export interface StatCardData {
 
 export interface CourseSummary {
   id: string;
+  offeringId: string;
   title: string;
   progress?: number;
   imageUrl: string;
   students?: number;
   instructor?: string;
   rating?: number;
+  deliveryMode?: DeliveryMode;
+  semesterName?: string;
 }
 
 export interface Department {
@@ -76,8 +84,11 @@ export interface Semester {
 }
 
 export enum CourseStatus {
-    Published = 'published',
     Draft = 'draft',
+    Published = 'published',
+    Grading = 'grading',
+    Finalized = 'finalized',
+    Archived = 'archived',
     PendingReview = 'pending_review',
     Rejected = 'rejected',
 }
@@ -91,8 +102,10 @@ export enum ContentType {
     Examination = 'examination',
     InteractiveVideo = 'interactive-video',
     OfflineSession = 'offline-session',
+    LiveSession = 'live-session',
     Survey = 'survey',
     Leaderboard = 'leaderboard',
+    Scorm = 'scorm',
 }
 
 export enum QuestionType {
@@ -109,7 +122,6 @@ export enum QuestionDifficulty {
     Hard = 'hard',
 }
 
-// Base interface for all question types
 interface BaseQuestion {
     id: string;
     instructorId: string;
@@ -146,6 +158,13 @@ export interface MultipleSelectQuestion extends BaseQuestion {
     correctAnswerIndices: number[];
 }
 
+export interface CustomLiveDetails {
+    platform: 'Zoom' | 'Meet' | 'Teams' | 'Built-in';
+    meetingUrl: string;
+    startTime: string; // ISO
+    durationMinutes: number;
+}
+
 export interface FillBlankQuestion extends BaseQuestion {
     type: QuestionType.FillBlank;
     acceptableAnswers: string[];
@@ -155,14 +174,13 @@ export type Question = MultipleChoiceQuestion | TrueFalseQuestion | ShortAnswerQ
 
 export interface VideoInteraction {
     id: string;
-    timestamp: number; // in seconds
+    timestamp: number;
     question: Question;
 }
 
-// Survey Types
 export enum SurveyQuestionType {
-    Rating = 'rating', // 1-5 Stars
-    OpenEnded = 'open-ended', // Text Area
+    Rating = 'rating',
+    OpenEnded = 'open-ended',
     YesNo = 'yes-no',
 }
 
@@ -189,15 +207,19 @@ export interface ContentItem {
     maxPoints?: number;
     videoUrl?: string;
     interactions?: VideoInteraction[];
-    // Offline Session Props
     offlineDetails?: {
         location: string;
-        startDateTime: string; // ISO String
+        startDateTime: string;
         durationMinutes: number;
         notes?: string;
     };
-    // Survey Props
+    liveDetails?: CustomLiveDetails;
     surveyQuestions?: SurveyQuestion[];
+    scormDetails?: {
+        version: '1.2' | '2004';
+        launchFile: string;
+        packageUrl: string;
+    };
 }
 
 export interface Module {
@@ -208,32 +230,47 @@ export interface Module {
 
 export interface Course {
     id: string;
+    masterId: string;
     title: string;
     description: string;
     instructorId: string;
     instructorName: string;
     departmentId: string;
     departmentName: string;
+    semesterId: string;
+    semesterName: string;
     status: CourseStatus;
     modules?: Module[];
     progress?: number;
     students?: number;
-    price?: number; // Added price for financial tracking
+    price?: number; 
+    deliveryMode: DeliveryMode;
+    gradingDeadline?: string;
 }
 
-export interface Announcement {
+export enum DisputeStatus {
+    Pending = 'pending',
+    Accepted = 'accepted',
+    Rejected = 'rejected',
+}
+
+export interface GradeDispute {
     id: string;
-    title: string;
-    content: string;
-    author: string;
+    gradeId: string;
+    studentId: string;
+    studentReason: string;
+    instructorComment?: string;
+    status: DisputeStatus;
     createdAt: string;
 }
 
-export interface Enrollment {
+export interface GradeHistoryEntry {
     id: string;
-    studentId: string;
-    courseId: string;
-    contentItemId: string;
+    timestamp: string;
+    modifierName: string;
+    oldScore: number | null;
+    newScore: number;
+    reason: string;
 }
 
 export interface Grade {
@@ -246,6 +283,12 @@ export interface Grade {
     submissionId?: string;
     feedback?: string;
     rubricFeedback?: Record<string, { points: number; comment?: string }>;
+    aiSuggestion?: string;
+    plagiarismScore?: number;
+    isDisputed?: boolean;
+    disputeId?: string;
+    canResubmit?: boolean;
+    history?: GradeHistoryEntry[];
 }
 
 export interface QuizSubmission {
@@ -271,6 +314,7 @@ export interface AssignmentSubmission {
         size: number;
         url: string;
     };
+    textContent?: string;
 }
 
 export type Submission = QuizSubmission | AssignmentSubmission;
@@ -280,6 +324,18 @@ export enum CalendarEventType {
     Quiz = 'quiz',
     Holiday = 'holiday',
     Maintenance = 'maintenance',
+    OnSiteSession = 'on-site-session',
+    LiveSession = 'live-session',
+    Graduation = 'graduation',
+    Summons = 'summons',
+    Meeting = 'meeting',
+}
+
+export enum CalendarVisibility {
+    Everyone = 'everyone',
+    Instructors = 'instructors',
+    Students = 'students',
+    SpecificUsers = 'specific_users',
 }
 
 export interface CalendarEvent {
@@ -288,6 +344,14 @@ export interface CalendarEvent {
     date: string;
     type: CalendarEventType;
     courseName?: string;
+    courseId?: string;
+    location?: string;
+    time?: string;
+    description?: string;
+    link?: string;
+    visibility: CalendarVisibility;
+    targetUserIds?: string[];
+    createdBy?: string;
 }
 
 export interface DiscussionPost {
@@ -305,7 +369,6 @@ export interface DiscussionPost {
     replyCount?: number;
 }
 
-// --- Rubrics ---
 export interface RubricLevel {
     id: string;
     name: string;
@@ -328,202 +391,6 @@ export interface Rubric {
     levels: RubricLevel[];
 }
 
-// --- My Program Page ---
-export type CourseEnrollmentStatus = 'completed' | 'in_progress' | 'not_started';
-
-export interface ProgramCourse extends Course {
-    enrollmentStatus: CourseEnrollmentStatus;
-    finalGrade: number | null;
-}
-
-export interface StudentProgramDetails {
-    program: Program;
-    progress: number;
-    courses: ProgramCourse[];
-}
-
-export interface Communication {
-    id: string;
-    subject: string;
-    content: string;
-    recipientsSummary: string;
-    sentAt: string;
-    authorName: string;
-}
-
-export interface SecuritySettings {
-    enableAiFeatures: boolean;
-    aiSafetyFilter: 'Low' | 'Medium' | 'High';
-    passwordPolicy: {
-        minLength: boolean;
-        requireUppercase: boolean;
-        requireNumber: boolean;
-    };
-}
-
-// --- My Transcript Page ---
-export interface TranscriptCourse {
-    courseCode: string;
-    courseTitle: string;
-    credits: number;
-    grade: string;
-    gradePoints: number;
-}
-
-export interface TranscriptSemester {
-    semesterName: string;
-    courses: TranscriptCourse[];
-    semesterGpa: number;
-}
-
-export interface StudentTranscript {
-    studentName: string;
-    studentId: string;
-    programName: string;
-    semesters: TranscriptSemester[];
-    cumulativeGpa: number;
-}
-
-// --- My Messages Page ---
-export interface Message {
-    id: string;
-    threadId: string;
-    authorId: string;
-    authorName: string;
-    authorAvatarUrl: string;
-    content: string;
-    createdAt: string;
-    isRead: boolean;
-}
-
-export interface MessageThread {
-    id: string;
-    participants: Pick<User, 'id' | 'name' | 'avatarUrl'>[];
-    subject: string;
-    lastMessage: {
-        content: string;
-        createdAt: string;
-    };
-    isRead: boolean;
-    messages?: Message[];
-}
-
-// --- Examinations ---
-export enum ExaminationStatus {
-    Draft = 'draft',
-    Scheduled = 'scheduled',
-    Completed = 'completed',
-}
-
-export interface Examination {
-    id: string;
-    instructorId: string;
-    title: string;
-    instructions: string;
-    courseId: string;
-    courseTitle: string;
-    scheduledStart: string;
-    scheduledEnd: string;
-    durationMinutes: number;
-    questionIds: string[];
-    shuffleQuestions: boolean;
-    status: ExaminationStatus;
-}
-
-// --- My Certificates Page ---
-export interface Certificate {
-  id: string;
-  courseName: string;
-  studentName: string;
-  issueDate: string;
-  certificateId: string;
-}
-
-// --- My Achievements Page ---
-export interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: IconName;
-  unlocked: boolean;
-}
-
-// --- Certificate Settings ---
-export interface CertificateSettings {
-  logoUrl: string;
-  signatureImageUrl: string;
-  signatureSignerName: string;
-  signatureSignerTitle: string;
-  primaryColor: string;
-  autoIssueOnCompletion: boolean;
-}
-
-// --- Certificate Requests ---
-export enum CertificateRequestStatus {
-  Pending = 'pending',
-  Approved = 'approved',
-  Denied = 'denied',
-}
-
-export interface CertificateRequest {
-  id: string;
-  studentId: string;
-  studentName: string;
-  courseId: string;
-  courseName: string;
-  requestDate: string;
-  status: CertificateRequestStatus;
-}
-
-// --- Institution Settings ---
-export interface InstitutionSettings {
-  institutionName: string;
-  logoUrl: string;
-  primaryColor: string;
-}
-
-// --- Activity Logs ---
-export enum ActivityActionType {
-  Login = 'login',
-  Logout = 'logout',
-  Create = 'create',
-  Update = 'update',
-  Delete = 'delete',
-  View = 'view',
-  Enroll = 'enroll',
-}
-
-export interface ActivityLog {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatarUrl: string;
-  action: ActivityActionType;
-  description: string;
-  timestamp: string;
-  location?: string; // Added for Geospatial
-}
-
-// --- Session Management ---
-export interface UserSession {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatarUrl: string;
-  userRole: UserRole;
-  loginTime: string;
-  lastActiveTime: string;
-  ipAddress: string;
-}
-
-// --- Notifications ---
-export enum NotificationType {
-  NewGrade = 'new_grade',
-  NewMessage = 'new_message',
-  NewAnnouncement = 'new_announcement',
-  AssignmentDueSoon = 'assignment_due_soon',
-}
-
 export interface Notification {
   id: string;
   userId: string;
@@ -535,101 +402,85 @@ export interface Notification {
   createdAt: string;
 }
 
-// --- Student Dashboard ---
-export interface OverdueItem {
+export enum NotificationType {
+  NewGrade = 'new_grade',
+  NewMessage = 'new_message',
+  NewAnnouncement = 'new_announcement',
+  AssignmentDueSoon = 'assignment_due_soon',
+  OnSiteReminder = 'on_site_reminder',
+  GradeDispute = 'grade_dispute',
+}
+
+export interface VersionHistoryEntry {
     id: string;
-    title: string;
-    courseName: string;
-    dueDate: string;
-    link: string;
-}
-
-export interface UpcomingDeadline {
-    id: string;
-    title: string;
-    courseName: string;
-    dueDate: string;
-    type: 'quiz' | 'assignment' | 'exam';
-}
-
-export interface RecentActivity {
-    id: string;
-    type: string;
-    title: string;
-    summary: string;
-    timestamp: string;
-    link: string;
-    icon: IconName;
-}
-
-// --- Content Viewers ---
-export interface ContentItemDetails {
-    id: string;
-    content: string;
-}
-
-// --- Media Library ---
-export enum MediaType {
-    Image = 'image',
-    Video = 'video',
-    Audio = 'audio',
-    Document = 'document',
-}
-
-export interface MediaItem {
-    id: string;
-    instructorId: string;
-    name: string;
-    type: MediaType;
-    url: string;
-    size: number;
-    uploadedAt: string;
-    isPublic: boolean;
-}
-
-// --- Grading Hub ---
-export interface GradableItemSummary {
-    id: string;
-    title: string;
-    type: ContentType;
-    dueDate: string;
-    totalEnrolled: number;
-    submittedCount: number;
-    gradedCount: number;
-}
-
-export interface CourseGradingSummary {
     courseId: string;
-    courseTitle: string;
-    items: GradableItemSummary[];
+    versionNumber: number;
+    changedBy: string;
+    timestamp: string;
+    changeSummary: string;
+    snapshot: Module[];
 }
 
-export interface StudentSubmissionDetails {
-    student: Pick<User, 'id' | 'name' | 'avatarUrl'>;
-    submission: Submission | null;
-    grade: Grade | null;
+export interface RegionalStat {
+    county: string;
+    userCount: number;
+    activeLearners: number;
+    completionRate: number;
+    attendanceRate?: number;
 }
 
-// --- Retention / At-Risk ---
-export interface AtRiskStudent {
+export interface BudgetRequest {
+    id: string;
+    requesterName: string;
+    departmentName: string;
+    title: string; 
+    justification: string;
+    amount: number;
+    status: 'pending' | 'approved' | 'rejected';
+    date: string;
+}
+
+export interface DepartmentBudget {
+    departmentId: string;
+    departmentName: string;
+    allocatedAmount: number;
+    spentAmount: number;
+    generatedRevenue: number;
+    netIncome: number;
+    trainingNeedsCount: number;
+}
+
+export interface FinancialTrend {
+    month: string;
+    revenue: number;
+    expenses: number;
+}
+
+export interface LeaderboardEntry {
     studentId: string;
     name: string;
-    email: string;
     avatarUrl: string;
-    riskLevel: 'High' | 'Moderate';
-    riskFactors: string[];
-    lastLogin: string;
-    currentGradeAverage: number;
-    missedAssignmentsCount: number;
+    points: number;
+    rank: number;
+    trend: 'up' | 'down' | 'same';
 }
 
-// --- Career Hub ---
-export enum JobType {
-    FullTime = 'full-time',
-    PartTime = 'part-time',
-    Contract = 'contract',
-    Gig = 'gig',
-    Internship = 'internship'
+export interface SurveySummary {
+    surveyId: string;
+    title: string;
+    totalRespondents: number;
+    results: SurveyQuestionResult[];
+}
+
+export interface SurveyQuestionResult {
+    questionId: string;
+    questionText: string;
+    type: SurveyQuestionType;
+    responseCount: number;
+    averageRating?: number;
+    ratingDistribution?: Record<number, number>;
+    yesNoDistribution?: { yes: number, no: number };
+    textResponses?: string[];
 }
 
 export interface JobOpportunity {
@@ -642,8 +493,16 @@ export interface JobOpportunity {
     requirements: string[];
     salaryRange?: string;
     postedDate: string;
-    applicationLink?: string; // External link
+    applicationLink?: string;
     skills: string[];
+}
+
+export enum JobType {
+    FullTime = 'full-time',
+    PartTime = 'part-time',
+    Contract = 'contract',
+    Gig = 'gig',
+    Internship = 'internship'
 }
 
 export enum ApplicationStatus {
@@ -661,75 +520,289 @@ export interface JobApplication {
     status: ApplicationStatus;
 }
 
-// --- Survey Results ---
-export interface SurveySubmission {
-    id: string;
-    surveyId: string;
-    studentId: string;
-    answers: Record<string, any>; // questionId -> answer (number | string)
-    submittedAt: string;
-}
-
-export interface SurveyQuestionResult {
-    questionId: string;
-    questionText: string;
-    type: SurveyQuestionType;
-    responseCount: number;
-    averageRating?: number; // For Rating type
-    ratingDistribution?: Record<number, number>; // 1-5 counts
-    yesNoDistribution?: { yes: number, no: number };
-    textResponses?: string[]; // For OpenEnded
-}
-
-export interface SurveySummary {
-    surveyId: string;
-    title: string;
-    totalRespondents: number;
-    results: SurveyQuestionResult[];
-}
-
-// --- Leaderboard ---
-export interface LeaderboardEntry {
+export interface AtRiskStudent {
     studentId: string;
     name: string;
+    email: string;
     avatarUrl: string;
-    points: number;
-    rank: number;
-    trend: 'up' | 'down' | 'same';
+    riskLevel: 'High' | 'Moderate';
+    riskFactors: string[];
+    lastLogin: string;
+    currentGradeAverage: number;
+    missedAssignmentsCount: number;
 }
 
-// --- Financial / Budgeting ---
-export interface DepartmentBudget {
-    departmentId: string;
-    departmentName: string;
-    allocatedAmount: number; // The expense budget
-    spentAmount: number;
-    generatedRevenue: number; // New: Tuition fees earned
-    netIncome: number; // New: Revenue - Spent
-    trainingNeedsCount: number;
+export interface StudentSubmissionDetails {
+    student: Pick<User, 'id' | 'name' | 'avatarUrl'>;
+    submission: Submission | null;
+    grade: Grade | null;
 }
 
-export interface BudgetRequest {
+export interface CourseGradingSummary {
+    courseId: string;
+    courseTitle: string;
+    status: CourseStatus;
+    items: GradableItemSummary[];
+}
+
+export interface GradableItemSummary {
     id: string;
-    requesterName: string;
-    departmentName: string;
-    title: string; 
-    justification: string;
-    amount: number;
-    status: 'pending' | 'approved' | 'rejected';
-    date: string;
+    title: string;
+    type: ContentType;
+    dueDate: string;
+    totalEnrolled: number;
+    submittedCount: number;
+    gradedCount: number;
 }
 
-export interface FinancialTrend {
-    month: string;
-    revenue: number;
-    expenses: number;
+export interface MediaItem {
+    id: string;
+    instructorId: string;
+    name: string;
+    type: MediaType;
+    url: string;
+    size: number;
+    uploadedAt: string;
+    isPublic: boolean;
 }
 
-// --- Geospatial Analytics ---
-export interface RegionalStat {
-    county: string;
-    userCount: number;
-    activeLearners: number;
-    completionRate: number;
+export enum MediaType {
+    Image = 'image',
+    Video = 'video',
+    Audio = 'audio',
+    Document = 'document',
+}
+
+export interface ContentItemDetails {
+    id: string;
+    content: string;
+}
+
+export interface OverdueItem {
+    id: string;
+    title: string;
+    courseName: string;
+    dueDate: string;
+    link: string;
+}
+
+export interface UpcomingDeadline {
+    id: string;
+    title: string;
+    courseName: string;
+    dueDate: string;
+    type: 'quiz' | 'assignment' | 'exam' | 'on-site' | 'live';
+}
+
+export interface RecentActivity {
+    id: string;
+    type: string;
+    title: string;
+    summary: string;
+    timestamp: string;
+    link: string;
+    icon: IconName;
+}
+
+export interface UserSession {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl: string;
+  userRole: UserRole;
+  loginTime: string;
+  lastActiveTime: string;
+  ipAddress: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatarUrl: string;
+  action: ActivityActionType;
+  description: string;
+  timestamp: string;
+  location?: string;
+}
+
+export enum ActivityActionType {
+  Login = 'login',
+  Logout = 'logout',
+  Create = 'create',
+  Update = 'update',
+  Delete = 'delete',
+  View = 'view',
+  Enroll = 'enroll',
+  GradeFinalize = 'grade_finalize',
+  GradeUnlock = 'grade_unlock',
+}
+
+export interface InstitutionSettings {
+  institutionName: string;
+  logoUrl: string;
+  primaryColor: string;
+}
+
+export interface CertificateSettings {
+  logoUrl: string;
+  signatureImageUrl: string;
+  signatureSignerName: string;
+  signatureSignerTitle: string;
+  primaryColor: string;
+  autoIssueOnCompletion: boolean;
+}
+
+export interface CertificateRequest {
+  id: string;
+  studentId: string;
+  studentName: string;
+  courseId: string;
+  courseName: string;
+  requestDate: string;
+  status: CertificateRequestStatus;
+}
+
+export enum CertificateRequestStatus {
+  Pending = 'pending',
+  Approved = 'approved',
+  Denied = 'denied',
+}
+
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: IconName;
+  unlocked: boolean;
+}
+
+export interface Certificate {
+  id: string;
+  courseName: string;
+  studentName: string;
+  issueDate: string;
+  certificateId: string;
+}
+
+export interface Examination {
+    id: string;
+    instructorId: string;
+    title: string;
+    instructions: string;
+    courseId: string;
+    courseTitle: string;
+    scheduledStart: string;
+    scheduledEnd: string;
+    durationMinutes: number;
+    questionIds: string[];
+    shuffleQuestions: boolean;
+    status: ExaminationStatus;
+}
+
+export enum ExaminationStatus {
+    Draft = 'draft',
+    Scheduled = 'scheduled',
+    Completed = 'completed',
+}
+
+export interface MessageThread {
+    id: string;
+    participants: Pick<User, 'id' | 'name' | 'avatarUrl'>[];
+    subject: string;
+    lastMessage: {
+        content: string;
+        createdAt: string;
+    };
+    isRead: boolean;
+    messages?: Message[];
+}
+
+export interface Message {
+    id: string;
+    threadId: string;
+    authorId: string;
+    authorName: string;
+    authorAvatarUrl: string;
+    content: string;
+    createdAt: string;
+    isRead: boolean;
+}
+
+export interface StudentTranscript {
+    studentName: string;
+    studentId: string;
+    programName: string;
+    semesters: TranscriptSemester[];
+    cumulativeGpa: number;
+}
+
+export interface TranscriptSemester {
+    semesterName: string;
+    courses: TranscriptCourse[];
+    semesterGpa: number;
+}
+
+export interface TranscriptCourse {
+    courseCode: string;
+    courseTitle: string;
+    credits: number;
+    grade: string;
+    gradePoints: number;
+}
+
+export interface SecuritySettings {
+    enableAiFeatures: boolean;
+    aiSafetyFilter: 'Low' | 'Medium' | 'High';
+    passwordPolicy: {
+        minLength: boolean;
+        requireUppercase: boolean;
+        requireNumber: boolean;
+    };
+}
+
+export interface Communication {
+    id: string;
+    subject: string;
+    content: string;
+    recipientsSummary: string;
+    sentAt: string;
+    authorName: string;
+}
+
+export interface StudentProgramDetails {
+    program: Program;
+    progress: number;
+    courses: ProgramCourse[];
+}
+
+export interface ProgramCourse extends Course {
+    enrollmentStatus: CourseEnrollmentStatus;
+    finalGrade: number | null;
+}
+
+export type CourseEnrollmentStatus = 'completed' | 'in_progress' | 'not_started';
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  createdAt: string;
+}
+
+export interface Enrollment {
+  id: string;
+  userId: string;
+  courseId: string;
+  enrolledAt: string;
+  status: 'active' | 'completed' | 'dropped';
+}
+
+export interface SurveySubmission {
+  id: string;
+  surveyId: string;
+  studentId: string;
+  submittedAt: string;
+  answers: Record<string, any>;
 }

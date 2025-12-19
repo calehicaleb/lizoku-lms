@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import * as api from '../../services/api';
 // Fix: Import ContentItemDetails type.
-import { Course, Module, ContentItem, ContentType, Question, Rubric, ContentItemDetails, CourseStatus } from '../../types';
+import { Course, Module, ContentItem, ContentType, Question, Rubric, ContentItemDetails, CourseStatus, VersionHistoryEntry } from '../../types';
 import { Icon, IconName } from '../../components/icons';
 import { Modal } from '../../components/ui/Modal';
 import { generateCourseOutline, generateSingleModule, generateContentItems } from '../../services/geminiService';
@@ -14,6 +14,7 @@ import { VideoQuizEditor } from '../../components/common/VideoQuizEditor';
 import { OfflineSessionEditor } from '../../components/common/OfflineSessionEditor';
 import { SurveyEditor } from '../../components/common/SurveyEditor';
 import { SurveyResults } from '../../components/common/SurveyResults';
+import { VersionHistoryModal } from '../../components/common/VersionHistoryModal';
 
 interface AddModuleModalProps {
     isOpen: boolean;
@@ -35,6 +36,7 @@ const AddModuleModal: React.FC<AddModuleModalProps> = ({ isOpen, onClose, course
     const [generatedModule, setGeneratedModule] = useState<Module | null>(null);
     const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
     
+    // Fix: Added missing LiveSession icon mapping to satisfy the type requirement.
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -44,8 +46,10 @@ const AddModuleModal: React.FC<AddModuleModalProps> = ({ isOpen, onClose, course
         [ContentType.Examination]: 'ListChecks',
         [ContentType.InteractiveVideo]: 'FileVideo',
         [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.LiveSession]: 'Video',
         [ContentType.Survey]: 'Star',
         [ContentType.Leaderboard]: 'Trophy',
+        [ContentType.Scorm]: 'Package',
     };
 
     const resetForm = () => {
@@ -282,6 +286,11 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
     const [generatedItems, setGeneratedItems] = useState<ContentItem[] | null>(null);
     const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
 
+    // SCORM Upload State
+    const [isScormUpload, setIsScormUpload] = useState(false);
+    const [scormFile, setScormFile] = useState<File | null>(null);
+
+    // Fix: Added missing LiveSession mapping.
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -291,8 +300,10 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
         [ContentType.Examination]: 'ListChecks',
         [ContentType.InteractiveVideo]: 'FileVideo',
         [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.LiveSession]: 'Video',
         [ContentType.Survey]: 'Star',
         [ContentType.Leaderboard]: 'Trophy',
+        [ContentType.Scorm]: 'Package',
     };
 
     const resetForm = () => {
@@ -303,6 +314,8 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
         setActiveTab('manual');
         setGeneratedItems(null);
         setSelectedItemIds(new Set());
+        setScormFile(null);
+        setIsScormUpload(false);
     };
 
     useEffect(() => {
@@ -316,7 +329,22 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
             setError('Content item title cannot be empty.');
             return;
         }
-        onItemsAdded([{ title: manualTitle, type: manualType }]);
+        
+        const newItem: Omit<ContentItem, 'id'> = { title: manualTitle, type: manualType };
+        
+        if (manualType === ContentType.Scorm) {
+            if (!scormFile) {
+                setError('Please upload a SCORM zip package.');
+                return;
+            }
+            newItem.scormDetails = {
+                version: '1.2', // Default for mock
+                launchFile: 'index.html',
+                packageUrl: '#', // In real app, this is URL after upload
+            };
+        }
+
+        onItemsAdded([newItem]);
         resetForm();
     };
 
@@ -438,10 +466,33 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
                     </div>
                     <div>
                         <label htmlFor="item-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item Type</label>
-                        <select id="item-type" value={manualType} onChange={e => setManualType(e.target.value as ContentType)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md capitalize">
+                        <select 
+                            id="item-type" 
+                            value={manualType} 
+                            onChange={e => {
+                                const type = e.target.value as ContentType;
+                                setManualType(type);
+                                setIsScormUpload(type === ContentType.Scorm);
+                            }} 
+                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md capitalize"
+                        >
                             {Object.values(ContentType).map(type => (<option key={type} value={type}>{type}</option>))}
                         </select>
                     </div>
+
+                    {isScormUpload && (
+                        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 border dark:border-gray-600 rounded-md border-dashed border-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload SCORM Package (.zip)</label>
+                            <input 
+                                type="file" 
+                                accept=".zip" 
+                                onChange={(e) => setScormFile(e.target.files ? e.target.files[0] : null)}
+                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-gray-800 hover:file:bg-primary-dark"
+                            />
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Supports SCORM 1.2 and 2004.</p>
+                        </div>
+                    )}
+
                     <div className="pt-2 flex justify-end">
                         <button onClick={handleManualAdd} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark">Add Item</button>
                     </div>
@@ -523,6 +574,11 @@ const CourseBuilderPage: React.FC = () => {
     const [draggedItem, setDraggedItem] = useState<DraggedItemState | null>(null);
     const [dragOverTargetId, setDragOverTargetId] = useState<string | null>(null);
 
+    // Version History State
+    const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+    const [history, setHistory] = useState<VersionHistoryEntry[]>([]);
+    const [isRestoring, setIsRestoring] = useState(false);
+
     // Read Only State
     const isReadOnly = useMemo(() => course?.status === CourseStatus.PendingReview, [course]);
 
@@ -589,6 +645,7 @@ const CourseBuilderPage: React.FC = () => {
         }
     }, [editingContentItem]);
 
+    // Fix: Added missing LiveSession icon mapping to satisfy the Record<ContentType, IconName> requirement.
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -598,8 +655,38 @@ const CourseBuilderPage: React.FC = () => {
         [ContentType.Examination]: 'ListChecks',
         [ContentType.InteractiveVideo]: 'FileVideo',
         [ContentType.OfflineSession]: 'CalendarCheck',
+        [ContentType.LiveSession]: 'Video',
         [ContentType.Survey]: 'Star',
         [ContentType.Leaderboard]: 'Trophy',
+        [ContentType.Scorm]: 'Package',
+    };
+
+    // --- Version History Logic ---
+    const handleOpenHistory = async () => {
+        if (!courseId) return;
+        setIsHistoryModalOpen(true);
+        try {
+            const historyData = await api.getCourseHistory(courseId);
+            setHistory(historyData);
+        } catch (error) {
+            console.error("Failed to load history", error);
+        }
+    };
+
+    const handleRestoreVersion = async (versionId: string) => {
+        if (!courseId) return;
+        setIsRestoring(true);
+        try {
+            const restoredCourse = await api.restoreCourseVersion(courseId, versionId);
+            setCourse(restoredCourse);
+            setIsHistoryModalOpen(false);
+            alert("Course restored successfully!");
+        } catch (error) {
+            console.error("Failed to restore version", error);
+            alert("Failed to restore version. Please try again.");
+        } finally {
+            setIsRestoring(false);
+        }
     };
 
     // --- Drag and Drop Handlers ---
@@ -1089,6 +1176,13 @@ const CourseBuilderPage: React.FC = () => {
 
             {!isReadOnly && (
                 <div className="flex flex-col sm:flex-row justify-end items-center gap-4 my-6">
+                    <button
+                        onClick={handleOpenHistory}
+                        className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3 px-5 rounded-lg shadow-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-300 flex items-center justify-center"
+                        title="View Version History"
+                    >
+                        <Icon name="History" className="h-5 w-5" />
+                    </button>
                     <button 
                         onClick={() => { setGeneratedOutline(null); setGeneratorOpen(true); }}
                         className="w-full sm:w-auto bg-primary text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:bg-primary-dark transition duration-300 flex items-center justify-center">
@@ -1449,6 +1543,15 @@ const CourseBuilderPage: React.FC = () => {
                     </div>
                 </Modal>
             )}
+
+            {/* Version History Modal */}
+            <VersionHistoryModal 
+                isOpen={isHistoryModalOpen} 
+                onClose={() => setIsHistoryModalOpen(false)} 
+                history={history} 
+                onRestore={handleRestoreVersion}
+                isRestoring={isRestoring}
+            />
         </div>
     );
 };

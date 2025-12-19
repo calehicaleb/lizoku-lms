@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -10,6 +9,10 @@ const NOTIFICATION_ICONS: Record<NotificationType, IconName> = {
     [NotificationType.NewMessage]: 'MessageSquare',
     [NotificationType.NewAnnouncement]: 'ScrollText',
     [NotificationType.AssignmentDueSoon]: 'Clock',
+    // Fix: Added missing icon mapping for OnSiteReminder.
+    [NotificationType.OnSiteReminder]: 'MapPin',
+    // Fix: Added missing icon mapping for GradeDispute to satisfy Record<NotificationType, IconName> type constraint.
+    [NotificationType.GradeDispute]: 'AlertTriangle',
 };
 
 const NotificationItem: React.FC<{ notification: Notification; onClick: () => void }> = ({ notification, onClick }) => (
