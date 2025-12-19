@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
     LayoutDashboard, 
@@ -80,7 +79,6 @@ import {
     Eye,
     TrendingUp,
     PieChart,
-    // Fix: Added Video icon from lucide-react to resolve assignment errors in components using 'Video' as an IconName.
     Video,
 } from 'lucide-react';
 
@@ -97,18 +95,17 @@ const iconMap = {
     Bold, Italic, Underline, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, Type, Undo, Redo, Image, Code,
     Sun, Moon, HelpCircle, Briefcase, MapPin, Building2, DollarSign,
     QrCode, CalendarCheck, Star, Package, Eye, TrendingUp, PieChart,
-    // Fix: Mapped Video to its corresponding Lucide icon.
     Video
 };
 
 export type IconName = keyof typeof iconMap;
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
-  name: IconName;
+  name: IconName | string; // Allow string for flexibility while maintaining typing
 }
 
 export const Icon: React.FC<IconProps> = ({ name, ...props }) => {
-  const LucideIcon = iconMap[name];
+  const LucideIcon = iconMap[name as IconName];
   if (!LucideIcon) return null;
   return <LucideIcon {...props} />;
 };

@@ -1,5 +1,5 @@
 import {
-    User, UserRole, UserStatus, StatCardData, CourseSummary, Department, Program, Semester, SemesterStatus, Course, CourseStatus, Module, ContentType, ContentItem, Announcement, Enrollment, Grade, CalendarEvent, CalendarEventType, DiscussionPost, Question, QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, ShortAnswerQuestion, QuizSubmission, MultipleSelectQuestion, FillBlankQuestion, Rubric, StudentProgramDetails, ProgramCourse, Communication, SecuritySettings, StudentTranscript, Message, MessageThread, Examination, ExaminationStatus, Certificate, Achievement, CertificateSettings, CertificateRequest, CertificateRequestStatus, InstitutionSettings, ActivityLog, ActivityActionType, UserSession, Notification, NotificationType, OverdueItem, UpcomingDeadline, RecentActivity, IconName, ContentItemDetails, AssignmentSubmission, Submission, QuestionDifficulty, MediaItem, MediaType, CourseGradingSummary, GradableItemSummary, StudentSubmissionDetails, RubricCriterion, RubricLevel, AtRiskStudent, JobOpportunity, JobType, JobApplication, ApplicationStatus, SurveySubmission, SurveySummary, SurveyQuestionType, LeaderboardEntry, DepartmentBudget, BudgetRequest, FinancialTrend, RegionalStat, VersionHistoryEntry, DeliveryMode, DisputeStatus, GradeDispute, CalendarVisibility
+    User, UserRole, UserStatus, StatCardData, CourseSummary, Department, Program, Semester, SemesterStatus, Course, CourseStatus, Module, ContentItem, ContentType, Announcement, Enrollment, Grade, CalendarEvent, CalendarEventType, DiscussionPost, Question, QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, ShortAnswerQuestion, QuizSubmission, MultipleSelectQuestion, FillBlankQuestion, Rubric, RubricScope, StudentProgramDetails, ProgramCourse, Communication, SecuritySettings, StudentTranscript, Message, MessageThread, Examination, ExaminationStatus, Certificate, Achievement, CertificateSettings, CertificateRequest, CertificateRequestStatus, InstitutionSettings, ActivityLog, ActivityActionType, UserSession, Notification, NotificationType, OverdueItem, UpcomingDeadline, RecentActivity, ContentItemDetails, AssignmentSubmission, Submission, QuestionDifficulty, MediaItem, MediaType, CourseGradingSummary, GradableItemSummary, StudentSubmissionDetails, RubricCriterion, RubricLevel, AtRiskStudent, JobOpportunity, JobType, JobApplication, ApplicationStatus, SurveySubmission, SurveySummary, SurveyQuestionType, LeaderboardEntry, DepartmentBudget, BudgetRequest, FinancialTrend, RegionalStat, VersionHistoryEntry, DeliveryMode, DisputeStatus, GradeDispute, CalendarVisibility
 } from '../types';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -67,6 +67,23 @@ const MOCK_CALENDAR_EVENTS: CalendarEvent[] = [
     { id: 'e3', title: 'Christmas Holiday', date: '2025-12-25', type: CalendarEventType.Holiday, visibility: CalendarVisibility.Everyone },
     { id: 'e4', title: 'Spring 2026 Orientation', date: '2026-01-05', type: CalendarEventType.OnSiteSession, location: 'Main Hall', visibility: CalendarVisibility.Students, description: 'Mandatory orientation for all new students joining in Jan 2026.' },
     { id: 'sum1', title: 'Academic Council Meeting', date: '2025-12-20', type: CalendarEventType.Summons, location: 'Boardroom A', visibility: CalendarVisibility.SpecificUsers, targetUserIds: ['3'], description: 'Meeting with the dean regarding your research proposal.' }
+];
+
+const RUBRICS: Rubric[] = [
+    {
+        id: 'r1',
+        instructorId: '2',
+        instructorName: 'Instructor Sam',
+        title: 'Institutional Writing Standard',
+        scope: RubricScope.Account,
+        criteria: [
+            { id: 'c1', description: 'Grammar & Clarity', points: 20, levelDescriptions: { 'l1': 'Perfect', 'l2': 'Needs improvement' } }
+        ],
+        levels: [
+            { id: 'l1', name: 'Expert', points: 20 },
+            { id: 'l2', name: 'Basic', points: 10 }
+        ]
+    }
 ];
 
 const DISPUTES: GradeDispute[] = [];
@@ -262,7 +279,45 @@ export const markNotificationAsRead = async (id: string) => {};
 export const markAllNotificationsAsRead = async (id: string) => {};
 export const getRecentUsers = async (limit: number): Promise<User[]> => [...USERS].slice(-limit);
 export const getSubmissionsForContentItem = async (itemId: string): Promise<StudentSubmissionDetails[]> => [];
-export const getRubrics = async (instructorId: string): Promise<Rubric[]> => [];
+
+export const getRubrics = async (instructorId: string): Promise<Rubric[]> => {
+    await delay(300);
+    // Return instructor-owned rubrics and institutional shared rubrics
+    return RUBRICS.filter(r => r.instructorId === instructorId || r.scope === RubricScope.Account);
+};
+
+export const getRubricById = async (id: string): Promise<Rubric | null> => {
+    await delay(100);
+    return RUBRICS.find(r => r.id === id) || null;
+};
+
+export const createRubric = async (r: Omit<Rubric, 'id'>): Promise<Rubric> => {
+    await delay(500);
+    const newRubric = { ...r, id: `r-${Date.now()}` };
+    RUBRICS.push(newRubric);
+    return newRubric;
+};
+
+export const updateRubric = async (id: string, updates: Partial<Rubric>): Promise<Rubric | null> => {
+    await delay(500);
+    const idx = RUBRICS.findIndex(r => r.id === id);
+    if (idx !== -1) {
+        RUBRICS[idx] = { ...RUBRICS[idx], ...updates };
+        return RUBRICS[idx];
+    }
+    return null;
+};
+
+export const deleteRubric = async (id: string): Promise<{ success: boolean }> => {
+    await delay(500);
+    const idx = RUBRICS.findIndex(r => r.id === id);
+    if (idx !== -1) {
+        RUBRICS.splice(idx, 1);
+        return { success: true };
+    }
+    return { success: false };
+};
+
 export const getQuestions = async (id: string) => [];
 export const gradeManualSubmission = async (id: string, data: any) => {};
 export const getSecuritySettings = async (): Promise<SecuritySettings> => ({ enableAiFeatures: true, aiSafetyFilter: 'Medium', passwordPolicy: { minLength: true, requireUppercase: true, requireNumber: true } });
@@ -327,7 +382,7 @@ export const updateCertificateSettings = async (s: any) => {};
 export const createDepartment = async (d: any) => DEPARTMENTS[0];
 export const createProgram = async (p: any) => ({ id: 'p2' } as any);
 export const createQuestion = async (q: any) => ({} as any);
-export const createRubric = async (r: any) => ({} as any);
+// Fix: Removed duplicate createRubric function declaration.
 export const createExamination = async (e: any) => ({} as any);
 export const sendCommunication = async (c: any) => ({} as any);
 export const getCommunications = async () => [];
@@ -335,7 +390,6 @@ export const updateUser = async (id: string, u: any) => USERS[0];
 export const updateDepartment = async (id: string, d: any) => DEPARTMENTS[0];
 export const updateProgram = async (id: string, p: any) => ({} as any);
 export const updateQuestion = async (id: string, q: any) => ({} as any);
-export const updateRubric = async (id: string, r: any) => ({} as any);
 export const updateExamination = async (id: string, e: any) => ({} as any);
 export const deleteUser = async (id: string) => ({ success: true });
 export const deleteDepartment = async (id: string) => ({ success: true });
@@ -343,7 +397,6 @@ export const deleteProgram = async (id: string) => ({ success: true });
 export const deleteSemester = async (id: string) => ({ success: true });
 export const deleteCourse = async (id: string) => ({ success: true });
 export const deleteQuestion = async (id: string) => ({ success: true });
-export const deleteRubric = async (id: string) => ({ success: true });
 export const deleteExamination = async (id: string) => ({ success: true });
 export const changeUserPassword = async (id: string, c: string, n: string) => ({ success: true, message: 'Done' });
 export const getAllInstructors = async () => USERS.filter(u => u.role === UserRole.Instructor);
@@ -416,7 +469,6 @@ export const getInstructorStats = async (instructorId: string): Promise<StatCard
     { icon: 'TrendingUp' as any, title: 'Avg. Attendance', value: '88%', color: 'success' },
 ];
 
-export const getRubricById = async (id: string): Promise<Rubric | null> => null;
 export const updateDepartmentBudget = async (id: string, amount: number) => ({ success: true });
 export const approveBudgetRequest = async (id: string) => ({ success: true });
 export const rejectBudgetRequest = async (id: string) => ({ success: true });

@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import * as api from '../../services/api';
-// Fix: Import ContentItemDetails type.
-import { Course, Module, ContentItem, ContentType, Question, Rubric, ContentItemDetails, CourseStatus, VersionHistoryEntry } from '../../types';
+import { Course, Module, ContentItem, ContentType, Question, Rubric, ContentItemDetails, CourseStatus, VersionHistoryEntry, RubricScope } from '../../types';
 import { Icon, IconName } from '../../components/icons';
 import { Modal } from '../../components/ui/Modal';
 import { generateCourseOutline, generateSingleModule, generateContentItems } from '../../services/geminiService';
@@ -15,6 +13,7 @@ import { OfflineSessionEditor } from '../../components/common/OfflineSessionEdit
 import { SurveyEditor } from '../../components/common/SurveyEditor';
 import { SurveyResults } from '../../components/common/SurveyResults';
 import { VersionHistoryModal } from '../../components/common/VersionHistoryModal';
+import { RubricViewer } from '../../components/common/RubricViewer';
 
 interface AddModuleModalProps {
     isOpen: boolean;
@@ -32,11 +31,9 @@ const AddModuleModal: React.FC<AddModuleModalProps> = ({ isOpen, onClose, course
     const [isGenerating, setIsGenerating] = useState(false);
     const [error, setError] = useState('');
 
-    // New state for AI preview
     const [generatedModule, setGeneratedModule] = useState<Module | null>(null);
     const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
     
-    // Fix: Added missing LiveSession icon mapping to satisfy the type requirement.
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -75,7 +72,7 @@ const AddModuleModal: React.FC<AddModuleModalProps> = ({ isOpen, onClose, course
             return;
         }
         onModuleAdded({
-            id: '', // Parent will assign
+            id: '', 
             title: manualTitle,
             items: [],
         });
@@ -286,11 +283,8 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
     const [generatedItems, setGeneratedItems] = useState<ContentItem[] | null>(null);
     const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set());
 
-    // SCORM Upload State
-    const [isScormUpload, setIsScormUpload] = useState(false);
     const [scormFile, setScormFile] = useState<File | null>(null);
 
-    // Fix: Added missing LiveSession mapping.
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -315,7 +309,6 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
         setGeneratedItems(null);
         setSelectedItemIds(new Set());
         setScormFile(null);
-        setIsScormUpload(false);
     };
 
     useEffect(() => {
@@ -338,9 +331,9 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
                 return;
             }
             newItem.scormDetails = {
-                version: '1.2', // Default for mock
+                version: '1.2', 
                 launchFile: 'index.html',
-                packageUrl: '#', // In real app, this is URL after upload
+                packageUrl: '#', 
             };
         }
 
@@ -446,7 +439,7 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Add to: ${moduleTitle}`} size="2xl">
+        <Modal isOpen={isOpen} onClose={onClose} title={`Add Content to: ${moduleTitle}`} size="2xl">
             <div className="flex border-b dark:border-gray-700 mb-4">
                 <button onClick={() => setActiveTab('manual')} className={`px-4 py-2 text-sm font-medium ${activeTab === 'manual' ? 'border-b-2 border-primary text-primary-dark dark:text-primary' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}>
                     Create Manually
@@ -455,59 +448,135 @@ const AddContentItemModal: React.FC<AddContentItemModalProps> = ({ isOpen, onClo
                     Generate with AI <Icon name="Sparkles" className="h-4 w-4" />
                 </button>
             </div>
-
+            
             {error && <p className="mb-4 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-md text-sm">{error}</p>}
 
             {activeTab === 'manual' && (
                 <div className="space-y-4">
                     <div>
-                        <label htmlFor="item-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item Title</label>
-                        <input type="text" id="item-title" value={manualTitle} onChange={e => setManualTitle(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" placeholder="e.g., Introduction to Variables"/>
+                        <label htmlFor="manual-item-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item Title</label>
+                        <input
+                            type="text"
+                            id="manual-item-title"
+                            value={manualTitle}
+                            onChange={e => setManualTitle(e.target.value)}
+                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md"
+                            placeholder="e.g., Lesson 1: Intro"
+                        />
                     </div>
                     <div>
-                        <label htmlFor="item-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Item Type</label>
-                        <select 
-                            id="item-type" 
-                            value={manualType} 
-                            onChange={e => {
-                                const type = e.target.value as ContentType;
-                                setManualType(type);
-                                setIsScormUpload(type === ContentType.Scorm);
-                            }} 
-                            className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md capitalize"
-                        >
-                            {Object.values(ContentType).map(type => (<option key={type} value={type}>{type}</option>))}
+                        <label htmlFor="manual-item-type" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content Type</label>
+                        <select id="manual-item-type" value={manualType} onChange={e => setManualType(e.target.value as ContentType)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md capitalize">
+                            {Object.values(ContentType).map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
-
-                    {isScormUpload && (
-                        <div className="p-4 bg-gray-50 dark:bg-gray-700/50 border dark:border-gray-600 rounded-md border-dashed border-2">
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Upload SCORM Package (.zip)</label>
-                            <input 
-                                type="file" 
-                                accept=".zip" 
-                                onChange={(e) => setScormFile(e.target.files ? e.target.files[0] : null)}
-                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-gray-800 hover:file:bg-primary-dark"
-                            />
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Supports SCORM 1.2 and 2004.</p>
+                    {manualType === ContentType.Scorm && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload SCORM Package (.zip)</label>
+                            <input type="file" accept=".zip" onChange={e => setScormFile(e.target.files ? e.target.files[0] : null)} className="w-full px-3 py-2 border rounded-md dark:border-gray-600" />
                         </div>
                     )}
-
                     <div className="pt-2 flex justify-end">
-                        <button onClick={handleManualAdd} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark">Add Item</button>
+                        <button onClick={handleManualAdd} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark">
+                            Add Item
+                        </button>
                     </div>
                 </div>
             )}
+
             {activeTab === 'ai' && renderAiTab()}
         </Modal>
     );
 };
 
-// Drag types for internal logic
+// --- RUBRIC PICKER COMPONENT ---
+interface RubricPickerProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSelect: (rubricId: string) => void;
+    selectedRubricId?: string;
+}
+
+const RubricPicker: React.FC<RubricPickerProps> = ({ isOpen, onClose, onSelect, selectedRubricId }) => {
+    const { user } = useAuth();
+    const [rubrics, setRubrics] = useState<Rubric[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [previewRubric, setPreviewRubric] = useState<Rubric | null>(null);
+
+    useEffect(() => {
+        if (isOpen && user) {
+            setLoading(true);
+            api.getRubrics(user.id)
+                .then(setRubrics)
+                .finally(() => setLoading(false));
+        }
+    }, [isOpen, user]);
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Select Grading Rubric" size="5xl">
+            <div className="grid grid-cols-12 gap-6 h-[70vh]">
+                <div className="col-span-4 border-r dark:border-gray-700 pr-4 flex flex-col overflow-hidden">
+                    <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4">Rubric Bank</h3>
+                    {loading ? <p className="animate-pulse">Searching library...</p> : (
+                        <div className="flex-1 overflow-y-auto space-y-2">
+                            {rubrics.map(r => (
+                                <button
+                                    key={r.id}
+                                    onClick={() => setPreviewRubric(r)}
+                                    className={`w-full text-left p-4 rounded-lg border transition-all ${
+                                        previewRubric?.id === r.id 
+                                            ? 'border-primary bg-primary/10 ring-2 ring-primary' 
+                                            : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                                    }`}
+                                >
+                                    <p className="font-bold text-gray-800 dark:text-gray-100">{r.title}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className={`text-[10px] font-black uppercase px-1.5 py-0.5 rounded ${
+                                            r.scope === RubricScope.Account ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
+                                        }`}>
+                                            {r.scope}
+                                        </span>
+                                        <span className="text-xs text-gray-500">{r.criteria.length} criteria</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <div className="col-span-8 flex flex-col overflow-hidden">
+                    {previewRubric ? (
+                        <>
+                            <div className="flex-1 overflow-y-auto pr-2">
+                                <RubricViewer rubric={previewRubric} />
+                            </div>
+                            <div className="pt-6 border-t dark:border-gray-700 flex justify-end gap-3">
+                                <button onClick={onClose} className="px-6 py-2 font-bold text-gray-500">Cancel</button>
+                                <button 
+                                    onClick={() => { onSelect(previewRubric.id); onClose(); }} 
+                                    className="px-8 py-2 bg-primary text-gray-900 font-bold rounded-md hover:bg-primary-dark shadow-md"
+                                >
+                                    Use this Rubric
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
+                            <Icon name="ClipboardCheck" className="h-16 w-16 mb-4 opacity-20" />
+                            <p>Select a rubric from the bank to preview its criteria.</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </Modal>
+    );
+};
+
+
 interface DraggedItemState {
     id: string;
     type: 'module' | 'item';
-    moduleId?: string; // If it's an item, which module it belongs to
+    moduleId?: string; 
 }
 
 const CourseBuilderPage: React.FC = () => {
@@ -516,7 +585,6 @@ const CourseBuilderPage: React.FC = () => {
     const [course, setCourse] = useState<Course | null>(null);
     const [loading, setLoading] = useState(true);
     
-    // AI Full Outline Generator State
     const [isGeneratorOpen, setGeneratorOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
     const [aiDescription, setAiDescription] = useState('');
@@ -526,42 +594,34 @@ const CourseBuilderPage: React.FC = () => {
     const [generatedOutline, setGeneratedOutline] = useState<Module[] | null>(null);
     const [selectedGeneratedIds, setSelectedGeneratedIds] = useState<Set<string>>(new Set());
     
-    // Add Module Modal State
     const [isAddModuleModalOpen, setIsAddModuleModalOpen] = useState(false);
-
-    // Edit Module State
     const [editingModule, setEditingModule] = useState<Module | null>(null);
     const [editModuleTitle, setEditModuleTitle] = useState('');
 
-    // Add Content Item Modal State
     const [isAddContentItemModalOpen, setAddContentItemModalOpen] = useState(false);
     const [currentModuleForAddItem, setCurrentModuleForAddItem] = useState<Module | null>(null);
 
-    // Discussion Modal State
     const [viewingDiscussion, setViewingDiscussion] = useState<ContentItem | null>(null);
     const [discussionPrompt, setDiscussionPrompt] = useState<ContentItemDetails | null>(null);
     const [isLoadingPrompt, setIsLoadingPrompt] = useState(false);
 
-    // Edit Content (Rich Text) Modal State
     const [editingContentItem, setEditingContentItem] = useState<ContentItem | null>(null);
     const [editorContent, setEditorContent] = useState('');
     const [isSavingContent, setIsSavingContent] = useState(false);
 
-    // Interactive Video Editor State
     const [editingVideoItem, setEditingVideoItem] = useState<ContentItem | null>(null);
-
-    // Offline Session Editor State
     const [editingOfflineSession, setEditingOfflineSession] = useState<ContentItem | null>(null);
-
-    // Survey Editor State
     const [editingSurveyItem, setEditingSurveyItem] = useState<ContentItem | null>(null);
     const [viewingSurveyResults, setViewingSurveyResults] = useState<ContentItem | null>(null);
 
-    // Quiz/Assignment Assembly State
     const [isSettingsModalOpen, setSettingsModalOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<ContentItem | null>(null);
     const [instructorQuestions, setInstructorQuestions] = useState<Question[]>([]);
-    const [instructorRubrics, setInstructorRubrics] = useState<Rubric[]>([]);
+    
+    // Rubric Picker State
+    const [isRubricPickerOpen, setIsRubricPickerOpen] = useState(false);
+    const [selectedRubricTitle, setSelectedRubricTitle] = useState('No rubric attached');
+
     const [itemFormData, setItemFormData] = useState<{
         selectedQuestionIds: Set<string>;
         timeLimit?: number;
@@ -570,35 +630,23 @@ const CourseBuilderPage: React.FC = () => {
         rubricId?: string;
     }>({ selectedQuestionIds: new Set() });
 
-    // Drag and Drop State
     const [draggedItem, setDraggedItem] = useState<DraggedItemState | null>(null);
     const [dragOverTargetId, setDragOverTargetId] = useState<string | null>(null);
 
-    // Version History State
     const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
     const [history, setHistory] = useState<VersionHistoryEntry[]>([]);
     const [isRestoring, setIsRestoring] = useState(false);
 
-    // Read Only State
     const isReadOnly = useMemo(() => course?.status === CourseStatus.PendingReview, [course]);
-
-    const questionsById = useMemo(() => 
-        instructorQuestions.reduce((acc, q) => {
-            acc[q.id] = q;
-            return acc;
-        }, {} as Record<string, Question>), 
-    [instructorQuestions]);
-
 
     useEffect(() => {
         if (!courseId || !user) return;
         
         const fetchInitialData = async () => {
             try {
-                const [courseData, questionsData, rubricsData] = await Promise.all([
+                const [courseData, questionsData] = await Promise.all([
                     api.getCourseDetails(courseId),
-                    api.getQuestions(user.id),
-                    api.getRubrics(user.id)
+                    api.getQuestions(user.id)
                 ]);
 
                 setCourse(courseData);
@@ -606,7 +654,6 @@ const CourseBuilderPage: React.FC = () => {
                     setAiDescription(courseData.description);
                 }
                 setInstructorQuestions(questionsData);
-                setInstructorRubrics(rubricsData);
 
             } catch (error) {
                 console.error("Failed to fetch course data", error);
@@ -618,34 +665,13 @@ const CourseBuilderPage: React.FC = () => {
     }, [courseId, user]);
 
     useEffect(() => {
-        if (viewingDiscussion) {
-            setIsLoadingPrompt(true);
-            api.getContentItemDetails(viewingDiscussion.id)
-                .then(setDiscussionPrompt)
-                .catch(error => {
-                    console.error("Failed to load discussion prompt:", error);
-                    setDiscussionPrompt({ id: viewingDiscussion.id, content: "<p>Could not load prompt.</p>" });
-                })
-                .finally(() => setIsLoadingPrompt(false));
+        if (itemFormData.rubricId) {
+            api.getRubricById(itemFormData.rubricId).then(r => setSelectedRubricTitle(r?.title || 'Unknown Rubric'));
+        } else {
+            setSelectedRubricTitle('No rubric attached');
         }
-    }, [viewingDiscussion]);
-    
-    // Load content when editing modal opens
-    useEffect(() => {
-        if (editingContentItem) {
-            setEditorContent('');
-            api.getContentItemDetails(editingContentItem.id)
-                .then(details => {
-                    setEditorContent(details?.content || '');
-                })
-                .catch(err => {
-                    console.error("Failed to load item content", err);
-                    setEditorContent('<p>Error loading content.</p>');
-                });
-        }
-    }, [editingContentItem]);
+    }, [itemFormData.rubricId]);
 
-    // Fix: Added missing LiveSession icon mapping to satisfy the Record<ContentType, IconName> requirement.
     const contentIconMap: Record<ContentType, IconName> = {
         [ContentType.Lesson]: 'FileText',
         [ContentType.Quiz]: 'ClipboardCheck',
@@ -661,7 +687,6 @@ const CourseBuilderPage: React.FC = () => {
         [ContentType.Scorm]: 'Package',
     };
 
-    // --- Version History Logic ---
     const handleOpenHistory = async () => {
         if (!courseId) return;
         setIsHistoryModalOpen(true);
@@ -689,38 +714,23 @@ const CourseBuilderPage: React.FC = () => {
         }
     };
 
-    // --- Drag and Drop Handlers ---
-
     const handleDragStart = (e: React.DragEvent, id: string, type: 'module' | 'item', moduleId?: string) => {
         if (isReadOnly) {
             e.preventDefault();
             return;
         }
-        e.stopPropagation(); // Prevent bubbling so dragging an item doesn't drag the module
+        e.stopPropagation(); 
         setDraggedItem({ id, type, moduleId });
-        // Set drag effect
         e.dataTransfer.effectAllowed = 'move';
-        // Add a class for visual feedback (optional, handled by react state for opacity)
     };
 
     const handleDragOver = (e: React.DragEvent, targetId: string) => {
         if (isReadOnly) return;
-        e.preventDefault(); // Necessary to allow dropping
+        e.preventDefault(); 
         e.stopPropagation();
-        
         if (!draggedItem) return;
-        
-        // Prevent dropping a module into an item, etc.
-        // We only allow dropping modules onto other modules, and items onto items or modules
         setDragOverTargetId(targetId);
         e.dataTransfer.dropEffect = 'move';
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        // Only clear if we are leaving the valid zone, simplified here to prevent flickering:
-        // We handle reset on drop or end.
     };
 
     const handleDrop = async (e: React.DragEvent, targetId: string, targetType: 'module' | 'item', targetModuleId?: string) => {
@@ -731,46 +741,28 @@ const CourseBuilderPage: React.FC = () => {
 
         if (!draggedItem || !course) return;
 
-        // Logic for reordering/moving
         let newModules = [...(course.modules || [])];
 
         if (draggedItem.type === 'module' && targetType === 'module') {
-            // Reorder Modules
             const oldIndex = newModules.findIndex(m => m.id === draggedItem.id);
             const newIndex = newModules.findIndex(m => m.id === targetId);
-            
             if (oldIndex !== -1 && newIndex !== -1) {
                 const [removed] = newModules.splice(oldIndex, 1);
                 newModules.splice(newIndex, 0, removed);
             }
         } else if (draggedItem.type === 'item') {
-            // Find source module
             const sourceModuleIndex = newModules.findIndex(m => m.id === draggedItem.moduleId);
             if (sourceModuleIndex === -1) return;
-            
-            // Find target module
-            // If dropped on a module header, targetModuleId is the targetId
-            // If dropped on an item, targetModuleId is passed in
             const destModuleId = targetType === 'module' ? targetId : targetModuleId;
             const destModuleIndex = newModules.findIndex(m => m.id === destModuleId);
-            
             if (destModuleIndex === -1) return;
-
-            // Remove item from source
             const itemToMove = newModules[sourceModuleIndex].items.find(i => i.id === draggedItem.id);
             if (!itemToMove) return;
-            
             newModules[sourceModuleIndex].items = newModules[sourceModuleIndex].items.filter(i => i.id !== draggedItem.id);
-
-            // Add to destination
             if (targetType === 'module') {
-                // Append to end of module
                 newModules[destModuleIndex].items.push(itemToMove);
             } else {
-                // Insert before/after target item
                 const targetItemIndex = newModules[destModuleIndex].items.findIndex(i => i.id === targetId);
-                // For simplicity, inserting before. Usually we calculate position relative to rect center.
-                // Standard UI behavior: insert at index
                 if (targetItemIndex !== -1) {
                     newModules[destModuleIndex].items.splice(targetItemIndex, 0, itemToMove);
                 } else {
@@ -779,11 +771,8 @@ const CourseBuilderPage: React.FC = () => {
             }
         }
 
-        // Optimistic Update
         setCourse({ ...course, modules: newModules });
         setDraggedItem(null);
-
-        // API Call
         try {
             await api.updateCourseModules(course.id, newModules);
         } catch (error) {
@@ -792,27 +781,21 @@ const CourseBuilderPage: React.FC = () => {
         }
     };
 
-    // --- End Drag and Drop Handlers ---
-
     const handleGenerateOutline = async () => {
         if (!course) return;
-
         if (allowedContentTypes.size === 0) {
             setGeneratorError("Please select at least one content type.");
             return;
         }
-
         const num = parseInt(numModules, 10);
         if (isNaN(num) || num < 1 || num > 20) {
             setGeneratorError("Number of modules must be between 1 and 20.");
             return;
         }
-
         setIsGenerating(true);
         setGeneratorError('');
         try {
             const generatedModules = await generateCourseOutline(course.title, aiDescription, num, Array.from(allowedContentTypes));
-            
             const allIds = new Set<string>();
             const outlineWithTempIds = generatedModules.map((mod, modIndex) => {
                 const modId = `temp-mod-${modIndex}`;
@@ -839,7 +822,6 @@ const CourseBuilderPage: React.FC = () => {
 
     const handleAcceptGeneratedOutline = async () => {
         if (!course || !generatedOutline || !window.confirm('This will replace your current course outline. Are you sure?')) return;
-        
         const newModules = generatedOutline.filter(mod => selectedGeneratedIds.has(mod.id)).map(mod => ({
             ...mod,
             id: `mod-${Date.now()}-${Math.random()}`,
@@ -848,7 +830,6 @@ const CourseBuilderPage: React.FC = () => {
                 id: `item-${Date.now()}-${Math.random()}`
             }))
         }));
-
         try {
             const updatedCourse = await api.updateCourseModules(course.id, newModules);
             setCourse(updatedCourse);
@@ -864,15 +845,14 @@ const CourseBuilderPage: React.FC = () => {
         setSelectedGeneratedIds(prev => {
             const newSet = new Set(prev);
             const module = generatedOutline?.find(m => m.id === (isModule ? id : id.split('-item-')[0]));
-
-            if (newSet.has(id)) { // Deselecting
+            if (newSet.has(id)) { 
                 newSet.delete(id);
-                if (isModule && module) { // If deselecting a module, deselect its items
+                if (isModule && module) { 
                     module.items.forEach(item => newSet.delete(item.id));
                 }
-            } else { // Selecting
+            } else { 
                 newSet.add(id);
-                if (isModule && module) { // If selecting a module, select its items
+                if (isModule && module) { 
                     module.items.forEach(item => newSet.add(item.id));
                 }
             }
@@ -907,7 +887,6 @@ const CourseBuilderPage: React.FC = () => {
 
     const handleSaveItemSettings = async () => {
         if (!course || !currentItem) return;
-
         const updatedModules = course.modules?.map(module => ({
             ...module,
             items: module.items.map(item => 
@@ -923,9 +902,7 @@ const CourseBuilderPage: React.FC = () => {
                 : item
             ),
         }));
-
         if (!updatedModules) return;
-
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -938,7 +915,6 @@ const CourseBuilderPage: React.FC = () => {
     
     const handleModuleAdded = async (newModule: Module) => {
         if (!course) return;
-    
         const moduleWithIds: Module = {
             ...newModule,
             id: `mod-${Date.now()}`,
@@ -947,9 +923,7 @@ const CourseBuilderPage: React.FC = () => {
                 id: `item-${Date.now()}-${index}`
             }))
         };
-        
         const updatedModules = [...(course.modules || []), moduleWithIds];
-    
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -968,12 +942,10 @@ const CourseBuilderPage: React.FC = () => {
 
     const handleItemsAdded = async (newItems: Omit<ContentItem, 'id'>[]) => {
         if (!course || !currentModuleForAddItem) return;
-
         const itemsWithIds: ContentItem[] = newItems.map((item, index) => ({
             ...item,
             id: `item-${Date.now()}-${index}`
         }));
-
         const updatedModules = course.modules?.map(module => {
             if (module.id === currentModuleForAddItem.id) {
                 return {
@@ -983,9 +955,7 @@ const CourseBuilderPage: React.FC = () => {
             }
             return module;
         });
-
         if (!updatedModules) return;
-        
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -1001,7 +971,7 @@ const CourseBuilderPage: React.FC = () => {
         setIsSavingContent(true);
         try {
             await api.updateContentItemDetails(editingContentItem.id, editorContent);
-            setEditingContentItem(null); // Close modal
+            setEditingContentItem(null); 
         } catch (error) {
             console.error("Failed to save content", error);
             alert("Failed to save content. Please try again.");
@@ -1012,7 +982,6 @@ const CourseBuilderPage: React.FC = () => {
 
     const handleSaveVideoItem = async (updatedItem: Omit<ContentItem, 'id'>) => {
         if (!course || !editingVideoItem) return;
-
         const updatedModules = course.modules?.map(module => ({
             ...module,
             items: module.items.map(item => 
@@ -1021,9 +990,7 @@ const CourseBuilderPage: React.FC = () => {
                 : item
             ),
         }));
-
         if (!updatedModules) return;
-
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -1036,7 +1003,6 @@ const CourseBuilderPage: React.FC = () => {
 
     const handleSaveOfflineSession = async (updatedItem: Omit<ContentItem, 'id'>) => {
         if (!course || !editingOfflineSession) return;
-
         const updatedModules = course.modules?.map(module => ({
             ...module,
             items: module.items.map(item => 
@@ -1045,9 +1011,7 @@ const CourseBuilderPage: React.FC = () => {
                 : item
             ),
         }));
-
         if (!updatedModules) return;
-
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -1060,7 +1024,6 @@ const CourseBuilderPage: React.FC = () => {
 
     const handleSaveSurveyItem = async (updatedItem: Omit<ContentItem, 'id'>) => {
         if (!course || !editingSurveyItem) return;
-
         const updatedModules = course.modules?.map(module => ({
             ...module,
             items: module.items.map(item => 
@@ -1069,9 +1032,7 @@ const CourseBuilderPage: React.FC = () => {
                 : item
             ),
         }));
-
         if (!updatedModules) return;
-
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -1090,13 +1051,10 @@ const CourseBuilderPage: React.FC = () => {
 
     const handleUpdateModule = async () => {
         if (!course || !editingModule || !editModuleTitle.trim()) return;
-
         const updatedModules = course.modules?.map(m =>
             m.id === editingModule.id ? { ...m, title: editModuleTitle } : m
         );
-
         if (!updatedModules) return;
-
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -1110,11 +1068,8 @@ const CourseBuilderPage: React.FC = () => {
     const handleDeleteModule = async () => {
         if (!course || !editingModule) return;
         if (!window.confirm("Are you sure you want to delete this module and all its content?")) return;
-
         const updatedModules = course.modules?.filter(m => m.id !== editingModule.id);
-
         if (!updatedModules) return;
-
         try {
             const updatedCourse = await api.updateCourseModules(course.id, updatedModules);
             setCourse(updatedCourse);
@@ -1125,15 +1080,9 @@ const CourseBuilderPage: React.FC = () => {
         }
     };
 
-
-    if (loading) return <div>Loading course builder...</div>;
-    if (!course) return <div>Course not found.</div>;
-
     const handleItemFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        // FIX: Safely handle checkbox changes by checking for the `checked` property on the target.
         const target = e.target as HTMLInputElement;
         const { name, value, type } = target;
-
         if (type === 'checkbox') {
             setItemFormData(prev => ({ ...prev, [name]: target.checked }));
         } else if (type === 'number') {
@@ -1156,6 +1105,9 @@ const CourseBuilderPage: React.FC = () => {
         });
     };
     
+    if (loading) return <div>Loading course builder...</div>;
+    if (!course) return <div>Course not found.</div>;
+
     return (
         <div>
              <div className="mb-6">
@@ -1168,7 +1120,7 @@ const CourseBuilderPage: React.FC = () => {
                     {isReadOnly && (
                         <div className="px-4 py-2 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-700 text-yellow-800 dark:text-yellow-200 rounded-md flex items-center">
                             <Icon name="Lock" className="h-5 w-5 mr-2" />
-                            <span className="font-bold text-sm">Read Only: Pending Administrator Review. Editing is disabled until this course is approved.</span>
+                            <span className="font-bold text-sm">Read Only: Pending Review</span>
                         </div>
                     )}
                 </div>
@@ -1176,22 +1128,14 @@ const CourseBuilderPage: React.FC = () => {
 
             {!isReadOnly && (
                 <div className="flex flex-col sm:flex-row justify-end items-center gap-4 my-6">
-                    <button
-                        onClick={handleOpenHistory}
-                        className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3 px-5 rounded-lg shadow-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-300 flex items-center justify-center"
-                        title="View Version History"
-                    >
+                    <button onClick={handleOpenHistory} className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold py-3 px-5 rounded-lg shadow-sm border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-300 flex items-center justify-center" title="View Version History">
                         <Icon name="History" className="h-5 w-5" />
                     </button>
-                    <button 
-                        onClick={() => { setGeneratedOutline(null); setGeneratorOpen(true); }}
-                        className="w-full sm:w-auto bg-primary text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:bg-primary-dark transition duration-300 flex items-center justify-center">
+                    <button onClick={() => { setGeneratedOutline(null); setGeneratorOpen(true); }} className="w-full sm:w-auto bg-primary text-gray-800 font-bold py-3 px-5 rounded-lg shadow-sm hover:bg-primary-dark transition duration-300 flex items-center justify-center">
                         <Icon name="Sparkles" className="h-5 w-5 mr-2" />
                         Generate Full Outline with AI
                     </button>
-                    <button 
-                        onClick={() => setIsAddModuleModalOpen(true)}
-                        className="w-full sm:w-auto bg-white dark:bg-gray-800 text-secondary dark:text-blue-400 font-bold py-3 px-5 rounded-lg shadow-sm border-2 border-dashed border-gray-300 dark:border-gray-600 hover:bg-secondary-light dark:hover:bg-secondary/20 transition duration-300">
+                    <button onClick={() => setIsAddModuleModalOpen(true)} className="w-full sm:w-auto bg-white dark:bg-gray-800 text-secondary dark:text-blue-400 font-bold py-3 px-5 rounded-lg shadow-sm border-2 border-dashed border-gray-300 dark:border-gray-600 hover:bg-secondary-light dark:hover:bg-secondary/20 transition duration-300">
                         + Add New Module
                     </button>
                 </div>
@@ -1205,17 +1149,7 @@ const CourseBuilderPage: React.FC = () => {
                         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Add a new module manually or use AI to generate a starting point.</p>
                     </div>
                 ) : course.modules?.map(module => (
-                    <div 
-                        key={module.id} 
-                        draggable={!isReadOnly}
-                        onDragStart={(e) => handleDragStart(e, module.id, 'module')}
-                        onDragOver={(e) => handleDragOver(e, module.id)}
-                        onDrop={(e) => handleDrop(e, module.id, 'module')}
-                        className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border transition-all duration-200 ${
-                            draggedItem?.id === module.id ? 'opacity-50 border-dashed border-gray-400' : 
-                            dragOverTargetId === module.id ? 'border-primary border-2 dark:border-primary' : 'dark:border-gray-700'
-                        } ${isReadOnly ? '' : 'cursor-grab active:cursor-grabbing'}`}
-                    >
+                    <div key={module.id} draggable={!isReadOnly} onDragStart={(e) => handleDragStart(e, module.id, 'module')} onDragOver={(e) => handleDragOver(e, module.id)} onDrop={(e) => handleDrop(e, module.id, 'module')} className={`bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border transition-all duration-200 ${draggedItem?.id === module.id ? 'opacity-50 border-dashed border-gray-400' : dragOverTargetId === module.id ? 'border-primary border-2 dark:border-primary' : 'dark:border-gray-700'} ${isReadOnly ? '' : 'cursor-grab active:cursor-grabbing'}`}>
                         <div className="flex justify-between items-center mb-4">
                              <div className="flex items-center">
                                 {!isReadOnly && <Icon name="GripVertical" className="h-5 w-5 text-gray-400 mr-2" />}
@@ -1225,71 +1159,23 @@ const CourseBuilderPage: React.FC = () => {
                                 <button onClick={() => handleOpenEditModule(module)} className="text-sm font-medium text-secondary dark:text-blue-400 hover:underline">Edit Module</button>
                             )}
                         </div>
-                        
-                        <div className="space-y-2 pl-7 min-h-[50px]" onDragOver={(e) => {
-                            if (draggedItem?.type === 'item' && draggedItem.moduleId !== module.id) {
-                                // Allow dropping items into empty module space
-                                handleDragOver(e, module.id);
-                            }
-                        }} onDrop={(e) => {
-                             if (draggedItem?.type === 'item') {
-                                handleDrop(e, module.id, 'module');
-                             }
-                        }}>
+                        <div className="space-y-2 pl-7 min-h-[50px]" onDragOver={(e) => { if (draggedItem?.type === 'item' && draggedItem.moduleId !== module.id) handleDragOver(e, module.id); }} onDrop={(e) => { if (draggedItem?.type === 'item') handleDrop(e, module.id, 'module'); }}>
                             {module.items.map(item => (
-                                <div 
-                                    key={item.id} 
-                                    draggable={!isReadOnly}
-                                    onDragStart={(e) => handleDragStart(e, item.id, 'item', module.id)}
-                                    onDragOver={(e) => handleDragOver(e, item.id)}
-                                    onDrop={(e) => handleDrop(e, item.id, 'item', module.id)}
-                                    className={`flex items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md border transition-all duration-200 ${
-                                        draggedItem?.id === item.id ? 'opacity-50' : 
-                                        dragOverTargetId === item.id ? 'border-primary border-dashed border-2' : 'dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                                    } ${isReadOnly ? '' : 'cursor-grab active:cursor-grabbing'}`}
-                                >
+                                <div key={item.id} draggable={!isReadOnly} onDragStart={(e) => handleDragStart(e, item.id, 'item', module.id)} onDragOver={(e) => handleDragOver(e, item.id)} onDrop={(e) => handleDrop(e, item.id, 'item', module.id)} className={`flex items-center bg-gray-50 dark:bg-gray-700/50 p-3 rounded-md border transition-all duration-200 ${draggedItem?.id === item.id ? 'opacity-50' : dragOverTargetId === item.id ? 'border-primary border-dashed border-2' : 'dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'} ${isReadOnly ? '' : 'cursor-grab active:cursor-grabbing'}`}>
                                     {!isReadOnly && <Icon name="GripVertical" className="h-5 w-5 text-gray-400" />}
                                     <Icon name={contentIconMap[item.type] || 'FileText'} className="h-5 w-5 text-gray-500 dark:text-gray-400 mx-3" />
                                     <span className="flex-grow text-gray-700 dark:text-gray-300">{item.title}</span>
                                     <span className="text-xs text-gray-400 dark:text-gray-500 capitalize mr-4">{item.type} {item.type === 'quiz' && `(${item.questionIds?.length || 0} Qs)`}</span>
-                                    
                                     {!isReadOnly ? (
                                         <>
-                                            {item.type === ContentType.Discussion ? (
-                                                <button onClick={() => setViewingDiscussion(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                                    View Discussion
-                                                </button>
-                                            ) : (item.type === 'quiz' || item.type === 'assignment') ? (
-                                                <button onClick={() => handleOpenSettingsModal(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                                    Manage Settings
-                                                </button>
-                                            ) : (item.type === ContentType.Lesson || item.type === ContentType.Resource) ? (
-                                                <button onClick={() => setEditingContentItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                                    Edit Content
-                                                </button>
-                                            ) : (item.type === ContentType.InteractiveVideo) ? (
-                                                <button onClick={() => setEditingVideoItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                                    Edit Video
-                                                </button>
-                                            ) : (item.type === ContentType.OfflineSession) ? (
-                                                <button onClick={() => setEditingOfflineSession(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                                    Edit Session
-                                                </button>
-                                            ) : (item.type === ContentType.Survey) ? (
-                                                <div className="flex gap-2">
-                                                    <button onClick={() => setEditingSurveyItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">
-                                                        Edit Survey
-                                                    </button>
-                                                    <span className="text-gray-300">|</span>
-                                                    <button onClick={() => setViewingSurveyResults(item)} className="text-xs font-medium text-green-600 dark:text-green-400 hover:underline">
-                                                        View Results
-                                                    </button>
-                                                </div>
-                                            ) : null}
+                                            {item.type === ContentType.Discussion ? <button onClick={() => setViewingDiscussion(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">View Discussion</button> :
+                                             (item.type === 'quiz' || item.type === 'assignment') ? <button onClick={() => handleOpenSettingsModal(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Settings</button> :
+                                             (item.type === ContentType.Lesson || item.type === ContentType.Resource) ? <button onClick={() => setEditingContentItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Content</button> :
+                                             (item.type === ContentType.InteractiveVideo) ? <button onClick={() => setEditingVideoItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Video</button> :
+                                             (item.type === ContentType.OfflineSession) ? <button onClick={() => setEditingOfflineSession(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Session</button> :
+                                             (item.type === ContentType.Survey) ? <div className="flex gap-2"><button onClick={() => setEditingSurveyItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Edit</button><span className="text-gray-300">|</span><button onClick={() => setViewingSurveyResults(item)} className="text-xs font-medium text-green-600 dark:text-green-400 hover:underline">Results</button></div> : null}
                                         </>
-                                    ) : (
-                                        <span className="text-xs text-gray-400 italic">View Only</span>
-                                    )}
+                                    ) : <span className="text-xs text-gray-400 italic">View Only</span>}
                                 </div>
                             ))}
                               {!isReadOnly && (
@@ -1306,13 +1192,12 @@ const CourseBuilderPage: React.FC = () => {
             <Modal isOpen={isGeneratorOpen} onClose={() => setGeneratorOpen(false)} title="Generate Course Outline with AI" size="3xl">
                 <div className="space-y-4">
                     {generatorError && <p className="bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 p-3 rounded-md text-sm">{generatorError}</p>}
-                    
                     {isGenerating ? ( <div className="text-center p-8">Generating outline...</div> ) : 
                      !generatedOutline ? (
                         <>
                             <div>
                                 <label htmlFor="ai-desc-full" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Course Description</label>
-                                <textarea id="ai-desc-full" rows={4} value={aiDescription} onChange={e => setAiDescription(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" placeholder="Provide a detailed description for the AI to generate a better outline." />
+                                <textarea id="ai-desc-full" rows={4} value={aiDescription} onChange={e => setAiDescription(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" placeholder="Provide a detailed description..." />
                             </div>
                             <div>
                                 <label htmlFor="num-modules" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Modules</label>
@@ -1386,31 +1271,20 @@ const CourseBuilderPage: React.FC = () => {
             {viewingDiscussion && (
                 <Modal isOpen={!!viewingDiscussion} onClose={() => setViewingDiscussion(null)} title={`Discussion: ${viewingDiscussion.title}`} size="5xl">
                     <div className="h-[75vh]">
-                        <DiscussionBoard
-                            discussionId={viewingDiscussion.id}
-                            promptContent={discussionPrompt}
-                            isLoadingPrompt={isLoadingPrompt}
-                        />
+                        <DiscussionBoard discussionId={viewingDiscussion.id} promptContent={discussionPrompt} isLoadingPrompt={isLoadingPrompt} />
                     </div>
                 </Modal>
             )}
 
-            {/* Edit Content Modal with Rich Text Editor */}
             {editingContentItem && (
                 <Modal isOpen={!!editingContentItem} onClose={() => setEditingContentItem(null)} title={`Edit Content: ${editingContentItem.title}`} size="5xl">
                     <div className="flex flex-col h-[70vh]">
                         <div className="flex-grow mb-4">
-                            <RichTextEditor 
-                                initialContent={editorContent} 
-                                onChange={setEditorContent} 
-                                placeholder="Start writing your lesson content here..." 
-                            />
+                            <RichTextEditor initialContent={editorContent} onChange={setEditorContent} placeholder="Start writing..." />
                         </div>
                         <div className="flex justify-end gap-2 pt-4 border-t dark:border-gray-700">
-                            <button onClick={() => setEditingContentItem(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">
-                                Cancel
-                            </button>
-                            <button onClick={handleSaveContent} disabled={isSavingContent} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary rounded-md hover:bg-primary-dark disabled:bg-gray-300">
+                            <button onClick={() => setEditingContentItem(null)} className="px-4 py-2 text-sm">Cancel</button>
+                            <button onClick={handleSaveContent} disabled={isSavingContent} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary rounded-md disabled:bg-gray-300">
                                 {isSavingContent ? 'Saving...' : 'Save Content'}
                             </button>
                         </div>
@@ -1418,46 +1292,30 @@ const CourseBuilderPage: React.FC = () => {
                 </Modal>
             )}
 
-            {/* Video Quiz Editor Modal */}
             {editingVideoItem && (
                 <Modal isOpen={!!editingVideoItem} onClose={() => setEditingVideoItem(null)} title={`Edit Interactive Video: ${editingVideoItem.title}`} size="5xl">
                     <div className="h-[70vh]">
-                        <VideoQuizEditor 
-                            initialItem={editingVideoItem}
-                            onSave={handleSaveVideoItem}
-                            onCancel={() => setEditingVideoItem(null)}
-                        />
+                        <VideoQuizEditor initialItem={editingVideoItem} onSave={handleSaveVideoItem} onCancel={() => setEditingVideoItem(null)} />
                     </div>
                 </Modal>
             )}
 
-            {/* Offline Session Editor Modal */}
             {editingOfflineSession && (
                 <Modal isOpen={!!editingOfflineSession} onClose={() => setEditingOfflineSession(null)} title={`Edit Offline Session: ${editingOfflineSession.title}`} size="3xl">
                     <div className="h-auto">
-                        <OfflineSessionEditor 
-                            initialItem={editingOfflineSession}
-                            onSave={handleSaveOfflineSession}
-                            onCancel={() => setEditingOfflineSession(null)}
-                        />
+                        <OfflineSessionEditor initialItem={editingOfflineSession} onSave={handleSaveOfflineSession} onCancel={() => setEditingOfflineSession(null)} />
                     </div>
                 </Modal>
             )}
 
-            {/* Survey Editor Modal */}
             {editingSurveyItem && (
                 <Modal isOpen={!!editingSurveyItem} onClose={() => setEditingSurveyItem(null)} title={`Edit Survey: ${editingSurveyItem.title}`} size="4xl">
                     <div className="h-[70vh]">
-                        <SurveyEditor 
-                            initialItem={editingSurveyItem}
-                            onSave={handleSaveSurveyItem}
-                            onCancel={() => setEditingSurveyItem(null)}
-                        />
+                        <SurveyEditor initialItem={editingSurveyItem} onSave={handleSaveSurveyItem} onCancel={() => setEditingSurveyItem(null)} />
                     </div>
                 </Modal>
             )}
 
-            {/* Survey Results Modal */}
             {viewingSurveyResults && (
                 <Modal isOpen={!!viewingSurveyResults} onClose={() => setViewingSurveyResults(null)} title="Survey Results" size="5xl">
                     <div className="h-[70vh] overflow-y-auto">
@@ -1466,51 +1324,40 @@ const CourseBuilderPage: React.FC = () => {
                 </Modal>
             )}
             
-            {/* Edit Module Modal */}
             {editingModule && (
                 <Modal isOpen={!!editingModule} onClose={() => setEditingModule(null)} title="Edit Module">
                     <div className="space-y-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Module Title</label>
-                            <input
-                                type="text"
-                                value={editModuleTitle}
-                                onChange={(e) => setEditModuleTitle(e.target.value)}
-                                className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-                            />
+                            <input type="text" value={editModuleTitle} onChange={(e) => setEditModuleTitle(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md" />
                         </div>
                         <div className="flex justify-between items-center pt-4">
                             <button onClick={handleDeleteModule} className="text-red-600 hover:text-red-800 font-medium text-sm flex items-center">
                                 <Icon name="X" className="h-4 w-4 mr-1" /> Delete Module
                             </button>
                             <div className="flex space-x-2">
-                                <button onClick={() => setEditingModule(null)} className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600">Cancel</button>
-                                <button onClick={handleUpdateModule} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary rounded-md hover:bg-primary-dark">Save Changes</button>
+                                <button onClick={() => setEditingModule(null)} className="px-4 py-2 text-sm">Cancel</button>
+                                <button onClick={handleUpdateModule} className="px-4 py-2 text-sm font-medium text-gray-800 bg-primary rounded-md">Save Changes</button>
                             </div>
                         </div>
                     </div>
                 </Modal>
             )}
 
-            {/* Settings Modal for Quiz/Assignment */}
             {currentItem && (
-                <Modal isOpen={isSettingsModalOpen} onClose={() => setSettingsModalOpen(false)} title={`Settings for "${currentItem.title}"`} size="4xl">
-                    <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                <Modal isOpen={isSettingsModalOpen} onClose={() => setSettingsModalOpen(false)} title={`Settings: ${currentItem.title}`} size="4xl">
+                    <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
                         {currentItem.type === 'quiz' && (
                              <>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor="timeLimit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Limit (minutes)</label>
-                                        <input type="number" name="timeLimit" value={itemFormData.timeLimit || ''} onChange={handleItemFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
+                                        <label className="block text-sm font-bold mb-1">Time Limit (mins)</label>
+                                        <input type="number" name="timeLimit" value={itemFormData.timeLimit || ''} onChange={handleItemFormChange} className="w-full px-3 py-2 border rounded-md dark:bg-gray-700" />
                                     </div>
                                     <div>
-                                        <label htmlFor="attemptsLimit" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Attempts Allowed</label>
-                                        <input type="number" name="attemptsLimit" value={itemFormData.attemptsLimit || ''} onChange={handleItemFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md" />
+                                        <label className="block text-sm font-bold mb-1">Attempts</label>
+                                        <input type="number" name="attemptsLimit" value={itemFormData.attemptsLimit || ''} onChange={handleItemFormChange} className="w-full px-3 py-2 border rounded-md dark:bg-gray-700" />
                                     </div>
-                                </div>
-                                 <div className="flex items-center">
-                                    <input type="checkbox" name="randomizeQuestions" checked={itemFormData.randomizeQuestions} onChange={handleItemFormChange} className="h-4 w-4 text-primary rounded" />
-                                    <label htmlFor="randomizeQuestions" className="ml-2 block text-sm text-gray-900 dark:text-gray-300">Randomize question order</label>
                                 </div>
                                 <div>
                                     <h3 className="font-bold mb-2 dark:text-gray-100">Questions ({itemFormData.selectedQuestionIds.size} selected)</h3>
@@ -1519,8 +1366,8 @@ const CourseBuilderPage: React.FC = () => {
                                             <label key={q.id} className="flex items-start p-2 bg-gray-50 dark:bg-gray-700/50 rounded-md cursor-pointer">
                                                 <input type="checkbox" checked={itemFormData.selectedQuestionIds.has(q.id)} onChange={() => handleQuizQuestionToggle(q.id)} className="h-4 w-4 text-primary mt-1" />
                                                 <div className="ml-3 text-sm">
-                                                    <p className="font-medium text-gray-900 dark:text-gray-200">{q.stem}</p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{q.type.replace('-', ' ')}</p>
+                                                    <p className="font-medium">{q.stem}</p>
+                                                    <p className="text-xs text-gray-500 capitalize">{q.type.replace('-', ' ')}</p>
                                                 </div>
                                             </label>
                                         ))}
@@ -1528,30 +1375,53 @@ const CourseBuilderPage: React.FC = () => {
                                 </div>
                             </>
                         )}
-                        {currentItem.type === 'assignment' && (
-                            <div>
-                                 <label htmlFor="rubricId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Grading Rubric</label>
-                                <select name="rubricId" value={itemFormData.rubricId || ''} onChange={handleItemFormChange} className="w-full px-3 py-2 bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-md">
-                                    <option value="">None (score out of 100)</option>
-                                    {instructorRubrics.map(r => <option key={r.id} value={r.id}>{r.title}</option>)}
-                                </select>
+                        
+                        {(currentItem.type === 'assignment' || currentItem.type === 'quiz') && (
+                            <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600">
+                                <label className="block text-sm font-black text-gray-500 uppercase tracking-[0.15em] mb-3">Grading Rubric Association</label>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-white dark:bg-gray-600 rounded-lg shadow-sm">
+                                            <Icon name="ClipboardCheck" className="h-6 w-6 text-secondary" />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-800 dark:text-gray-100">{selectedRubricTitle}</p>
+                                            <p className="text-xs text-gray-500">Attach a rubric from your library or institutional templates.</p>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setIsRubricPickerOpen(true)}
+                                        className="px-4 py-2 bg-secondary text-white text-sm font-bold rounded-md hover:bg-secondary-dark transition-all"
+                                    >
+                                        {itemFormData.rubricId ? 'Change Rubric' : 'Find Rubric'}
+                                    </button>
+                                </div>
+                                {itemFormData.rubricId && (
+                                    <button 
+                                        onClick={() => setItemFormData(prev => ({ ...prev, rubricId: undefined }))}
+                                        className="mt-4 text-xs font-bold text-red-600 hover:underline"
+                                    >
+                                        Remove Rubric
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
                     <div className="pt-4 mt-4 border-t dark:border-gray-700 flex justify-end">
-                        <button onClick={handleSaveItemSettings} className="bg-primary text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-primary-dark">Save Settings</button>
+                        <button onClick={handleSaveItemSettings} className="bg-primary text-gray-900 font-bold py-2 px-6 rounded-md hover:bg-primary-dark">Save Settings</button>
                     </div>
                 </Modal>
             )}
 
-            {/* Version History Modal */}
-            <VersionHistoryModal 
-                isOpen={isHistoryModalOpen} 
-                onClose={() => setIsHistoryModalOpen(false)} 
-                history={history} 
-                onRestore={handleRestoreVersion}
-                isRestoring={isRestoring}
+            {/* Rubric Library Picker */}
+            <RubricPicker 
+                isOpen={isRubricPickerOpen} 
+                onClose={() => setIsRubricPickerOpen(false)} 
+                onSelect={(id) => setItemFormData(prev => ({ ...prev, rubricId: id }))}
+                selectedRubricId={itemFormData.rubricId}
             />
+
+            <VersionHistoryModal isOpen={isHistoryModalOpen} onClose={() => setIsHistoryModalOpen(false)} history={history} onRestore={handleRestoreVersion} isRestoring={isRestoring} />
         </div>
     );
 };

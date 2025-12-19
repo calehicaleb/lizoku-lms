@@ -1,5 +1,4 @@
-import type { IconName } from './components/icons';
-export type { IconName };
+// types.ts - Core Data Models
 
 export enum UserRole {
   Admin = 'admin',
@@ -33,7 +32,7 @@ export interface User {
 }
 
 export interface StatCardData {
-  icon: IconName;
+  icon: string; 
   title: string;
   value: string;
   color: string;
@@ -122,7 +121,14 @@ export enum QuestionDifficulty {
     Hard = 'hard',
 }
 
-interface BaseQuestion {
+export interface CustomLiveDetails {
+    platform: 'Zoom' | 'Meet' | 'Teams' | 'Built-in';
+    meetingUrl: string;
+    startTime: string; // ISO
+    durationMinutes: number;
+}
+
+export interface BaseQuestion {
     id: string;
     instructorId: string;
     stem: string;
@@ -156,13 +162,6 @@ export interface MultipleSelectQuestion extends BaseQuestion {
     type: QuestionType.MultipleSelect;
     options: string[];
     correctAnswerIndices: number[];
-}
-
-export interface CustomLiveDetails {
-    platform: 'Zoom' | 'Meet' | 'Teams' | 'Built-in';
-    meetingUrl: string;
-    startTime: string; // ISO
-    durationMinutes: number;
 }
 
 export interface FillBlankQuestion extends BaseQuestion {
@@ -383,12 +382,20 @@ export interface RubricCriterion {
     levelDescriptions?: { [levelId: string]: string };
 }
 
+export enum RubricScope {
+    Personal = 'personal',
+    Course = 'course',
+    Account = 'account'
+}
+
 export interface Rubric {
     id: string;
     instructorId: string;
+    instructorName?: string;
     title: string;
     criteria: RubricCriterion[];
     levels: RubricLevel[];
+    scope: RubricScope;
 }
 
 export interface Notification {
@@ -601,7 +608,7 @@ export interface RecentActivity {
     summary: string;
     timestamp: string;
     link: string;
-    icon: IconName;
+    icon: string; 
 }
 
 export interface UserSession {
@@ -673,7 +680,7 @@ export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: IconName;
+  icon: string; 
   unlocked: boolean;
 }
 

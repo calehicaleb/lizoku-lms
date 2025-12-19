@@ -2,13 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { PageHeader } from '../../components/ui/PageHeader';
 import { Modal } from '../../components/ui/Modal';
 import * as api from '../../services/api';
-import { Rubric, RubricCriterion, RubricLevel } from '../../types';
+import { Rubric, RubricCriterion, RubricLevel, RubricScope } from '../../types';
 import { Icon } from '../../components/icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { RubricViewer } from '../../components/common/RubricViewer';
 
+// Fix: Added missing scope property to satisfy Omit<Rubric, 'id' | 'instructorId'> type.
 const emptyRubric: Omit<Rubric, 'id' | 'instructorId'> = {
     title: 'New Rubric',
+    scope: RubricScope.Personal,
     criteria: [
         { id: `c-${Date.now()}`, description: 'Criterion 1', longDescription: '', points: 5, levelDescriptions: {} }
     ],

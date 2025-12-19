@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,57 +23,69 @@ const getNavItemsByRole = (role: UserRole): NavItem[] => {
 export const MainLayout: React.FC = () => {
     const { user } = useAuth();
     const location = useLocation();
-    const [isSidebarOpen, setSidebarOpen] = useState(false);
+    const [isSidebarOpen, setSidebarOpen] = useState(true);
 
     useEffect(() => {
         const isStudentCoursePage = user?.role === UserRole.Student && location.pathname.startsWith('/courses/');
         const isDesktop = window.innerWidth >= 1024;
         
-        // Set default sidebar state based on page and screen size.
-        // On a student's course page, it defaults to closed.
-        // On all other pages, it defaults to open on desktop and closed on mobile.
-        setSidebarOpen(isDesktop && !isStudentCoursePage);
-    }, [location.pathname, user]);
+        // Default sidebar state:
+        // On Student Course Viewer: Collapsed for focus.
+        // Otherwise: Expanded.
+        if (isStudentCoursePage) {
+            setSidebarOpen(false);
+        } else {
+            setSidebarOpen(isDesktop);
+        }
+    }, [location.pathname, user?.role]);
 
-    if (!user) {
-        // This should ideally not be reached if routes are protected
-        return null;
-    }
+    if (!user) return null;
 
     const navItems = getNavItemsByRole(user.role);
     
     const handleToggleSidebar = () => {
         setSidebarOpen(!isSidebarOpen);
-    }
+    };
     
     const handleCloseSidebar = () => {
         setSidebarOpen(false);
-    }
+    };
 
-    const mainContentPadding = isSidebarOpen ? 'lg:pl-72' : 'lg:pl-16';
+    // Calculate dynamic padding for the content area based on expanded vs rail state
+    const contentPadding = isSidebarOpen ? 'lg:pl-[18rem]' : 'lg:pl-[7rem]';
 
     return (
-        <div className="min-h-screen bg-light-cream dark:bg-gray-900">
-            {/* Floating button to OPEN sidebar, only on desktop when closed */}
+        <div className="min-h-screen bg-light-cream dark:bg-gray-900 transition-colors duration-300">
+            {/* Header always takes full available width with left padding adjustment */}
+            <div className={`transition-all duration-300 ease-in-out ${contentPadding} pr-4 lg:pr-8 pt-4`}>
+                <Header onToggleSidebar={handleToggleSidebar}/>
+            </div>
+
+            <Sidebar 
+                navItems={navItems} 
+                isOpen={isSidebarOpen} 
+                onClose={handleCloseSidebar} 
+                onToggleSidebar={handleToggleSidebar} 
+            />
+
+            <main className={`transition-all duration-300 ease-in-out ${contentPadding}`}>
+                <div className="p-4 sm:p-6 lg:p-8 lg:pt-4">
+                    <div className="max-w-[1600px] mx-auto">
+                        <Outlet />
+                    </div>
+                </div>
+            </main>
+
+            {/* Subtle overlay/indicator for when sidebar is completely hidden (Mobile) */}
             {!isSidebarOpen && (
                 <button
                     onClick={handleToggleSidebar}
                     aria-label="Open sidebar"
-                    className="fixed top-20 left-4 z-30 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg hidden lg:block"
+                    className="fixed bottom-6 left-6 z-50 p-4 bg-primary text-gray-900 rounded-full shadow-2xl lg:hidden transform active:scale-95 transition-transform"
                 >
-                    <Icon name="ChevronRight" className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                    <Icon name="Menu" className="h-6 w-6" />
                 </button>
             )}
-
-            <div className={`transition-all duration-300 ease-in-out ${mainContentPadding}`}>
-                <Header onToggleSidebar={handleToggleSidebar}/>
-            </div>
-            <Sidebar navItems={navItems} isOpen={isSidebarOpen} onClose={handleCloseSidebar} onToggleSidebar={handleToggleSidebar} />
-            <main className={`transition-all duration-300 ease-in-out ${mainContentPadding}`}>
-                <div className="p-4 sm:p-6 lg:p-8">
-                    <Outlet />
-                </div>
-            </main>
         </div>
     );
 };
