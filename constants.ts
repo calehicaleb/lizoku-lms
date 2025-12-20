@@ -5,6 +5,7 @@ export const ADMIN_NAV_ITEMS: NavItem[] = [
   { path: '/admin', name: 'Dashboard', icon: 'LayoutDashboard', section: 'Main' },
   { path: '/calendar', name: 'Calendar', icon: 'Calendar', section: 'Main' },
   { path: '/admin/users', name: 'User Management', icon: 'Users', section: 'Main' },
+  { path: '/admin/onboarding', name: 'Student Onboarding', icon: 'KeyRound', section: 'Main' },
   { path: '/admin/communications', name: 'Communications', icon: 'MessageSquare', section: 'Main' },
   
   { path: '/admin/departments', name: 'Departments', icon: 'Building', section: 'Academic Management' },

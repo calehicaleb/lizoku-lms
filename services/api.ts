@@ -1,3 +1,4 @@
+
 import {
     User, UserRole, UserStatus, StatCardData, CourseSummary, Department, Program, Semester, SemesterStatus, Course, CourseStatus, Module, ContentItem, ContentType, Announcement, Enrollment, Grade, CalendarEvent, CalendarEventType, DiscussionPost, Question, QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, ShortAnswerQuestion, QuizSubmission, MultipleSelectQuestion, FillBlankQuestion, Rubric, RubricScope, StudentProgramDetails, ProgramCourse, Communication, SecuritySettings, StudentTranscript, Message, MessageThread, Examination, ExaminationStatus, Certificate, Achievement, CertificateSettings, CertificateRequest, CertificateRequestStatus, InstitutionSettings, ActivityLog, ActivityActionType, UserSession, Notification, NotificationType, OverdueItem, UpcomingDeadline, RecentActivity, ContentItemDetails, AssignmentSubmission, Submission, QuestionDifficulty, MediaItem, MediaType, CourseGradingSummary, GradableItemSummary, StudentSubmissionDetails, RubricCriterion, RubricLevel, AtRiskStudent, JobOpportunity, JobType, JobApplication, ApplicationStatus, SurveySubmission, SurveySummary, SurveyQuestionType, LeaderboardEntry, DepartmentBudget, BudgetRequest, FinancialTrend, RegionalStat, VersionHistoryEntry, DeliveryMode, DisputeStatus, GradeDispute, CalendarVisibility
 } from '../types';
@@ -8,9 +9,17 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 const USERS: User[] = [
     { id: '1', name: 'Admin User', email: 'admin@lizoku.com', role: UserRole.Admin, avatarUrl: 'https://i.pravatar.cc/150?u=admin', status: UserStatus.Active, createdAt: '2025-01-01', county: 'Nairobi' },
     { id: '2', name: 'Instructor Sam', email: 'sam@lizoku.com', role: UserRole.Instructor, avatarUrl: 'https://i.pravatar.cc/150?u=sam', status: UserStatus.Active, createdAt: '2025-01-02', county: 'Mombasa' },
-    { id: '3', name: 'Alice Topstudent', email: 'alice@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=alice', status: UserStatus.Active, createdAt: '2025-01-03', programId: 'p1', county: 'Nairobi' },
-    { id: '4', name: 'John Average', email: 'john@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=john', status: UserStatus.Active, createdAt: '2025-01-05', programId: 'p1', county: 'Kiambu' },
+    { id: '3', name: 'Alice Topstudent', email: 'alice@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=alice', status: UserStatus.Active, createdAt: '2025-01-03', programId: 'p1', county: 'Nairobi', registrationNumber: 'STU/001', isActivated: true },
+    { id: '4', name: 'John Average', email: 'john@lizoku.com', role: UserRole.Student, avatarUrl: 'https://i.pravatar.cc/150?u=john', status: UserStatus.Active, createdAt: '2025-01-05', programId: 'p1', county: 'Kiambu', registrationNumber: 'STU/002', isActivated: true },
 ];
+
+const INSTITUTION_SETTINGS: InstitutionSettings = {
+    institutionName: 'Lizoku Demonstration Portal',
+    logoUrl: '',
+    primaryColor: '#FFD700',
+    restrictDomains: true,
+    allowedDomains: ['lizoku.com', 'strathmore.edu', 'uonbi.ac.ke']
+};
 
 const DEPARTMENTS: Department[] = [
     { id: 'd1', name: 'School of Computing', head: 'Dr. Smith', programCount: 3 },
@@ -77,7 +86,9 @@ const RUBRICS: Rubric[] = [
 // --- AUTH & USER API ---
 export const login = async (email: string, password?: string): Promise<User | null> => { 
     await delay(300); 
-    return USERS.find(u => u.email === email) || null; 
+    const u = USERS.find(u => u.email === email); 
+    if (u && u.role === UserRole.Student && !u.isActivated) return null; // Block unactivated students
+    return u || null; 
 };
 
 export const findInstitutions = async (query: string) => {
@@ -93,10 +104,57 @@ export const findInstitutions = async (query: string) => {
 
 export const getAllUsers = async (): Promise<User[]> => [...USERS];
 export const createUser = async (userData: Partial<User>): Promise<User> => {
-    const newUser = { id: `u-${Date.now()}`, createdAt: new Date().toISOString(), ...userData } as User;
+    const newUser = { 
+        id: `u-${Date.now()}`, 
+        createdAt: new Date().toISOString(), 
+        status: UserStatus.Active, 
+        isActivated: true, 
+        ...userData 
+    } as User;
     USERS.push(newUser);
     return newUser;
 };
+
+// --- PROVISIONING API ---
+export const bulkOnboardStudents = async (studentList: any[]) => {
+    await delay(1000);
+    const onboarded: User[] = studentList.map(s => {
+        const newUser: User = {
+            id: `u-${Math.random().toString(36).substr(2, 9)}`,
+            name: s.name,
+            email: s.email,
+            registrationNumber: s.regNo,
+            programId: s.programId,
+            role: UserRole.Student,
+            status: UserStatus.Pending,
+            isActivated: false,
+            inviteToken: Math.random().toString(36).substr(2, 15),
+            createdAt: new Date().toISOString(),
+            avatarUrl: `https://i.pravatar.cc/150?u=${s.name}`
+        };
+        USERS.push(newUser);
+        return newUser;
+    });
+    return onboarded;
+};
+
+export const getActivationRecord = async (token: string): Promise<User | null> => {
+    await delay(500);
+    return USERS.find(u => u.inviteToken === token) || null;
+};
+
+export const activateStudentAccount = async (id: string, regNo: string, password: string): Promise<boolean> => {
+    await delay(1000);
+    const u = USERS.find(x => x.id === id);
+    if (u && u.registrationNumber === regNo) {
+        u.isActivated = true;
+        u.status = UserStatus.Active;
+        u.inviteToken = undefined; // Token consumed
+        return true;
+    }
+    return false;
+};
+
 export const updateUser = async (id: string, u: any) => {
     const idx = USERS.findIndex(x => x.id === id);
     if (idx !== -1) USERS[idx] = { ...USERS[idx], ...u };
@@ -209,7 +267,6 @@ export const getGradeDispute = async (id: string) => null;
 export const resolveDispute = async (id: string, s: any, c: string, n?: number) => {};
 export const requestRegrade = async (g: string, s: string, r: string) => ({ id: '1', gradeId: g, studentId: s, studentReason: r, status: DisputeStatus.Pending, createdAt: new Date().toISOString() });
 
-// Fix: Updated mock implementation to return a complete Submission object and valid Grade/Item references to satisfy type safety in components using this API.
 export const getSubmissionDetails = async (id: string): Promise<{ submission: Submission; grade: Grade | null; rubric: Rubric | null; item: ContentItem }> => {
     await delay(300);
     const submission: AssignmentSubmission = {
@@ -281,8 +338,10 @@ export const getRecentUsers = async (l: number) => USERS.slice(-l);
 export const getSecuritySettings = async (): Promise<SecuritySettings> => ({ enableAiFeatures: true, aiSafetyFilter: 'Medium', passwordPolicy: { minLength: true, requireUppercase: true, requireNumber: true } });
 export const updateSecuritySettings = async (s: any) => {};
 
-export const getInstitutionSettings = async (): Promise<InstitutionSettings> => ({ institutionName: 'Lizoku LMS', logoUrl: '', primaryColor: '#FFD700' });
-export const updateInstitutionSettings = async (s: any) => {};
+export const getInstitutionSettings = async (): Promise<InstitutionSettings> => INSTITUTION_SETTINGS;
+export const updateInstitutionSettings = async (s: any) => {
+    Object.assign(INSTITUTION_SETTINGS, s);
+};
 
 export const getCertificateSettings = async (): Promise<CertificateSettings> => ({ logoUrl: '', signatureImageUrl: '', signatureSignerName: '', signatureSignerTitle: '', primaryColor: '#FFD700', autoIssueOnCompletion: true });
 export const updateCertificateSettings = async (s: any) => {};

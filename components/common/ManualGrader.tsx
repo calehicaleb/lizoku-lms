@@ -13,7 +13,6 @@ interface ManualGraderProps {
 
 interface GraderData {
     submission: Submission;
-    // Fix: Changed grade to Grade | null because a submission might not have a grade record yet, and the API returns null in those cases.
     grade: Grade | null;
     rubric: Rubric | null;
     item: ContentItem;
@@ -37,7 +36,6 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
             try {
                 const result = await api.getSubmissionDetails(submissionId);
                 const course = await api.getCourseDetails(result.submission.courseId);
-                // Fix: Properly setting state with merged API results. The type mismatch is resolved by updating the GraderData interface and API mock return types.
                 setData({ ...result, courseStatus: course?.status });
                 setFeedback(result.grade?.feedback || '');
                 
@@ -57,12 +55,9 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
     const handleSave = async () => {
         if (!data || isLocked) return;
         
-        // Fix: Explicitly cast the result of reduce to a number to ensure compatibility with arithmetic operations.
         const total = (Object.values(manualScores) as number[]).reduce((acc: number, curr: number): number => acc + (curr || 0), 0);
         const criteriaList = data.rubric?.criteria || [];
-        // Fix: Ensure max is explicitly calculated as a number and defaults to 100 to avoid division by zero or type errors.
         const max = criteriaList.reduce((acc: number, curr: RubricCriterion): number => acc + (Number(curr.points) || 0), 0) || 100;
-        // Fix: Explicitly wrap operands in Number() to satisfy compiler requirements for arithmetic operations.
         const percentage = Math.round((Number(total) / Number(max)) * 100);
 
         try {
@@ -157,7 +152,6 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                 <div className="flex justify-between items-center mb-4">
                                     <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Calculated Score</span>
                                     <span className="text-2xl font-black text-primary-dark">
-                                        {/* Fix: Explicitly type parameters in calculation sum reduce. */}
                                         {Object.values(manualScores).reduce((a: number, b: number): number => a + b, 0)} pts
                                     </span>
                                 </div>

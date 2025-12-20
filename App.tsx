@@ -4,6 +4,7 @@ import { HashRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import LandingPage from './pages/LandingPage';
+import ActivationPage from './pages/ActivationPage';
 import { MainLayout } from './components/layout/MainLayout';
 import { PublicLayout } from './components/layout/PublicLayout';
 
@@ -11,6 +12,7 @@ import { PublicLayout } from './components/layout/PublicLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagementPage from './pages/admin/UserManagementPage';
 import SecurityManagementPage from './pages/admin/SecurityManagementPage';
+import ProvisioningPage from './pages/admin/ProvisioningPage';
 import DepartmentsPage from './pages/admin/DepartmentsPage';
 import ProgramsPage from './pages/admin/ProgramsPage';
 import SemestersPage from './pages/admin/SemestersPage';
@@ -97,6 +99,7 @@ const AppRoutes: React.FC = () => {
                 {/* 1. PUBLIC ROUTES (Wrapped in PublicLayout) */}
                 <Route element={<PublicLayout><Outlet /></PublicLayout>}>
                     <Route path="/" element={<LandingPage />} />
+                    <Route path="/activate" element={<ActivationPage />} />
                     <Route path="/features" element={<FeaturesPage />} />
                     <Route path="/solutions" element={<SolutionsPage />} />
                     <Route path="/pricing" element={<PricingPage />} />
@@ -120,6 +123,7 @@ const AppRoutes: React.FC = () => {
                 <Route element={<ProtectedRoute allowedRoles={[UserRole.Admin]} />}>
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/admin/users" element={<UserManagementPage />} />
+                    <Route path="/admin/onboarding" element={<ProvisioningPage />} />
                     <Route path="/admin/departments" element={<DepartmentsPage />} />
                     <Route path="/admin/programs" element={<ProgramsPage />} />
                     <Route path="/admin/semesters" element={<SemestersPage />} />

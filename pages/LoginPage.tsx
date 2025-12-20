@@ -1,12 +1,12 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
-// Fix: Added Link to the imports from react-router-dom.
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Icon, IconName } from '../components/icons';
 import { Modal } from '../components/ui/Modal';
 import { generatePasswordHint } from '../services/geminiService';
 import * as api from '../services/api';
-import { SecuritySettings, UserRole, UserStatus } from '../types';
+import { SecuritySettings, UserRole, UserStatus, InstitutionSettings } from '../types';
 
 const LoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -25,6 +25,7 @@ const LoginPage: React.FC = () => {
     const [signupPassword, setSignupPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [securitySettings, setSecuritySettings] = useState<SecuritySettings | null>(null);
+    const [instSettings, setInstSettings] = useState<InstitutionSettings | null>(null);
     const [isFetchingSettings, setIsFetchingSettings] = useState(false);
     const [isSigningUp, setIsSigningUp] = useState(false);
 
@@ -36,20 +37,22 @@ const LoginPage: React.FC = () => {
     const institutionSlug = location.state?.institution;
 
     useEffect(() => {
-        if (isSignupModalOpen) {
-            const fetchSettings = async () => {
-                setIsFetchingSettings(true);
-                try {
-                    const settings = await api.getSecuritySettings();
-                    setSecuritySettings(settings);
-                } catch (error) {
-                    console.error("Failed to fetch security settings", error);
-                } finally {
-                    setIsFetchingSettings(false);
-                }
-            };
-            fetchSettings();
-        }
+        const fetchSettings = async () => {
+            setIsFetchingSettings(true);
+            try {
+                const [sec, inst] = await Promise.all([
+                    api.getSecuritySettings(),
+                    api.getInstitutionSettings()
+                ]);
+                setSecuritySettings(sec);
+                setInstSettings(inst);
+            } catch (error) {
+                console.error("Failed to fetch settings", error);
+            } finally {
+                setIsFetchingSettings(false);
+            }
+        };
+        fetchSettings();
     }, [isSignupModalOpen]);
 
     const passwordValidation = useMemo(() => {
@@ -85,7 +88,7 @@ const LoginPage: React.FC = () => {
             const path = user.role === 'student' ? '/dashboard' : `/${user.role}`;
             navigate(path);
         } else {
-            setError('Invalid email or password. Please try again.');
+            setError('Invalid credentials or unactivated account. If you are a student, please use your unique invite link.');
             setIsLoggingIn(false);
         }
     };
@@ -129,7 +132,7 @@ const LoginPage: React.FC = () => {
                 status: UserStatus.Pending,
             });
             if (newUser) {
-                alert('Sign up successful! Please wait for admin approval.');
+                alert('Account request submitted. Since this is an institutional portal, a registrar will verify your details before activation.');
                 setSignupModalOpen(false);
                 setSignupFullName('');
                 setSignupEmail('');
@@ -176,10 +179,10 @@ const LoginPage: React.FC = () => {
                     </div>
                     
                     <form onSubmit={handleLogin} className="space-y-6">
-                        {error && <p className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-bold border border-red-100 animate-in fade-in slide-in-from-top-2">{error}</p>}
+                        {error && <p className="bg-red-50 text-red-700 p-4 rounded-2xl text-[10px] leading-relaxed font-bold border border-red-100 animate-in fade-in slide-in-from-top-2">{error}</p>}
                         
                         <div>
-                            <label htmlFor="email" className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
+                            <label htmlFor="email" className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Institutional Email</label>
                             <input
                                 type="email"
                                 id="email"
@@ -234,7 +237,11 @@ const LoginPage: React.FC = () => {
                     </div>
 
                     <p className="text-center text-sm font-bold text-gray-400">
-                        New here? <button onClick={() => setSignupModalOpen(true)} className="text-primary-dark hover:underline">Create institutional account</button>
+                        {instSettings?.restrictDomains ? (
+                            <span className="text-[10px] uppercase tracking-widest">Enrollment requires institutional invite</span>
+                        ) : (
+                            <>New here? <button onClick={() => setSignupModalOpen(true)} className="text-primary-dark hover:underline">Request Access</button></>
+                        )}
                     </p>
                 </div>
             </div>
@@ -261,46 +268,24 @@ const LoginPage: React.FC = () => {
             </Modal>
 
             {/* Signup Modal */}
-            <Modal isOpen={isSignupModalOpen} onClose={() => setSignupModalOpen(false)} title="Account Request">
+            <Modal isOpen={isSignupModalOpen} onClose={() => setSignupModalOpen(false)} title="Registration Request">
                 {isFetchingSettings ? <p className="text-center py-12">Loading security policy...</p> : (
                     <div className="space-y-6">
-                        <p className="text-sm text-gray-500 font-medium">Requested accounts are placed in a 'Pending' state for registrar verification.</p>
+                        <p className="text-sm text-gray-500 font-medium">This campus requires registrar approval. After requesting, check your email for an invite link.</p>
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Full Name</label>
                                 <input type="text" value={signupFullName} onChange={e => setSignupFullName(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
                             </div>
                             <div>
-                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Email</label>
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Institutional Email</label>
                                 <input type="email" value={signupEmail} onChange={e => setSignupEmail(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Password</label>
-                                    <input type="password" value={signupPassword} onChange={e => setSignupPassword(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
-                                </div>
-                                <div>
-                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Confirm</label>
-                                    <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border-none rounded-xl outline-none font-bold" />
-                                </div>
                             </div>
                         </div>
 
-                        {securitySettings && signupPassword.length > 0 && (
-                            <div className="p-4 bg-gray-50 dark:bg-gray-900 rounded-2xl space-y-2 border border-gray-100 dark:border-gray-800">
-                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Policy Validation</h4>
-                                <ul className="text-xs font-bold space-y-1">
-                                    <ValidationItem isValid={passwordValidation.minLength}>8+ Characters</ValidationItem>
-                                    <ValidationItem isValid={passwordValidation.requireUppercase}>Uppercase Letter</ValidationItem>
-                                    <ValidationItem isValid={passwordValidation.requireNumber}>Contains Number</ValidationItem>
-                                    <ValidationItem isValid={passwordValidation.passwordsMatch}>Passwords Match</ValidationItem>
-                                </ul>
-                            </div>
-                        )}
-
                         <div className="flex justify-end gap-3 pt-6">
                             <button onClick={() => setSignupModalOpen(false)} className="px-6 py-3 font-bold text-gray-400">Cancel</button>
-                            <button onClick={handleSignup} disabled={isSigningUp || !passwordValidation.isValid} className="bg-primary text-gray-900 font-black px-10 py-3 rounded-xl uppercase text-xs tracking-widest hover:bg-primary-dark transition-all disabled:opacity-30">Request Access</button>
+                            <button onClick={handleSignup} disabled={isSigningUp || !signupEmail} className="bg-primary text-gray-900 font-black px-10 py-3 rounded-xl uppercase text-xs tracking-widest hover:bg-primary-dark transition-all disabled:opacity-30">Submit Request</button>
                         </div>
                     </div>
                 )}
@@ -308,12 +293,5 @@ const LoginPage: React.FC = () => {
         </div>
     );
 };
-
-const ValidationItem: React.FC<{isValid: boolean, children: React.ReactNode}> = ({ isValid, children }) => (
-    <li className={`flex items-center gap-2 ${isValid ? 'text-green-600' : 'text-gray-400 opacity-60'}`}>
-        <Icon name={isValid ? "CheckCircle" : "ChevronRight"} className="h-3 w-3" />
-        {children}
-    </li>
-);
 
 export default LoginPage;

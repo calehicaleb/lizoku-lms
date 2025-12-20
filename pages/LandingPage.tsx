@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '../components/icons';
@@ -11,6 +10,20 @@ const LandingPage: React.FC = () => {
     const [isSearching, setIsSearching] = useState(false);
     const searchRef = useRef<HTMLDivElement>(null);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+    // Intersection Observer for scroll animations
+    useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal-active');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -39,7 +52,7 @@ const LandingPage: React.FC = () => {
     };
 
     return (
-        <div className="landing-page-root">
+        <div className="landing-page-root overflow-x-hidden bg-white text-slate-900 font-sans selection:bg-primary/30">
             <style>{`
                 .landing-page-root {
                     --primary-color: #FFD700;
@@ -57,10 +70,19 @@ const LandingPage: React.FC = () => {
                 }
                 .animate-float { animation: float 6s ease-in-out infinite; }
                 .animate-scan { animation: scan 3s linear infinite; }
+                .reveal {
+                    opacity: 0;
+                    transform: translateY(30px);
+                    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+                .reveal-active {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             `}</style>
             
             {/* HERO SECTION */}
-            <section className="relative pt-24 pb-32 px-6 overflow-hidden">
+            <section className="relative pt-24 pb-32 px-6">
                 <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-primary/10 rounded-full blur-[120px] -mr-[500px] -mt-[500px]"></div>
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[100px] -ml-[300px] -mb-[300px]"></div>
 
@@ -156,77 +178,8 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* PAIN POINT SECTION */}
-            <section className="py-32 px-6 max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-                <div className="order-2 lg:order-1 relative reveal">
-                    <div className="absolute -inset-4 bg-primary/20 rounded-[4rem] blur-2xl rotate-3"></div>
-                    <img src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=1000&q=80" alt="Modern Learning" className="relative rounded-[3.5rem] shadow-2xl border-4 border-white" />
-                    <div className="absolute -bottom-8 -right-8 bg-white p-8 rounded-[2.5rem] shadow-2xl border border-slate-50 max-w-xs animate-float">
-                        <div className="flex gap-1 mb-4 text-primary-dark">
-                            {[1,2,3,4,5].map(i => <Icon key={i} name="Star" className="h-5 w-5 fill-current" />)}
-                        </div>
-                        <p className="text-sm font-bold text-slate-800 leading-relaxed italic">"Transitioning to Lizoku was the best decision for our faculty. The interface is remarkably intuitive."</p>
-                        <p className="mt-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">— Registrar, Heritage School</p>
-                    </div>
-                </div>
-                <div className="order-1 lg:order-2 reveal" style={{ transitionDelay: '300ms' }}>
-                    <h2 className="text-5xl md:text-7xl font-black text-slate-900 mb-10 leading-[1] tracking-tight">Tired of Outdated, <br/><span className="text-slate-400">Clunky Systems?</span></h2>
-                    <p className="text-xl text-slate-500 leading-relaxed mb-12">
-                        Your faculty's time is valuable. Don't waste it on software that requires a semester of training just to operate. Move to a platform that feels as intuitive as the apps you use every day.
-                    </p>
-                    <div className="space-y-8">
-                        <LandingFeatureItem icon="Zap" title="Increased Productivity" text="Spend time on teaching, not settings. Lizoku automates administrative overhead." />
-                        <LandingFeatureItem icon="Eye" title="Total Accessibility" text="Cloud-native means 100% uptime and accessibility from any device, anywhere in Kenya." />
-                        <LandingFeatureItem icon="BarChart" title="Interactive Analytics" text="Real-time regional and classroom insights delivered in high-fidelity dashboards." />
-                    </div>
-                </div>
-            </section>
-
-            {/* FEATURES GRID */}
-            <section id="features" className="py-32 px-6 bg-slate-50 relative overflow-hidden">
-                <div className="max-w-[1440px] mx-auto">
-                    <div className="text-center max-w-3xl mx-auto mb-24 reveal">
-                        <span className="text-primary-dark font-black text-[11px] uppercase tracking-[0.4em] mb-4 block">Engineered for Excellence</span>
-                        <h2 className="text-5xl md:text-7xl font-black text-slate-900 mb-8 tracking-tight">Powerful Features, <br/>Simple Interface</h2>
-                        <p className="text-xl text-slate-500 font-medium">Our platform is packed with tools that are powerful for admins, yet intuitive for everyone.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        <SmallFeatureCard 
-                            icon="Wrench"
-                            title="Intuitive Course Builder"
-                            text="AI-powered tools help you generate module suggestions, lesson content, and quizzes in minutes, not hours."
-                            delay="100ms"
-                        />
-                         <SmallFeatureCard 
-                            icon="Zap"
-                            title="Instant Setup"
-                            text="Launch your branded learning portal in minutes. We handle all the migration and technical details."
-                            delay="200ms"
-                        />
-                         <SmallFeatureCard 
-                            icon="Globe"
-                            title="Your Domain"
-                            text="Use your own subdomain with SSL security handled by us for a professional, trustworthy presence."
-                            delay="300ms"
-                        />
-                         <SmallFeatureCard 
-                            icon="PieChart"
-                            title="Advanced Reporting"
-                            text="Monitor student progress, regional trends, and course effectiveness with powerful visual analytics."
-                            delay="400ms"
-                        />
-                    </div>
-                </div>
-            </section>
-
             {/* SPEED GRADER FEATURE SECTION */}
             <section className="py-40 px-6 bg-[#020617] text-white relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-                    <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-600 rounded-full blur-[150px]"></div>
-                    <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary rounded-full blur-[150px]"></div>
-                </div>
-
                 <div className="max-w-[1440px] mx-auto relative z-10">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
                         <div className="lg:col-span-5 reveal">
@@ -293,18 +246,6 @@ const LandingPage: React.FC = () => {
                                         </button>
                                         <p className="mt-4 font-black uppercase tracking-[0.3em] text-[10px] text-white">Watch Feature Video</p>
                                     </div>
-                                    <div className="absolute top-8 right-8 animate-float">
-                                        <div className="bg-blue-600/90 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 border border-white/10 shadow-2xl">
-                                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                            AI-ASSISTANT ACTIVE
-                                        </div>
-                                    </div>
-                                    <div className="absolute bottom-8 left-8 animate-float" style={{ animationDelay: '-3s' }}>
-                                        <div className="bg-slate-900/90 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 border border-white/10 shadow-2xl">
-                                            <Icon name="ClipboardCheck" className="h-3 w-3 text-primary" />
-                                            INTERACTIVE RUBRIC LOADED
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -321,76 +262,25 @@ const LandingPage: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                        <PricingCard 
+                        <LandingPricingCard 
                             title="Starter"
                             price="5,000"
                             desc="Perfect for small teams and individual instructors getting started."
                             features={["Up to 50 Users", "10 GB Storage", "1,000 AI Credits/month", "Core LMS Features", "Standard Support"]}
-                            delay="100ms"
                         />
-                        <PricingCard 
+                        <LandingPricingCard 
                             title="Institution"
                             price="20,000"
                             desc="Ideal for most schools and institutions needing more power and support."
                             isPopular
-                            features={["Up to 500 Users", "100 GB Storage", "10,000 AI Credits/month", "Advanced Reporting", "Priority Support", "All features from Starter"]}
-                            delay="200ms"
+                            features={["Up to 500 Users", "100 GB Storage", "10,000 AI Credits/month", "Advanced Reporting", "Priority Support"]}
                         />
-                        <PricingCard 
+                        <LandingPricingCard 
                             title="Enterprise"
                             price="Custom"
                             desc="For large-scale deployments with custom needs and dedicated infrastructure."
-                            features={["Custom User Limits", "Unlimited Storage", "Custom AI Credits", "White-Label Portal", "Custom Domain", "Plugin Marketplace"]}
-                            delay="300ms"
+                            features={["Custom User Limits", "Unlimited Storage", "Custom AI Credits", "White-Label Portal", "Custom Domain"]}
                         />
-                    </div>
-                </div>
-            </section>
-
-            {/* COMPLIANCE SECTION */}
-            <section className="py-32 px-6 bg-slate-900 text-white relative">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-500"></div>
-                <div className="max-w-[1440px] mx-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-                        <div className="reveal">
-                            <h2 className="text-5xl md:text-6xl font-black mb-10 tracking-tight">Built with Trust and <br/><span className="text-primary">Compliance</span> at its Core.</h2>
-                            <p className="text-xl text-slate-400 leading-relaxed mb-12">
-                                We are committed to protecting your data and adhering to local regulations. Our platform is designed to meet the highest standards of data privacy for Kenyan educational institutions.
-                            </p>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div className="p-8 bg-slate-800/50 rounded-[2.5rem] border border-slate-700 hover:bg-slate-800 transition-colors group">
-                                    <Icon name="Shield" className="h-12 w-12 text-primary mb-6 transform group-hover:scale-110 transition-transform" />
-                                    <h4 className="font-black text-xl mb-3">Data Protection Act</h4>
-                                    <p className="text-sm text-slate-400 leading-relaxed">Full adherence to KDPA 2019 principles for lawful data processing and storage.</p>
-                                </div>
-                                <div className="p-8 bg-slate-800/50 rounded-[2.5rem] border border-slate-700 hover:bg-slate-800 transition-colors group">
-                                    <Icon name="BadgeCheck" className="h-12 w-12 text-primary mb-6 transform group-hover:scale-110 transition-transform" />
-                                    <h4 className="font-black text-xl mb-3">Ministry Standards</h4>
-                                    <p className="text-sm text-slate-400 leading-relaxed">Platform architecture aligned with Ministry of Education e-learning guidelines.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-slate-800/30 p-12 rounded-[4rem] border-2 border-slate-700/50 reveal" style={{ transitionDelay: '200ms' }}>
-                             <div className="flex items-center gap-8 mb-10">
-                                <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center shadow-2xl">
-                                    <Icon name="Lock" className="h-10 w-10 text-primary" />
-                                </div>
-                                <div>
-                                    <h4 className="text-2xl font-black">Registered Data Processor</h4>
-                                    <p className="text-slate-400 font-bold uppercase tracking-widest text-xs mt-1">Official ODPC Registration Active</p>
-                                </div>
-                             </div>
-                             <div className="space-y-6">
-                                <div className="flex justify-between items-end">
-                                    <span className="text-sm font-bold text-slate-400 uppercase tracking-widest">Platform Security Status</span>
-                                    <span className="text-lg font-black text-primary">Certified</span>
-                                </div>
-                                <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
-                                    <div className="bg-primary h-full w-[100%] shadow-[0_0_20px_rgba(255,215,0,0.4)]"></div>
-                                </div>
-                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Annual Security Audit: 100% Passed</p>
-                             </div>
-                        </div>
                     </div>
                 </div>
             </section>
@@ -460,33 +350,8 @@ const LandingPage: React.FC = () => {
 
 // --- SUB-COMPONENTS ---
 
-const LandingFeatureItem: React.FC<{icon: any, title: string, text: string}> = ({ icon, title, text }) => (
-    <div className="flex gap-8 group">
-        <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-500 shadow-sm">
-            <Icon name={icon} className="h-8 w-8 text-primary-dark group-hover:text-slate-900 transition-colors" />
-        </div>
-        <div>
-            <h4 className="text-2xl font-black text-slate-800 mb-2">{title}</h4>
-            <p className="text-slate-500 font-medium leading-relaxed">{text}</p>
-        </div>
-    </div>
-);
-
-const SmallFeatureCard: React.FC<{icon: any, title: string, text: string, delay?: string}> = ({ icon, title, text, delay }) => (
-    <div className="bg-white p-10 rounded-[3rem] shadow-xl shadow-slate-200/50 border border-white hover:border-primary/40 transition-all hover:-translate-y-3 group reveal" style={{ transitionDelay: delay }}>
-        <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-primary transition-all duration-500 transform group-hover:rotate-[10deg]">
-            <Icon name={icon} className="h-8 w-8 text-primary-dark group-hover:text-slate-900 transition-colors" />
-        </div>
-        <h3 className="text-2xl font-black text-slate-800 mb-4 leading-tight">{title}</h3>
-        <p className="text-slate-500 text-sm font-medium leading-relaxed mb-8">{text}</p>
-        <button className="text-[11px] font-black uppercase tracking-[0.2em] text-primary-dark hover:text-slate-900 flex items-center gap-2 transition-colors">
-            Explore <Icon name="ChevronRight" className="h-4 w-4" />
-        </button>
-    </div>
-);
-
-const PricingCard: React.FC<{title: string, price: string, desc: string, features: string[], isPopular?: boolean, delay?: string}> = ({ title, price, desc, features, isPopular, delay }) => (
-    <div className={`p-12 rounded-[4rem] border-2 transition-all relative reveal ${isPopular ? 'bg-slate-900 text-white border-primary shadow-[0_40px_80px_-15px_rgba(255,215,0,0.3)] scale-105 z-10' : 'bg-white text-slate-800 border-slate-100 hover:border-primary/50'}`} style={{ transitionDelay: delay }}>
+const LandingPricingCard: React.FC<{title: string, price: string, desc: string, features: string[], isPopular?: boolean}> = ({ title, price, desc, features, isPopular }) => (
+    <div className={`p-12 rounded-[4rem] border-2 transition-all relative ${isPopular ? 'bg-slate-900 text-white border-primary shadow-2xl scale-105 z-10' : 'bg-white text-slate-800 border-slate-100 hover:border-primary/50'}`}>
         {isPopular && (
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-slate-900 font-black text-[11px] uppercase tracking-[0.3em] px-8 py-3 rounded-full shadow-2xl">Most Popular</div>
         )}
@@ -504,9 +369,9 @@ const PricingCard: React.FC<{title: string, price: string, desc: string, feature
                 </li>
             ))}
         </ul>
-        <button className={`w-full py-6 rounded-3xl font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-95 shadow-xl ${isPopular ? 'bg-primary text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-primary hover:text-slate-900'}`}>
+        <Link to="/login" className={`w-full py-6 rounded-3xl block text-center font-black uppercase tracking-[0.2em] text-xs transition-all active:scale-95 shadow-xl ${isPopular ? 'bg-primary text-slate-900 hover:bg-white' : 'bg-slate-900 text-white hover:bg-primary hover:text-slate-900'}`}>
             {price === 'Custom' ? 'Contact Sales' : 'Start Trial'}
-        </button>
+        </Link>
     </div>
 );
 

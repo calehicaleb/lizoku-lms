@@ -1,10 +1,8 @@
-
 import React, { useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Icon } from '../icons';
 
 export const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const navigate = useNavigate();
     const location = useLocation();
 
     useEffect(() => {
@@ -99,7 +97,7 @@ export const PublicLayout: React.FC<{ children: React.ReactNode }> = ({ children
             </header>
 
             {/* 3. CONTENT AREA */}
-            <main>{children}</main>
+            <main className="min-h-[60vh]">{children}</main>
 
             {/* 4. PREMIUM FOOTER */}
             <footer className="bg-[#020617] text-white pt-32 pb-12 px-6 relative overflow-hidden">

@@ -30,6 +30,9 @@ export interface User {
   createdAt: string;
   programId?: string;
   county?: string;
+  registrationNumber?: string; // Institution ERP identifier
+  isActivated?: boolean;       // Activated via invite link
+  inviteToken?: string;        // Unique link token
 }
 
 export interface StatCardData {
@@ -654,6 +657,8 @@ export interface InstitutionSettings {
   institutionName: string;
   logoUrl: string;
   primaryColor: string;
+  restrictDomains: boolean;
+  allowedDomains: string[];
 }
 
 export interface CertificateSettings {
