@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import * as api from '../../services/api';
-// Fix: Added RubricCriterion to imports to resolve type issues in reduce functions
-import { Question, Submission, QuestionType, Rubric, Grade, ContentItem, AssignmentSubmission, CourseStatus, RubricCriterion } from '../../types';
+import { Submission, Rubric, Grade, ContentItem, AssignmentSubmission, CourseStatus, RubricCriterion } from '../../types';
 import { Icon } from '../icons';
-import { suggestGradingFeedback } from '../../services/geminiService';
 
 interface ManualGraderProps {
     isOpen: boolean;
@@ -18,7 +17,7 @@ interface GraderData {
     grade: Grade;
     rubric: Rubric | null;
     item: ContentItem;
-    courseStatus?: CourseStatus; // Added to handle locking
+    courseStatus?: CourseStatus; 
 }
 
 export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, submissionId, studentName }) => {
@@ -26,9 +25,8 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
     const [loading, setLoading] = useState(true);
     const [manualScores, setManualScores] = useState<Record<string, number>>({});
     const [feedback, setFeedback] = useState('');
-    const [isAiLoading, setIsAiLoading] = useState(false);
     const [isMaximized, setIsMaximized] = useState(true);
-    const [activeTab, setActiveTab] = useState<'rubric' | 'feedback' | 'ai'>('rubric');
+    const [activeTab, setActiveTab] = useState<'rubric' | 'feedback'>('rubric');
 
     const isLocked = data?.courseStatus === CourseStatus.Finalized || data?.courseStatus === CourseStatus.Archived;
 
@@ -38,14 +36,13 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
             setLoading(true);
             try {
                 const result = await api.getSubmissionDetails(submissionId);
-                // Also fetch course to check lock status
                 const course = await api.getCourseDetails(result.submission.courseId);
                 setData({ ...result, courseStatus: course?.status });
                 setFeedback(result.grade?.feedback || '');
                 
                 const initialScores: Record<string, number> = {};
                 if (result?.rubric) {
-                    result.rubric.criteria.forEach((c: any) => {
+                    result.rubric.criteria.forEach((c: RubricCriterion) => {
                         const existing = result.grade?.rubricFeedback?.[c.id]?.points;
                         initialScores[c.id] = existing !== undefined ? existing : 0;
                     });
@@ -58,12 +55,14 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
 
     const handleSave = async () => {
         if (!data || isLocked) return;
-        // Fix: Explicitly cast manualScores values to number array and simplified reduce to avoid left-hand side arithmetic type errors.
-        const total = (Object.values(manualScores) as number[]).reduce((acc, curr) => acc + curr, 0);
-        // Fix: Resolved arithmetic operation type error on line 66 by explicitly narrowing criteria to an array and using typed accumulator.
-        const criteriaList: RubricCriterion[] = data.rubric?.criteria || [];
-        const max = criteriaList.reduce((acc: number, curr: RubricCriterion) => acc + (curr.points || 0), 0) || 100;
-        const percentage = Math.round((total / max) * 100);
+        
+        // Fix: Explicitly cast the result of reduce to a number to ensure compatibility with arithmetic operations.
+        const total = (Object.values(manualScores) as number[]).reduce((acc: number, curr: number): number => acc + (curr || 0), 0);
+        const criteriaList = data.rubric?.criteria || [];
+        // Fix: Ensure max is explicitly calculated as a number and defaults to 100 to avoid division by zero or type errors.
+        const max = criteriaList.reduce((acc: number, curr: RubricCriterion): number => acc + (Number(curr.points) || 0), 0) || 100;
+        // Fix: Explicitly wrap operands in Number() to satisfy compiler requirements for arithmetic operations.
+        const percentage = Math.round((Number(total) / Number(max)) * 100);
 
         try {
             await api.gradeManualSubmission(submissionId, { score: percentage, feedback });
@@ -83,7 +82,7 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
             onToggleMaximize={() => setIsMaximized(!isMaximized)}
         >
             {loading ? (
-                <div className="flex h-64 items-center justify-center animate-pulse text-gray-400">Loading submission environment...</div>
+                <div className="flex h-64 items-center justify-center animate-pulse text-gray-400 font-bold uppercase tracking-widest">Initialising Secure Environment...</div>
             ) : data && (
                 <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900 -m-6">
                     {isLocked && (
@@ -97,18 +96,23 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                             <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg shadow-inner border dark:border-gray-700 overflow-y-auto p-12">
                                 <div className="max-w-3xl mx-auto prose dark:prose-invert">
                                     {(data.submission as AssignmentSubmission).textContent ? (
-                                        <div className="whitespace-pre-wrap leading-relaxed text-lg">
+                                        <div className="whitespace-pre-wrap leading-relaxed text-lg text-gray-800 dark:text-gray-200">
                                             {(data.submission as AssignmentSubmission).textContent}
                                         </div>
-                                    ) : <p className="text-center text-gray-500">No text content available.</p>}
+                                    ) : (
+                                        <div className="text-center text-gray-500 py-12">
+                                            <Icon name="FileText" className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                                            <p>No plain text content available. View the submitted file attachment for grading.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
 
                         <div className="w-96 bg-white dark:bg-gray-800 border-l dark:border-gray-700 flex flex-col">
                             <div className="flex border-b dark:border-gray-700">
-                                <button onClick={() => setActiveTab('rubric')} className={`flex-1 py-4 text-xs font-bold uppercase ${activeTab === 'rubric' ? 'text-primary border-b-2 border-primary' : 'text-gray-400'}`}>Rubric</button>
-                                <button onClick={() => setActiveTab('feedback')} className={`flex-1 py-4 text-xs font-bold uppercase ${activeTab === 'feedback' ? 'text-primary border-b-2 border-primary' : 'text-gray-400'}`}>Feedback</button>
+                                <button onClick={() => setActiveTab('rubric')} className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest ${activeTab === 'rubric' ? 'text-primary-dark border-b-2 border-primary' : 'text-gray-400'}`}>Rubric</button>
+                                <button onClick={() => setActiveTab('feedback')} className={`flex-1 py-4 text-xs font-bold uppercase tracking-widest ${activeTab === 'feedback' ? 'text-primary-dark border-b-2 border-primary' : 'text-gray-400'}`}>Feedback</button>
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-4 space-y-6">
@@ -117,7 +121,7 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                         {data.rubric.criteria.map(crit => (
                                             <div key={crit.id} className="space-y-2">
                                                 <div className="flex justify-between items-center text-sm font-bold">
-                                                    <span>{crit.description}</span>
+                                                    <span className="text-gray-700 dark:text-gray-200">{crit.description}</span>
                                                     <span className="text-primary-dark">{manualScores[crit.id] || 0} / {crit.points}</span>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-1">
@@ -142,26 +146,26 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
                                         disabled={isLocked}
                                         value={feedback}
                                         onChange={e => setFeedback(e.target.value)}
-                                        className="w-full h-64 p-3 bg-gray-50 dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm"
-                                        placeholder="Enter marking notes..."
+                                        className="w-full h-64 p-3 bg-gray-50 dark:bg-gray-700 border rounded-lg focus:ring-2 focus:ring-primary outline-none text-sm dark:text-gray-100 font-medium"
+                                        placeholder="Enter marking notes and pedagogical feedback..."
                                     />
                                 )}
                             </div>
 
                             <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                                 <div className="flex justify-between items-center mb-4">
-                                    <span className="text-sm font-bold text-gray-500">Score</span>
+                                    <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Calculated Score</span>
                                     <span className="text-2xl font-black text-primary-dark">
-                                        {/* Fix: Explicitly ensure result of reduction is treated as a number for UI display. */}
-                                        {(Object.values(manualScores) as number[]).reduce((a: number, b: number) => a + b, 0)} pts
+                                        {/* Fix: Explicitly type parameters in calculation sum reduce. */}
+                                        {Object.values(manualScores).reduce((a: number, b: number): number => a + b, 0)} pts
                                     </span>
                                 </div>
                                 <button 
                                     onClick={handleSave} 
                                     disabled={isLocked}
-                                    className="w-full bg-primary text-gray-900 font-bold py-3 rounded-lg hover:bg-primary-dark shadow-md disabled:bg-gray-400"
+                                    className="w-full bg-primary text-gray-900 font-black py-4 rounded-xl hover:bg-primary-dark shadow-xl shadow-primary/20 disabled:bg-gray-200 disabled:shadow-none uppercase tracking-widest text-xs"
                                 >
-                                    {isLocked ? 'Closed' : 'Submit Score'}
+                                    {isLocked ? 'Closed' : 'Submit Final Grade'}
                                 </button>
                             </div>
                         </div>

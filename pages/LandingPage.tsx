@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Icon } from '../components/icons';
@@ -115,8 +116,8 @@ const LandingPage: React.FC = () => {
                         <div className="bg-primary p-2 rounded-xl group-hover:rotate-[15deg] transition-all duration-500 shadow-lg shadow-primary/20">
                             <Icon name="GraduationCap" className="h-7 w-7 text-slate-900" />
                         </div>
-                        <span className="text-2xl font-black tracking-tighter text-slate-800 flex items-center">
-                            LIZOKU <span className="text-primary-dark ml-1 font-extrabold">LMS</span>
+                        <span className="text-2xl font-black tracking-tighter text-slate-800 flex items-center uppercase">
+                            LIZOKU <span className="text-primary-dark ml-1 font-extrabold lowercase">LMS</span>
                         </span>
                     </div>
 
@@ -146,7 +147,6 @@ const LandingPage: React.FC = () => {
 
             {/* 3. HERO SECTION */}
             <section className="relative pt-24 pb-32 px-6 overflow-hidden">
-                {/* Background decorative elements */}
                 <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-primary/10 rounded-full blur-[120px] -mr-[500px] -mt-[500px]"></div>
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[100px] -ml-[300px] -mb-[300px]"></div>
 
@@ -242,7 +242,7 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* 5. PAIN POINT SECTION */}
+            {/* 5. FEATURE ITEM LIST SECTION */}
             <section className="py-32 px-6 max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
                 <div className="order-2 lg:order-1 relative reveal">
                     <div className="absolute -inset-4 bg-primary/20 rounded-[4rem] blur-2xl rotate-3"></div>
@@ -611,7 +611,7 @@ const LandingPage: React.FC = () => {
                                     <Icon name="CheckCircle" className="h-3 w-3 text-green-500" /> All Browsers
                                 </div>
                                 <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase">
-                                    <Icon name="CheckCircle" className="h-3 w-3 text-green-500" /> Offline Sync
+                                    <Icon name="CheckCircle" className="h-3 w-3 text-green-500" /> Fast, Secure, Reliable
                                 </div>
                              </div>
                         </div>

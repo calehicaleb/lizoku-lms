@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import * as api from '../../services/api';
@@ -628,6 +629,8 @@ const CourseBuilderPage: React.FC = () => {
         attemptsLimit?: number;
         randomizeQuestions?: boolean;
         rubricId?: string;
+        isGraded?: boolean;
+        pointsPossible?: number;
     }>({ selectedQuestionIds: new Set() });
 
     const [draggedItem, setDraggedItem] = useState<DraggedItemState | null>(null);
@@ -881,6 +884,8 @@ const CourseBuilderPage: React.FC = () => {
             attemptsLimit: item.attemptsLimit,
             randomizeQuestions: item.randomizeQuestions || false,
             rubricId: item.rubricId || '',
+            isGraded: item.isGraded || false,
+            pointsPossible: item.pointsPossible || 0,
         });
         setSettingsModalOpen(true);
     };
@@ -898,6 +903,8 @@ const CourseBuilderPage: React.FC = () => {
                     attemptsLimit: itemFormData.attemptsLimit,
                     randomizeQuestions: itemFormData.randomizeQuestions,
                     rubricId: itemFormData.rubricId || undefined,
+                    isGraded: itemFormData.isGraded,
+                    pointsPossible: itemFormData.pointsPossible,
                   }
                 : item
             ),
@@ -1165,10 +1172,19 @@ const CourseBuilderPage: React.FC = () => {
                                     {!isReadOnly && <Icon name="GripVertical" className="h-5 w-5 text-gray-400" />}
                                     <Icon name={contentIconMap[item.type] || 'FileText'} className="h-5 w-5 text-gray-500 dark:text-gray-400 mx-3" />
                                     <span className="flex-grow text-gray-700 dark:text-gray-300">{item.title}</span>
-                                    <span className="text-xs text-gray-400 dark:text-gray-500 capitalize mr-4">{item.type} {item.type === 'quiz' && `(${item.questionIds?.length || 0} Qs)`}</span>
+                                    <span className="text-xs text-gray-400 dark:text-gray-500 capitalize mr-4">
+                                        {item.type} 
+                                        {item.type === 'quiz' && ` (${item.questionIds?.length || 0} Qs)`}
+                                        {item.type === 'discussion' && item.isGraded && ` (Graded)`}
+                                    </span>
                                     {!isReadOnly ? (
                                         <>
-                                            {item.type === ContentType.Discussion ? <button onClick={() => setViewingDiscussion(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">View Discussion</button> :
+                                            {item.type === ContentType.Discussion ? (
+                                                <div className="flex gap-3">
+                                                    <button onClick={() => setViewingDiscussion(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">View</button>
+                                                    <button onClick={() => handleOpenSettingsModal(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Settings</button>
+                                                </div>
+                                            ) :
                                              (item.type === 'quiz' || item.type === 'assignment') ? <button onClick={() => handleOpenSettingsModal(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Settings</button> :
                                              (item.type === ContentType.Lesson || item.type === ContentType.Resource) ? <button onClick={() => setEditingContentItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Content</button> :
                                              (item.type === ContentType.InteractiveVideo) ? <button onClick={() => setEditingVideoItem(item)} className="text-xs font-medium text-secondary dark:text-blue-400 hover:underline">Video</button> :
@@ -1375,8 +1391,36 @@ const CourseBuilderPage: React.FC = () => {
                                 </div>
                             </>
                         )}
+
+                        {currentItem.type === 'discussion' && (
+                            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl border dark:border-gray-700 space-y-4 shadow-sm">
+                                <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tighter">Grading Settings</h3>
+                                <div className="flex items-center gap-3">
+                                    <input 
+                                        type="checkbox" 
+                                        name="isGraded"
+                                        checked={itemFormData.isGraded} 
+                                        onChange={handleItemFormChange} 
+                                        className="h-5 w-5 text-primary rounded" 
+                                    />
+                                    <span className="font-bold text-gray-700 dark:text-gray-200">Enable Graded Discussion</span>
+                                </div>
+                                {itemFormData.isGraded && (
+                                    <div className="pl-8 animate-in fade-in slide-in-from-left-2">
+                                        <label className="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">Points Possible</label>
+                                        <input 
+                                            type="number" 
+                                            name="pointsPossible"
+                                            value={itemFormData.pointsPossible} 
+                                            onChange={handleItemFormChange} 
+                                            className="w-32 px-3 py-2 border rounded-md dark:bg-gray-700" 
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         
-                        {(currentItem.type === 'assignment' || currentItem.type === 'quiz') && (
+                        {(currentItem.type === 'assignment' || currentItem.type === 'quiz' || (currentItem.type === 'discussion' && itemFormData.isGraded)) && (
                             <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-600">
                                 <label className="block text-sm font-black text-gray-500 uppercase tracking-[0.15em] mb-3">Grading Rubric Association</label>
                                 <div className="flex items-center justify-between">

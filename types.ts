@@ -1,3 +1,4 @@
+
 // types.ts - Core Data Models
 
 export enum UserRole {
@@ -219,6 +220,9 @@ export interface ContentItem {
         launchFile: string;
         packageUrl: string;
     };
+    // Graded Discussion support
+    isGraded?: boolean;
+    pointsPossible?: number;
 }
 
 export interface Module {
@@ -364,7 +368,8 @@ export interface DiscussionPost {
     content: string;
     createdAt: string;
     isRead: boolean;
-    children?: DiscussionPost[];
+    isPinned?: boolean;
+    likes?: number;
     replyCount?: number;
 }
 

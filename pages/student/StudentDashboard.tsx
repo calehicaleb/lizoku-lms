@@ -131,7 +131,7 @@ const UpcomingDeadlines: React.FC<{ deadlines: UpcomingDeadline[] }> = ({ deadli
     );
 };
 
-const RecentActivity: React.FC<{ activities: RecentActivity[] }> = ({ activities }) => (
+const RecentActivityFeed: React.FC<{ activities: RecentActivity[] }> = ({ activities }) => (
     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm">
         <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100 mb-4">Recent Activity</h3>
          {activities.length > 0 ? (
@@ -206,14 +206,14 @@ const StudentDashboard: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <UpcomingDeadlines deadlines={deadlines} />
-                <RecentActivity activities={activity} />
+                <RecentActivityFeed activities={activity} />
             </div>
 
             <div>
                 <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Continue Learning</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {courses.map(course => (
-                         <div key={course.id} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                         <div key={course.id} className="bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
                             <div className="h-32 bg-secondary-light dark:bg-secondary/20 flex items-center justify-center">
                                 <Icon name="BookOpen" className="h-16 w-16 text-secondary dark:text-blue-400" />
                             </div>
