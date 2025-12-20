@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -31,34 +32,22 @@
     </script>
     <style type="text/css" media="print">
       @media print {
-        body {
-          background-color: #fff;
-        }
-        .no-print, header, aside {
-          display: none !important;
-        }
-        main, .lg\:pl-64 {
-          padding: 0 !important;
-          margin: 0 !important;
-        }
-        .printable-area {
-          box-shadow: none !important;
-          border: none !important;
-          margin: 0;
-          padding: 0;
-        }
-        @page {
-          size: auto;
-          margin: 0.5in;
-        }
+        body { background-color: #fff; }
+        .no-print, header, aside { display: none !important; }
+        main, .lg\:pl-64 { padding: 0 !important; margin: 0 !important; }
+        .printable-area { box-shadow: none !important; border: none !important; margin: 0; padding: 0; }
+        @page { size: auto; margin: 0.5in; }
       }
     </style>
   <script type="importmap">
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react/jsx-runtime": "https://aistudiocdn.com/react@^19.2.0/jsx-runtime",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
     "@google/genai": "https://aistudiocdn.com/@google/genai@^1.27.0",
     "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.4",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.548.0"
@@ -68,7 +57,6 @@
 </head>
   <body class="bg-light-cream font-sans text-gray-800 antialiased dark:bg-gray-900 dark:text-gray-200">
     <div id="root"></div>
-    <!-- Explicitly load the entry point using a relative path to avoid resolution issues -->
-    <script type="module" src="index.tsx"></script>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>

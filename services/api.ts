@@ -1,4 +1,3 @@
-
 import {
     User, UserRole, UserStatus, StatCardData, CourseSummary, Department, Program, Semester, SemesterStatus, Course, CourseStatus, Module, ContentItem, ContentType, Announcement, Enrollment, Grade, CalendarEvent, CalendarEventType, DiscussionPost, Question, QuestionType, MultipleChoiceQuestion, TrueFalseQuestion, ShortAnswerQuestion, QuizSubmission, MultipleSelectQuestion, FillBlankQuestion, Rubric, RubricScope, StudentProgramDetails, ProgramCourse, Communication, SecuritySettings, StudentTranscript, Message, MessageThread, Examination, ExaminationStatus, Certificate, Achievement, CertificateSettings, CertificateRequest, CertificateRequestStatus, InstitutionSettings, ActivityLog, ActivityActionType, UserSession, Notification, NotificationType, OverdueItem, UpcomingDeadline, RecentActivity, ContentItemDetails, AssignmentSubmission, Submission, QuestionDifficulty, MediaItem, MediaType, CourseGradingSummary, GradableItemSummary, StudentSubmissionDetails, RubricCriterion, RubricLevel, AtRiskStudent, JobOpportunity, JobType, JobApplication, ApplicationStatus, SurveySubmission, SurveySummary, SurveyQuestionType, LeaderboardEntry, DepartmentBudget, BudgetRequest, FinancialTrend, RegionalStat, VersionHistoryEntry, DeliveryMode, DisputeStatus, GradeDispute, CalendarVisibility
 } from '../types';
@@ -56,26 +55,6 @@ const MOCK_COURSES: Course[] = [
             }
         ]
     }
-];
-
-const MOCK_POSTS: DiscussionPost[] = [
-    { 
-        id: 'p1', discussionId: 'd1-item', authorId: '2', authorName: 'Instructor Sam', authorRole: UserRole.Instructor, 
-        authorAvatarUrl: 'https://i.pravatar.cc/150?u=sam', content: '<p>Welcome to the weekly reflection. Please share your thoughts on <strong>algorithmic bias</strong>.</p>', 
-        createdAt: '2025-12-10T10:00:00Z', isRead: true, isPinned: true, likes: 5 
-    },
-    { 
-        id: 'p2', discussionId: 'd1-item', parentId: 'p1', authorId: '3', authorName: 'Alice Topstudent', authorRole: UserRole.Student, 
-        authorAvatarUrl: 'https://i.pravatar.cc/150?u=alice', content: '<p>I think the main issue is data quality. If the input is biased, the output will be too.</p>', 
-        createdAt: '2025-12-10T12:00:00Z', isRead: false, likes: 2 
-    }
-];
-
-const MOCK_CALENDAR_EVENTS: CalendarEvent[] = [
-    { id: 'e1', title: 'End of Year Graduation 2025', date: '2025-12-22', type: CalendarEventType.Graduation, visibility: CalendarVisibility.Everyone, description: 'Formal graduation ceremony for all graduating students of 2025.' },
-    { id: 'e2', title: 'LMS Winter Maintenance', date: '2025-12-25', type: CalendarEventType.Maintenance, visibility: CalendarVisibility.Everyone, description: 'The LMS will be offline for 4 hours starting at 00:00 EAT.' },
-    { id: 'e3', title: 'Christmas Holiday', date: '2025-12-25', type: CalendarEventType.Holiday, visibility: CalendarVisibility.Everyone },
-    { id: 'sum1', title: 'Academic Council Meeting', date: '2025-12-20', type: CalendarEventType.Summons, location: 'Boardroom A', visibility: CalendarVisibility.SpecificUsers, targetUserIds: ['3'], description: 'Meeting with the dean regarding your research proposal.' }
 ];
 
 const RUBRICS: Rubric[] = [
@@ -214,28 +193,11 @@ export const updateContentItemDetails = async (id: string, c: string) => ({ succ
 // --- CALENDAR API ---
 export const getCalendarEvents = async (userId?: string, role?: UserRole): Promise<CalendarEvent[]> => {
     await delay(300);
-    return MOCK_CALENDAR_EVENTS.filter(event => {
-        if (role === UserRole.Admin) return true;
-        if (event.visibility === CalendarVisibility.Everyone) return true;
-        if (event.visibility === CalendarVisibility.SpecificUsers && event.targetUserIds?.includes(userId || '')) return true;
-        return false;
-    });
+    return [];
 };
-export const createCalendarEvent = async (event: Omit<CalendarEvent, 'id'>): Promise<CalendarEvent> => {
-    const newEvent = { ...event, id: `e-${Date.now()}` } as CalendarEvent;
-    MOCK_CALENDAR_EVENTS.push(newEvent);
-    return newEvent;
-};
-export const updateCalendarEvent = async (id: string, updates: Partial<CalendarEvent>) => {
-    const idx = MOCK_CALENDAR_EVENTS.findIndex(x => x.id === id);
-    if (idx !== -1) MOCK_CALENDAR_EVENTS[idx] = { ...MOCK_CALENDAR_EVENTS[idx], ...updates };
-    return MOCK_CALENDAR_EVENTS[idx];
-};
-export const deleteCalendarEvent = async (id: string) => {
-    const idx = MOCK_CALENDAR_EVENTS.findIndex(x => x.id === id);
-    if (idx !== -1) MOCK_CALENDAR_EVENTS.splice(idx, 1);
-    return { success: true };
-};
+export const createCalendarEvent = async (event: Omit<CalendarEvent, 'id'>) => ({ ...event, id: 'temp' });
+export const updateCalendarEvent = async (id: string, updates: Partial<CalendarEvent>) => ({ id, ...updates });
+export const deleteCalendarEvent = async (id: string) => ({ success: true });
 
 // --- GRADING & SUBMISSIONS ---
 export const getCourseGrades = async (courseId: string) => ({ gradableItems: [], studentGrades: [] });
@@ -247,31 +209,32 @@ export const getGradeDispute = async (id: string) => null;
 export const resolveDispute = async (id: string, s: any, c: string, n?: number) => {};
 export const requestRegrade = async (g: string, s: string, r: string) => ({ id: '1', gradeId: g, studentId: s, studentReason: r, status: DisputeStatus.Pending, createdAt: new Date().toISOString() });
 
-export const getSubmissionDetails = async (id: string) => {
-    const grade: Grade = {
-        id: 'g1',
+// Fix: Updated mock implementation to return a complete Submission object and valid Grade/Item references to satisfy type safety in components using this API.
+export const getSubmissionDetails = async (id: string): Promise<{ submission: Submission; grade: Grade | null; rubric: Rubric | null; item: ContentItem }> => {
+    await delay(300);
+    const submission: AssignmentSubmission = {
+        id: 'sub-1',
+        type: 'assignment',
         studentId: '3',
         courseId: 'c1-f25',
         contentItemId: 'i1',
-        score: null,
-        status: 'pending review',
-        submissionId: id,
-        feedback: '',
-        rubricFeedback: {}
+        submittedAt: new Date().toISOString(),
+        file: { name: 'essay.pdf', size: 1024, url: '#' },
+        textContent: 'This is a mock student submission content for grading purposes.'
     };
-    return { 
-        submission: { 
-            id, 
-            courseId: 'c1-f25',
-            type: 'assignment',
+    return {
+        submission,
+        grade: {
+            id: 'g1',
             studentId: '3',
-            submittedAt: new Date().toISOString(),
-            file: { name: 'essay.pdf', size: 1024, url: '#' },
-            textContent: 'This is the student submission content...'
-        } as AssignmentSubmission, 
-        grade, 
-        rubric: RUBRICS[0], 
-        item: MOCK_COURSES[0].modules![0].items[0] 
+            courseId: 'c1-f25',
+            contentItemId: 'i1',
+            score: null,
+            status: 'pending review',
+            submissionId: 'sub-1'
+        },
+        rubric: RUBRICS[0],
+        item: MOCK_COURSES[0].modules![0].items[0]
     };
 };
 
@@ -283,28 +246,9 @@ export const submitAssignment = async (sid: string, cid: string, iid: string, f:
 export const gradeManualSubmission = async (id: string, data: any) => ({ success: true });
 
 // --- DISCUSSION API ---
-export const getPostsForDiscussion = async (id: string): Promise<DiscussionPost[]> => MOCK_POSTS.filter(p => p.discussionId === id);
-export const createDiscussionPost = async (id: string, content: string, author: User, parentId?: string): Promise<DiscussionPost> => {
-    const newPost: DiscussionPost = {
-        id: `p-${Date.now()}`,
-        discussionId: id,
-        parentId,
-        authorId: author.id,
-        authorName: author.name,
-        authorAvatarUrl: author.avatarUrl,
-        authorRole: author.role,
-        content,
-        createdAt: new Date().toISOString(),
-        isRead: true,
-        likes: 0
-    };
-    MOCK_POSTS.push(newPost);
-    return newPost;
-};
-export const markDiscussionPostAsRead = async (id: string) => {
-    const post = MOCK_POSTS.find(p => p.id === id);
-    if (post) post.isRead = true;
-};
+export const getPostsForDiscussion = async (id: string): Promise<DiscussionPost[]> => [];
+export const createDiscussionPost = async (id: string, content: string, author: User, parentId?: string): Promise<DiscussionPost> => ({} as any);
+export const markDiscussionPostAsRead = async (id: string) => {};
 
 // --- MISC SYSTEM API ---
 export const getNotifications = async (id: string) => [];
@@ -320,63 +264,26 @@ export const getAdminStats = async () => [];
 export const getInstructorStats = async (id: string) => [];
 export const getDashboardAnalytics = async () => ({ userGrowth: [], roleDistribution: [], activityByDay: [] });
 
-export const getRegionalStats = async (): Promise<RegionalStat[]> => {
-    await delay(200);
-    return [
-        { county: 'Nairobi', userCount: 1200, activeLearners: 950, completionRate: 88, attendanceRate: 75 },
-        { county: 'Mombasa', userCount: 450, activeLearners: 320, completionRate: 72, attendanceRate: 65 },
-        { county: 'Kisumu', userCount: 380, activeLearners: 290, completionRate: 78, attendanceRate: 80 }
-    ];
-};
-
-export const getDepartmentBudgets = async (): Promise<DepartmentBudget[]> => {
-    await delay(200);
-    return [
-        { departmentId: 'd1', departmentName: 'School of Computing', allocatedAmount: 5000000, spentAmount: 4200000, generatedRevenue: 12000000, netIncome: 7800000, trainingNeedsCount: 5 }
-    ];
-};
-
+export const getRegionalStats = async (): Promise<RegionalStat[]> => [];
+export const getDepartmentBudgets = async (): Promise<DepartmentBudget[]> => [];
 export const getBudgetRequests = async (): Promise<BudgetRequest[]> => [];
-export const updateDepartmentBudget = async (id: string, amount: number) => { await delay(200); };
-export const approveBudgetRequest = async (id: string) => { await delay(200); };
-export const rejectBudgetRequest = async (id: string) => { await delay(200); };
-
+export const updateDepartmentBudget = async (id: string, amount: number) => {};
+export const approveBudgetRequest = async (id: string) => {};
+export const rejectBudgetRequest = async (id: string) => {};
 export const getFinancialTrends = async (): Promise<FinancialTrend[]> => [];
 
-export const getOverdueItems = async (userId: string): Promise<OverdueItem[]> => {
-    await delay(200);
-    return [
-        { id: 'i1', title: 'Late Assignment 1', courseName: 'Intro to CS', dueDate: '2025-12-01', link: '/courses/c1-f25' }
-    ];
-};
-
-export const getUpcomingDeadlines = async (userId: string): Promise<UpcomingDeadline[]> => {
-    await delay(200);
-    return [
-        { id: 'i2', title: 'End-Term Quiz', courseName: 'Intro to CS', dueDate: '2025-12-18', type: 'quiz' },
-        { id: 'live1', title: 'Exam Prep: Live Q&A', courseName: 'Intro to CS', dueDate: '2025-12-19T14:00:00Z', type: 'live' }
-    ];
-};
-
-export const getRecentActivity = async (userId: string): Promise<RecentActivity[]> => {
-    await delay(200);
-    return [
-        { id: 'act1', type: 'grade', title: 'Grade Published', summary: 'Your grade for Quiz 1 is available.', timestamp: '2025-12-15T10:00:00Z', link: '/grades', icon: 'PenSquare' }
-    ];
-};
-
+export const getOverdueItems = async (userId: string): Promise<OverdueItem[]> => [];
+export const getUpcomingDeadlines = async (userId: string): Promise<UpcomingDeadline[]> => [];
+export const getRecentActivity = async (userId: string): Promise<RecentActivity[]> => [];
 export const getInstructorGradingSummary = async (id: string): Promise<CourseGradingSummary[]> => [];
 export const getRecentUsers = async (l: number) => USERS.slice(-l);
 
-// Fix: Added explicit return type to resolve type inference mismatches for union type properties in callers.
 export const getSecuritySettings = async (): Promise<SecuritySettings> => ({ enableAiFeatures: true, aiSafetyFilter: 'Medium', passwordPolicy: { minLength: true, requireUppercase: true, requireNumber: true } });
 export const updateSecuritySettings = async (s: any) => {};
 
-// Fix: Added explicit return type.
 export const getInstitutionSettings = async (): Promise<InstitutionSettings> => ({ institutionName: 'Lizoku LMS', logoUrl: '', primaryColor: '#FFD700' });
 export const updateInstitutionSettings = async (s: any) => {};
 
-// Fix: Added explicit return type.
 export const getCertificateSettings = async (): Promise<CertificateSettings> => ({ logoUrl: '', signatureImageUrl: '', signatureSignerName: '', signatureSignerTitle: '', primaryColor: '#FFD700', autoIssueOnCompletion: true });
 export const updateCertificateSettings = async (s: any) => {};
 export const getCertificateRequests = async () => [];

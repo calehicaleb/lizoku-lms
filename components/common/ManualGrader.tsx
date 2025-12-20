@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import * as api from '../../services/api';
@@ -14,7 +13,8 @@ interface ManualGraderProps {
 
 interface GraderData {
     submission: Submission;
-    grade: Grade;
+    // Fix: Changed grade to Grade | null because a submission might not have a grade record yet, and the API returns null in those cases.
+    grade: Grade | null;
     rubric: Rubric | null;
     item: ContentItem;
     courseStatus?: CourseStatus; 
@@ -37,6 +37,7 @@ export const ManualGrader: React.FC<ManualGraderProps> = ({ isOpen, onClose, sub
             try {
                 const result = await api.getSubmissionDetails(submissionId);
                 const course = await api.getCourseDetails(result.submission.courseId);
+                // Fix: Properly setting state with merged API results. The type mismatch is resolved by updating the GraderData interface and API mock return types.
                 setData({ ...result, courseStatus: course?.status });
                 setFeedback(result.grade?.feedback || '');
                 

@@ -12,20 +12,6 @@ const LandingPage: React.FC = () => {
     const searchRef = useRef<HTMLDivElement>(null);
     const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-    // Intersection Observer for scroll animations
-    useEffect(() => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('reveal-active');
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-        return () => observer.disconnect();
-    }, []);
-
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
@@ -53,7 +39,7 @@ const LandingPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-primary/30 overflow-x-hidden landing-page-root">
+        <div className="landing-page-root">
             <style>{`
                 .landing-page-root {
                     --primary-color: #FFD700;
@@ -71,81 +57,9 @@ const LandingPage: React.FC = () => {
                 }
                 .animate-float { animation: float 6s ease-in-out infinite; }
                 .animate-scan { animation: scan 3s linear infinite; }
-                .reveal {
-                    opacity: 0;
-                    transform: translateY(30px);
-                    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-                }
-                .reveal-active {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-                .glass {
-                    background: rgba(255, 255, 255, 0.8);
-                    backdrop-filter: blur(12px);
-                    -webkit-backdrop-filter: blur(12px);
-                }
-                .blue-glow {
-                    box-shadow: 0 0 50px -10px rgba(59, 130, 246, 0.5);
-                }
             `}</style>
             
-            {/* 1. UTILITY NAV (Narrow Blue) */}
-            <div className="bg-[#003366] text-white py-2.5 px-6 relative z-[60]">
-                <div className="max-w-[1440px] mx-auto flex justify-between items-center text-[10px] font-bold uppercase tracking-[0.2em]">
-                    <div className="flex gap-8 items-center">
-                        <a href="mailto:support@lizoku.com" className="flex items-center gap-2 hover:text-primary transition-colors">
-                            <Icon name="MessageSquare" className="h-3.5 w-3.5" /> support@lizoku.com
-                        </a>
-                        <span className="flex items-center gap-1.5 opacity-80 cursor-pointer hover:opacity-100 transition-opacity">
-                            <Icon name="Globe" className="h-3.5 w-3.5" /> EN
-                        </span>
-                    </div>
-                    <div className="hidden sm:flex gap-8 items-center">
-                        <Link to="/login" className="hover:text-primary transition-colors">Login</Link>
-                        <button onClick={() => window.scrollTo({ top: 800, behavior: 'smooth' })} className="hover:text-primary transition-colors">Find Your Institution</button>
-                        <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
-                    </div>
-                </div>
-            </div>
-
-            {/* 2. MAIN NAV */}
-            <header className="sticky top-0 z-50 glass border-b border-slate-100 shadow-sm">
-                <div className="max-w-[1440px] mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 group cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                        <div className="bg-primary p-2 rounded-xl group-hover:rotate-[15deg] transition-all duration-500 shadow-lg shadow-primary/20">
-                            <Icon name="GraduationCap" className="h-7 w-7 text-slate-900" />
-                        </div>
-                        <span className="text-2xl font-black tracking-tighter text-slate-800 flex items-center uppercase">
-                            LIZOKU <span className="text-primary-dark ml-1 font-extrabold lowercase">LMS</span>
-                        </span>
-                    </div>
-
-                    <nav className="hidden lg:flex items-center gap-10 text-[13px] font-black text-slate-500 uppercase tracking-widest">
-                        <a href="#features" className="hover:text-slate-900 transition-colors relative group">
-                            Features
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-                        </a>
-                        <a href="#solutions" className="hover:text-slate-900 transition-colors relative group">
-                            Solutions
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-                        </a>
-                        <a href="#pricing" className="hover:text-slate-900 transition-colors relative group">
-                            Pricing
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all group-hover:w-full"></span>
-                        </a>
-                    </nav>
-
-                    <div className="flex items-center gap-6">
-                         <button onClick={() => navigate('/login')} className="hidden md:block text-slate-500 font-black text-[11px] uppercase tracking-widest hover:text-slate-900 transition-colors">Request a Demo</button>
-                         <Link to="/login" className="bg-primary text-slate-900 px-8 py-3.5 rounded-full font-black uppercase text-[11px] tracking-[0.15em] hover:bg-slate-900 hover:text-white transition-all shadow-xl shadow-primary/20 active:scale-95">
-                            Get Started
-                        </Link>
-                    </div>
-                </div>
-            </header>
-
-            {/* 3. HERO SECTION */}
+            {/* HERO SECTION */}
             <section className="relative pt-24 pb-32 px-6 overflow-hidden">
                 <div className="absolute top-0 right-0 w-[1000px] h-[1000px] bg-primary/10 rounded-full blur-[120px] -mr-[500px] -mt-[500px]"></div>
                 <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[100px] -ml-[300px] -mb-[300px]"></div>
@@ -168,7 +82,7 @@ const LandingPage: React.FC = () => {
                         </p>
                         <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
                             <button onClick={() => navigate('/login')} className="bg-slate-900 text-white px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-2xl shadow-slate-300">Try LizokuLMS</button>
-                            <button className="bg-white text-slate-900 px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-sm border-2 border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all shadow-lg shadow-slate-100">Request a Demo</button>
+                            <Link to="/request-demo" className="bg-white text-slate-900 px-12 py-5 rounded-2xl flex items-center justify-center font-black uppercase tracking-widest text-sm border-2 border-slate-100 hover:bg-slate-50 hover:border-slate-200 transition-all shadow-lg shadow-slate-100">Request a Demo</Link>
                         </div>
                     </div>
                     
@@ -189,8 +103,8 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* 4. INSTITUTION FINDER SECTION */}
-            <section className="py-24 px-6 bg-[#003366] relative overflow-hidden">
+            {/* INSTITUTION FINDER SECTION */}
+            <section id="finder" className="py-24 px-6 bg-[#003366] relative overflow-hidden">
                 <div className="absolute top-0 right-0 opacity-10 pointer-events-none">
                     <Icon name="Globe" className="h-[500px] w-[500px] text-white" />
                 </div>
@@ -242,7 +156,7 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* 5. FEATURE ITEM LIST SECTION */}
+            {/* PAIN POINT SECTION */}
             <section className="py-32 px-6 max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
                 <div className="order-2 lg:order-1 relative reveal">
                     <div className="absolute -inset-4 bg-primary/20 rounded-[4rem] blur-2xl rotate-3"></div>
@@ -261,14 +175,14 @@ const LandingPage: React.FC = () => {
                         Your faculty's time is valuable. Don't waste it on software that requires a semester of training just to operate. Move to a platform that feels as intuitive as the apps you use every day.
                     </p>
                     <div className="space-y-8">
-                        <FeatureItem icon="Zap" title="Increased Productivity" text="Spend time on teaching, not settings. Lizoku automates administrative overhead." />
-                        <FeatureItem icon="Eye" title="Total Accessibility" text="Cloud-native means 100% uptime and accessibility from any device, anywhere in Kenya." />
-                        <FeatureItem icon="BarChart" title="Interactive Analytics" text="Real-time regional and classroom insights delivered in high-fidelity dashboards." />
+                        <LandingFeatureItem icon="Zap" title="Increased Productivity" text="Spend time on teaching, not settings. Lizoku automates administrative overhead." />
+                        <LandingFeatureItem icon="Eye" title="Total Accessibility" text="Cloud-native means 100% uptime and accessibility from any device, anywhere in Kenya." />
+                        <LandingFeatureItem icon="BarChart" title="Interactive Analytics" text="Real-time regional and classroom insights delivered in high-fidelity dashboards." />
                     </div>
                 </div>
             </section>
 
-            {/* 6. FEATURES GRID */}
+            {/* FEATURES GRID */}
             <section id="features" className="py-32 px-6 bg-slate-50 relative overflow-hidden">
                 <div className="max-w-[1440px] mx-auto">
                     <div className="text-center max-w-3xl mx-auto mb-24 reveal">
@@ -315,7 +229,6 @@ const LandingPage: React.FC = () => {
 
                 <div className="max-w-[1440px] mx-auto relative z-10">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-                        {/* Copy Content */}
                         <div className="lg:col-span-5 reveal">
                             <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-4 py-2 rounded-full mb-8">
                                 <Icon name="Zap" className="h-4 w-4 text-primary" />
@@ -351,10 +264,8 @@ const LandingPage: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Immersive Video/Mockup Area */}
                         <div className="lg:col-span-7 relative reveal" style={{ transitionDelay: '300ms' }}>
                             <div className="relative bg-slate-900 rounded-[3rem] p-4 shadow-[0_0_100px_rgba(59,130,246,0.3)] border border-slate-800 overflow-hidden">
-                                {/* Simulated Browser UI */}
                                 <div className="bg-slate-800 rounded-t-[2.5rem] p-4 flex items-center gap-2 border-b border-slate-700">
                                     <div className="flex gap-1.5">
                                         <div className="w-3 h-3 rounded-full bg-red-500"></div>
@@ -367,28 +278,21 @@ const LandingPage: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* Video Area */}
                                 <div className="relative aspect-video bg-slate-950 rounded-b-[2.5rem] overflow-hidden group">
                                     <img 
                                         src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1200&q=80" 
                                         alt="Speed Grader Demonstration" 
                                         className="w-full h-full object-cover opacity-50 transition-transform duration-[5s] group-hover:scale-110"
                                     />
-                                    
-                                    {/* Scanline Animation Overlay */}
                                     <div className="absolute inset-0 pointer-events-none">
                                         <div className="w-full h-1 bg-primary/20 absolute animate-scan"></div>
                                     </div>
-
-                                    {/* Play Button Overlay */}
                                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                                         <button className="w-20 h-20 bg-primary text-slate-900 rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(255,215,0,0.5)] transform transition-all hover:scale-110 active:scale-95 group">
                                             <Icon name="ChevronRight" className="h-10 w-10 ml-1" />
                                         </button>
                                         <p className="mt-4 font-black uppercase tracking-[0.3em] text-[10px] text-white">Watch Feature Video</p>
                                     </div>
-
-                                    {/* Floating UI Tags */}
                                     <div className="absolute top-8 right-8 animate-float">
                                         <div className="bg-blue-600/90 backdrop-blur px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2 border border-white/10 shadow-2xl">
                                             <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
@@ -408,7 +312,7 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* 7. PRICING SECTION */}
+            {/* PRICING SECTION */}
             <section id="pricing" className="py-32 px-6">
                 <div className="max-w-[1440px] mx-auto">
                     <div className="text-center mb-24 reveal">
@@ -443,7 +347,7 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* 8. COMPLIANCE SECTION */}
+            {/* COMPLIANCE SECTION */}
             <section className="py-32 px-6 bg-slate-900 text-white relative">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-blue-500"></div>
                 <div className="max-w-[1440px] mx-auto">
@@ -491,25 +395,25 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* 9. FAQ SECTION */}
-            <section className="py-32 px-6 max-w-[1000px] mx-auto reveal">
+            {/* FAQ SECTION */}
+            <section id="faq" className="py-32 px-6 max-w-[1000px] mx-auto reveal">
                 <h2 className="text-5xl md:text-7xl font-black text-center mb-20 tracking-tight">Have Questions? <br/>We Have Answers.</h2>
                 <div className="space-y-4">
-                    <FaqItem 
+                    <LandingFaqItem 
                         id={1} 
                         q="Do I need an IT team to use Lizoku?" 
                         a="Absolutely not. Lizoku is a fully managed SaaS platform. We handle all the servers, updates, security, and technical maintenance so your faculty can focus purely on education."
                         open={openFaq === 1}
                         onToggle={() => setOpenFaq(openFaq === 1 ? null : 1)}
                     />
-                    <FaqItem 
+                    <LandingFaqItem 
                         id={2} 
                         q="Can I use my own domain name?" 
                         a="Yes! Enterprise customers can use custom domains (e.g., learn.youruniversity.ac.ke). Starter and Institution plans get a professional subdomain like yourname.lizoku.com with SSL included."
                         open={openFaq === 2}
                         onToggle={() => setOpenFaq(openFaq === 2 ? null : 2)}
                     />
-                    <FaqItem 
+                    <LandingFaqItem 
                         id={3} 
                         q="How secure is my institutional data?" 
                         a="We use enterprise-grade AES-256 encryption for all data at rest and TLS 1.3 for data in transit. Our infrastructure is hosted on ISO-certified Tier-3 data centers for maximum reliability."
@@ -519,7 +423,7 @@ const LandingPage: React.FC = () => {
                 </div>
             </section>
 
-            {/* 10. FINAL CTA / TESTIMONIAL */}
+            {/* FINAL CTA / TESTIMONIAL */}
             <section className="py-32 px-6 relative">
                 <div className="absolute inset-0 bg-slate-50 skew-y-3 -z-10 origin-right"></div>
                 <div className="max-w-[1440px] mx-auto bg-primary rounded-[5rem] p-12 md:p-32 relative overflow-hidden shadow-[0_50px_100px_-20px_rgba(255,215,0,0.3)] reveal">
@@ -529,7 +433,7 @@ const LandingPage: React.FC = () => {
                             <h2 className="text-6xl md:text-[90px] font-black text-slate-900 mb-12 leading-[0.9] tracking-tighter">Ready to <br/>Modernize?</h2>
                             <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
                                 <button onClick={() => navigate('/login')} className="bg-slate-900 text-white px-14 py-6 rounded-3xl font-black uppercase tracking-widest text-sm hover:scale-105 transition-all shadow-2xl active:scale-95">Get Started Free</button>
-                                <button className="bg-white/30 text-slate-900 px-14 py-6 rounded-3xl font-black uppercase tracking-widest text-sm hover:bg-white/50 transition-all border border-white/20">Talk to Sales</button>
+                                <Link to="/request-demo" className="bg-white/30 text-slate-900 px-14 py-6 rounded-3xl font-black uppercase flex items-center justify-center tracking-widest text-sm hover:bg-white/50 transition-all border border-white/20">Talk to Sales</Link>
                             </div>
                         </div>
                         <div className="bg-white/40 backdrop-blur-3xl p-12 rounded-[4rem] border-2 border-white/50 shadow-2xl">
@@ -550,93 +454,13 @@ const LandingPage: React.FC = () => {
                     </div>
                 </div>
             </section>
-
-            {/* 11. EXTENDED PREMIUM FOOTER */}
-            <footer id="contact" className="bg-[#020617] text-white pt-32 pb-12 px-6 relative overflow-hidden">
-                {/* Decorative background for footer */}
-                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-blue-500 to-primary opacity-50"></div>
-                
-                <div className="max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-24 relative z-10 reveal">
-                    <div className="lg:col-span-1">
-                        <div className="flex items-center gap-3 mb-8">
-                             <div className="bg-primary p-2 rounded-xl">
-                                <Icon name="GraduationCap" className="h-6 w-6 text-slate-900" />
-                            </div>
-                            <span className="text-3xl font-black tracking-tighter text-white">LIZOKU</span>
-                        </div>
-                        <p className="text-slate-400 font-medium leading-relaxed mb-10 text-lg">
-                            Unlock your potential with our expert-led Learning and Career focused LMS. A Kenyan Innovation designed for global standard education.
-                        </p>
-                        <div className="flex gap-4">
-                             <FooterSocial icon="Globe" dark />
-                             <FooterSocial icon="MessageSquare" dark />
-                             <FooterSocial icon="Briefcase" dark />
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h4 className="font-black text-xs uppercase tracking-[0.4em] text-primary mb-10">Institutional Solutions</h4>
-                        <ul className="space-y-5 text-slate-300 font-bold text-sm">
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> Higher Education</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> K-12 Schools</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> Corporate Business</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> Vocational Training</a></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="font-black text-xs uppercase tracking-[0.4em] text-primary mb-10">Resources & Company</h4>
-                        <ul className="space-y-5 text-slate-300 font-bold text-sm">
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> About Lizoku</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> Contact Sales</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> Documentation</a></li>
-                            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2 group"><Icon name="ChevronRight" className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-all" /> Help Center</a></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="font-black text-xs uppercase tracking-[0.4em] text-primary mb-10">The Native Web Experience</h4>
-                        <div className="bg-slate-800/50 rounded-[2rem] p-6 border border-slate-700/50">
-                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center">
-                                    <Icon name="Globe" className="h-5 w-5 text-primary" />
-                                </div>
-                                <span className="font-black text-sm uppercase tracking-widest text-slate-200">Zero-Install Learning</span>
-                             </div>
-                             <p className="text-xs text-slate-400 leading-relaxed mb-4">
-                                Lizoku is a modern Progressive Web Platform. Access 100% of features on desktop, tablet, or smartphone without downloading a single app.
-                             </p>
-                             <div className="flex flex-wrap gap-3">
-                                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase">
-                                    <Icon name="CheckCircle" className="h-3 w-3 text-green-500" /> All Browsers
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[10px] font-black text-slate-500 uppercase">
-                                    <Icon name="CheckCircle" className="h-3 w-3 text-green-500" /> Fast, Secure, Reliable
-                                </div>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="max-w-[1440px] mx-auto mt-32 pt-10 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-                    <div className="flex flex-col gap-2">
-                        <p className="text-xs font-black text-slate-500 uppercase tracking-[0.3em]">Built for the future of education</p>
-                        <p className="text-[11px] font-bold text-slate-400">© 2025 Lizoku Learning Solutions. A Kenyan Innovation. All Rights Reserved.</p>
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-10 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                         <a href="#" className="hover:text-primary transition-colors">Privacy Policy</a>
-                         <a href="#" className="hover:text-primary transition-colors">Cookie Settings</a>
-                         <a href="#" className="hover:text-primary transition-colors">Security Standards</a>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 };
 
 // --- SUB-COMPONENTS ---
 
-const FeatureItem: React.FC<{icon: any, title: string, text: string}> = ({ icon, title, text }) => (
+const LandingFeatureItem: React.FC<{icon: any, title: string, text: string}> = ({ icon, title, text }) => (
     <div className="flex gap-8 group">
         <div className="flex-shrink-0 w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:bg-primary group-hover:scale-110 transition-all duration-500 shadow-sm">
             <Icon name={icon} className="h-8 w-8 text-primary-dark group-hover:text-slate-900 transition-colors" />
@@ -686,7 +510,7 @@ const PricingCard: React.FC<{title: string, price: string, desc: string, feature
     </div>
 );
 
-const FaqItem: React.FC<{id: number, q: string, a: string, open: boolean, onToggle: () => void}> = ({ q, a, open, onToggle }) => (
+const LandingFaqItem: React.FC<{id: number, q: string, a: string, open: boolean, onToggle: () => void}> = ({ q, a, open, onToggle }) => (
     <div className={`border rounded-[2.5rem] transition-all duration-500 overflow-hidden ${open ? 'bg-slate-50 border-primary/50 shadow-xl' : 'bg-white border-slate-100 hover:border-slate-200 shadow-sm'}`}>
         <button onClick={onToggle} className="w-full flex items-center justify-between p-10 text-left outline-none">
             <span className="text-xl font-black text-slate-800 pr-8">{q}</span>
@@ -697,16 +521,6 @@ const FaqItem: React.FC<{id: number, q: string, a: string, open: boolean, onTogg
         <div className={`transition-all duration-500 ease-in-out ${open ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <p className="px-10 pb-10 text-lg text-slate-500 font-medium leading-relaxed max-w-3xl">{a}</p>
         </div>
-    </div>
-);
-
-const FooterSocial: React.FC<{icon: any, dark?: boolean}> = ({ icon, dark }) => (
-    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center cursor-pointer transition-all hover:-translate-y-1 shadow-sm ${
-        dark 
-            ? 'bg-slate-800 text-slate-400 hover:bg-primary hover:text-slate-900' 
-            : 'bg-slate-50 text-slate-400 hover:bg-primary hover:text-slate-900'
-    }`}>
-        <Icon name={icon} className="h-6 w-6" />
     </div>
 );
 
